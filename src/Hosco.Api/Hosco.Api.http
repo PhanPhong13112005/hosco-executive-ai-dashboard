@@ -1,0 +1,25 @@
+@host = http://localhost:5179
+@token = paste-access-token-here
+
+GET {{host}}/health/live
+
+###
+
+GET {{host}}/health/ready
+
+###
+
+POST {{host}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner@hosco.local",
+  "password": "HoscoDemo!2026"
+}
+
+###
+
+GET {{host}}/api/v1/reporting/orders?from=2026-01-01T00:00:00Z&to=2026-06-30T23:59:59Z&page=1&pageSize=20&sortBy=orderedAt&sortDirection=desc
+Authorization: Bearer {{token}}
+X-Correlation-ID: manual-gd2-check
+

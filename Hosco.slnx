@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Hosco.Api/Hosco.Api.csproj" />
+    <Project Path="src/Hosco.Application/Hosco.Application.csproj" />
+    <Project Path="src/Hosco.Domain/Hosco.Domain.csproj" />
+    <Project Path="src/Hosco.Infrastructure/Hosco.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Hosco.IntegrationTests/Hosco.IntegrationTests.csproj" />
+    <Project Path="tests/Hosco.UnitTests/Hosco.UnitTests.csproj" />
+  </Folder>
+</Solution>
