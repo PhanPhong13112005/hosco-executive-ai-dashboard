@@ -108,3 +108,7 @@ Integration tests start the actual HTTP pipeline on an ephemeral local port with
 ## Business-definition status
 
 No approved BA SRS/KPI Dictionary was present in the initial workspace. Metric and query contracts exist, but KPI formulas are marked `BlockedByBusinessDefinition` or `ProvisionalTechnicalPreview`. Do not treat preview aggregates as signed-off business figures; see [GD2 report](docs/gd2/GD2_REPORT.md).
+
+## GD2 Verification Evidence
+
+The reproducible GD2 audit, runtime results, generated migration SQL, captured OpenAPI document, and known limitations are indexed in [GD2 Evidence Report](docs/gd2/evidence/GD2_EVIDENCE_REPORT.md). Run `./scripts/verify-gd2.ps1` for the non-mutating build/test checks.
