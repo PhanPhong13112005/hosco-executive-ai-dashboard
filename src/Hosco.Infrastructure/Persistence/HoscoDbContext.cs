@@ -19,6 +19,7 @@ public sealed class HoscoDbContext(DbContextOptions<HoscoDbContext> options) : D
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Refund> Refunds => Set<Refund>();
+    public DbSet<AlertRule> AlertRules => Set<AlertRule>();
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
@@ -29,7 +30,7 @@ public sealed class HoscoDbContext(DbContextOptions<HoscoDbContext> options) : D
         b.Entity<Branch>(e => { e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique(); e.HasOne(x => x.Tenant).WithMany(x => x.Branches).HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Restrict); });
         TenantFk<AppUser>(b); TenantFk<Customer>(b); TenantFk<Employee>(b); TenantFk<Product>(b);
         TenantFk<Inventory>(b); TenantFk<Order>(b); TenantFk<OrderItem>(b); TenantFk<Payment>(b);
-        TenantFk<Refund>(b); TenantFk<Alert>(b); TenantFk<AuditLog>(b);
+        TenantFk<Refund>(b); TenantFk<AlertRule>(b); TenantFk<Alert>(b); TenantFk<AuditLog>(b);
         b.Entity<AppUser>(e => { e.HasIndex(x => x.Email).IsUnique(); e.Property(x => x.Email).HasMaxLength(320); e.Property(x => x.PasswordHash).HasMaxLength(500); });
         b.Entity<Role>(e => e.HasIndex(x => x.Name).IsUnique());
         b.Entity<UserRole>(e => { e.HasKey(x => new { x.UserId, x.RoleId }); e.HasOne(x => x.User).WithMany(x => x.UserRoles).HasForeignKey(x => x.UserId); e.HasOne(x => x.Role).WithMany(x => x.UserRoles).HasForeignKey(x => x.RoleId); });
@@ -42,11 +43,39 @@ public sealed class HoscoDbContext(DbContextOptions<HoscoDbContext> options) : D
         b.Entity<OrderItem>(e => { e.HasIndex(x => new { x.TenantId, x.OrderId }); e.HasOne(x => x.Order).WithMany(x => x.Items).HasForeignKey(x => x.OrderId); e.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict); Money(e.Property(x => x.UnitPrice)); Money(e.Property(x => x.UnitCostAtSale)); Money(e.Property(x => x.DiscountAmount)); Money(e.Property(x => x.LineTotal)); });
         b.Entity<Payment>(e => { e.HasOne(x => x.Order).WithMany(x => x.Payments).HasForeignKey(x => x.OrderId); Money(e.Property(x => x.Amount)); });
         b.Entity<Refund>(e => { e.HasIndex(x => new { x.TenantId, x.BranchId, x.RequestedAt }); e.HasOne(x => x.Order).WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); Money(e.Property(x => x.Amount)); });
-        b.Entity<Alert>(e => e.HasIndex(x => new { x.TenantId, x.Status, x.DetectedAt }));
+        b.Entity<AlertRule>(e =>
+        {
+            e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.BranchId, x.IsEnabled });
+            e.Property(x => x.Code).HasMaxLength(32);
+            e.Property(x => x.Name).HasMaxLength(200);
+            e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.ConfigJson).HasMaxLength(4000);
+            Money(e.Property(x => x.Threshold));
+            Money(e.Property(x => x.Baseline));
+        });
+        b.Entity<Alert>(e =>
+        {
+            e.HasIndex(x => new { x.TenantId, x.Status, x.DetectedAt });
+            e.HasIndex(x => new { x.TenantId, x.BranchId, x.Severity, x.DetectedAt });
+            e.HasIndex(x => new { x.TenantId, x.DedupKey, x.DetectedAt });
+            e.HasIndex(x => x.RuleId);
+            e.Property(x => x.Type).HasMaxLength(64);
+            e.Property(x => x.RuleCode).HasMaxLength(32);
+            e.Property(x => x.Title).HasMaxLength(250);
+            e.Property(x => x.Message).HasMaxLength(2000);
+            e.Property(x => x.DedupKey).HasMaxLength(450);
+            Money(e.Property(x => x.DetectedValue));
+            Money(e.Property(x => x.ThresholdValue));
+            e.HasOne(x => x.Rule).WithMany(x => x.Alerts).HasForeignKey(x => x.RuleId).OnDelete(DeleteBehavior.SetNull);
+        });
         b.Entity<AuditLog>(e => e.HasIndex(x => new { x.TenantId, x.OccurredAt }));
     }
 
     private static void Money(Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<decimal> property) =>
+        property.HasPrecision(18, 2);
+
+    private static void Money(Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<decimal?> property) =>
         property.HasPrecision(18, 2);
 
     private static void TenantFk<T>(ModelBuilder builder) where T : Hosco.Domain.Common.TenantEntity =>

@@ -31,6 +31,9 @@ namespace Hosco.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("AcknowledgedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid?>("AcknowledgedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("BranchId")
                         .HasColumnType("uniqueidentifier");
 
@@ -40,12 +43,37 @@ namespace Hosco.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("DetectedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<decimal?>("DetectedValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DedupKey")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<string>("PayloadJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("ResolvedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ResolvedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RuleCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid?>("RuleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Severity")
                         .HasColumnType("int");
@@ -58,20 +86,55 @@ namespace Hosco.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<decimal?>("ThresholdValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RuleId");
+
+                    b.HasIndex("TenantId", "BranchId", "Severity", "DetectedAt");
+
+                    b.HasIndex("TenantId", "DedupKey", "DetectedAt");
+
                     b.HasIndex("TenantId", "Status", "DetectedAt");
 
                     b.ToTable("Alerts");
+                });
+
+            modelBuilder.Entity("Hosco.Domain.Entities.AlertRule", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uniqueidentifier");
+                    b.Property<decimal?>("Baseline").HasPrecision(18, 2).HasColumnType("decimal(18,2)");
+                    b.Property<Guid?>("BranchId").HasColumnType("uniqueidentifier");
+                    b.Property<string>("Code").IsRequired().HasMaxLength(32).HasColumnType("nvarchar(32)");
+                    b.Property<int>("CooldownMinutes").HasColumnType("int");
+                    b.Property<string>("ConfigJson").IsRequired().HasMaxLength(4000).HasColumnType("nvarchar(4000)");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("datetimeoffset");
+                    b.Property<string>("Description").IsRequired().HasMaxLength(1000).HasColumnType("nvarchar(1000)");
+                    b.Property<bool>("IsEnabled").HasColumnType("bit");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.Property<int>("Severity").HasColumnType("int");
+                    b.Property<Guid>("TenantId").HasColumnType("uniqueidentifier");
+                    b.Property<decimal?>("Threshold").HasPrecision(18, 2).HasColumnType("decimal(18,2)");
+                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("datetimeoffset");
+                    b.Property<int>("WindowMinutes").HasColumnType("int");
+                    b.HasKey("Id");
+                    b.HasIndex("TenantId", "BranchId", "IsEnabled");
+                    b.HasIndex("TenantId", "Code").IsUnique();
+                    b.ToTable("AlertRules");
                 });
 
             modelBuilder.Entity("Hosco.Domain.Entities.AppUser", b =>
@@ -654,6 +717,22 @@ namespace Hosco.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Hosco.Domain.Entities.Alert", b =>
                 {
+                    b.HasOne("Hosco.Domain.Entities.AlertRule", "Rule")
+                        .WithMany("Alerts")
+                        .HasForeignKey("RuleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Hosco.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rule");
+                });
+
+            modelBuilder.Entity("Hosco.Domain.Entities.AlertRule", b =>
+                {
                     b.HasOne("Hosco.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
@@ -884,6 +963,11 @@ namespace Hosco.Infrastructure.Persistence.Migrations
                     b.Navigation("UserBranches");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Hosco.Domain.Entities.AlertRule", b =>
+                {
+                    b.Navigation("Alerts");
                 });
 
             modelBuilder.Entity("Hosco.Domain.Entities.Order", b =>
