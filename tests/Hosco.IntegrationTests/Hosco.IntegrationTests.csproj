@@ -20,6 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hosco.Api\Hosco.Api.csproj" ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\..\src\Hosco.Application\Hosco.Application.csproj" />
+    <ProjectReference Include="..\..\src\Hosco.Domain\Hosco.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Hosco.Infrastructure\Hosco.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
