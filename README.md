@@ -112,3 +112,23 @@ Không có SRS/KPI Dictionary đã được BA phê duyệt trong workspace ban 
 ## Minh chứng xác minh GD2
 
 Bộ audit GD2 có thể tái lập, kết quả Runtime, SQL Migration đã sinh, tài liệu OpenAPI đã thu thập và các giới hạn đã biết được tổng hợp tại [Báo cáo minh chứng GD2](docs/gd2/evidence/GD2_EVIDENCE_REPORT.md). Chạy `./scripts/verify-gd2.ps1` để thực hiện các kiểm tra Build/Test không làm thay đổi source.
+
+## GD3 – Dashboard & Smart Alert
+
+Branch `feature/gd3-dashboard-alert` bổ sung Executive Dashboard, năm Smart Alert rule cấu hình được, scheduler 15–30 phút, persistence, deduplication/cooldown, workflow acknowledge/resolve và notification qua structured log. Các KPI/rule chưa được BA phê duyệt luôn mang nhãn provisional/PENDING.
+
+Frontend React + TypeScript + Vite nằm tại `src/Hosco.Web`:
+
+```powershell
+cd src/Hosco.Web
+npm install
+npm run dev
+```
+
+Đặt `VITE_API_BASE_URL` nếu API không chạy tại `http://localhost:5000`; Vite development server có proxy `/api` mặc định. Production build:
+
+```powershell
+npm run build
+```
+
+Tài liệu chi tiết nằm trong `docs/gd3`. Môi trường Windows hiện tại có Enterprise WDAC có thể chặn DLL .NET build local trước khi Runtime/Integration Test chạy; xem `docs/gd3/KNOWN_ENVIRONMENT_ISSUES.md`. Trường hợp này phải ghi `BLOCKED_BY_LOCAL_WDAC`, không được ghi Integration Test PASS.
