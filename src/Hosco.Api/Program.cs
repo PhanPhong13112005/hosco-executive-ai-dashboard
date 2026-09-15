@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Hosco.Api.Health;
+using Hosco.Api.Alerts;
 using Hosco.Api.Observability;
 using Hosco.Api.Security;
 using Hosco.Application.Abstractions;
@@ -68,11 +69,15 @@ public partial class Program
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true, ValidIssuer = jwt.Issuer,
-                ValidateAudience = true, ValidAudience = jwt.Audience,
-                ValidateLifetime = true, ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidIssuer = jwt.Issuer,
+                ValidateAudience = true,
+                ValidAudience = jwt.Audience,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
-                ClockSkew = TimeSpan.FromSeconds(30), NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier,
+                ClockSkew = TimeSpan.FromSeconds(30),
+                NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier,
                 RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
             options.Events = new JwtBearerEvents
@@ -92,8 +97,18 @@ public partial class Program
                 }
             };
         });
-        builder.Services.AddAuthorization(options => options.AddPolicy("ReportingReader", policy =>
-            policy.RequireAuthenticatedUser().RequireRole(Enum.GetNames<SystemRole>())));
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("ReportingReader", policy => policy.RequireAuthenticatedUser().RequireRole(Enum.GetNames<SystemRole>()));
+            options.AddPolicy("AlertConfigurator", policy => policy.RequireAuthenticatedUser().RequireRole(
+                nameof(SystemRole.Owner), nameof(SystemRole.ChainManager), nameof(SystemRole.SystemAdmin)));
+        });
+
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        builder.Services.AddCors(options => options.AddPolicy("WebClient", policy =>
+        {
+            if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+        }));
 
         builder.Services.AddScoped<ICurrentUser, CurrentUser>();
         builder.Services.AddScoped<ICorrelationContext, CorrelationContext>();
@@ -106,6 +121,20 @@ public partial class Program
         builder.Services.AddSingleton<IQueryCatalog, QueryCatalog>();
         builder.Services.AddScoped<IReportingDataStore, ReportingDataStore>();
         builder.Services.AddScoped<IAuditWriter, AuditWriter>();
+        builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+        builder.Services.AddScoped<IAlertSignalDataStore, AlertSignalDataStore>();
+        builder.Services.AddScoped<IAlertRuleEvaluator, CancellationRateAlertEvaluator>();
+        builder.Services.AddScoped<IAlertRuleEvaluator, RevenueDropAlertEvaluator>();
+        builder.Services.AddScoped<IAlertRuleEvaluator, DangerousStockAlertEvaluator>();
+        builder.Services.AddScoped<IAlertRuleEvaluator, EmployeeCancellationAlertEvaluator>();
+        builder.Services.AddScoped<IAlertRuleEvaluator, PriceDiscountAlertEvaluator>();
+        builder.Services.AddScoped<IAlertEngine, AlertEngine>();
+        builder.Services.AddScoped<IAlertService, AlertService>();
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<INotificationSender, LoggingNotificationSender>();
+        builder.Services.AddSingleton<IAlertEngineDiagnostics, LoggingAlertEngineDiagnostics>();
+        builder.Services.Configure<AlertSchedulerOptions>(builder.Configuration.GetSection(AlertSchedulerOptions.Section));
+        builder.Services.AddHostedService<AlertSchedulerBackgroundService>();
         builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
         builder.Services.AddEndpointsApiExplorer();
@@ -114,8 +143,12 @@ public partial class Program
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "HOSCO Reporting API", Version = "v1", Description = "Tenant-safe reporting boundary shared by Dashboard and future Chatbot." });
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT",
-                In = ParameterLocation.Header, Description = "Enter the JWT returned by POST /api/v1/auth/login."
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter the JWT returned by POST /api/v1/auth/login."
             });
             options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
@@ -135,6 +168,7 @@ public partial class Program
             app.UseSwaggerUI();
         }
         app.UseAuthentication();
+        app.UseCors("WebClient");
         app.UseAuthorization();
         app.MapControllers().WithRequestTimeout("reporting");
         app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false, ResponseWriter = WriteHealthResponse }).AllowAnonymous();
