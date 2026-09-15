@@ -19,6 +19,9 @@ public sealed class QueryCatalog : IQueryCatalog
     [
         Q("revenue.summary.v1", "revenue", Range, "RevenuePoint[]", DefinitionStatus.BlockedByBusinessDefinition),
         Q("revenue.trend.v1", "revenue", Range, "RevenuePoint[]", DefinitionStatus.BlockedByBusinessDefinition),
+        Q("dashboard.summary.v1", null, Range, "DashboardSummary", DefinitionStatus.ProvisionalTechnicalPreview),
+        Q("orders.trend.v1", "total-orders", Range, "OrderTrendPoint[]", DefinitionStatus.ProvisionalTechnicalPreview),
+        Q("branches.list.v1", null, [], "BranchRow[]", DefinitionStatus.Implemented),
         Q("gmv.summary.v1", "gmv", Range, "KpiValue", DefinitionStatus.BlockedByBusinessDefinition),
         Q("orders.summary.v1", "total-orders", Range, "KpiValue", DefinitionStatus.BlockedByBusinessDefinition),
         Q("orders.list.v1", null, [.. Range, "page", "pageSize", "sortBy", "sortDirection"], "PagedResult<OrderRow>", DefinitionStatus.Implemented),

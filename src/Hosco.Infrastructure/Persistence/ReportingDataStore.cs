@@ -9,8 +9,8 @@ public sealed class ReportingDataStore(HoscoDbContext db) : IReportingDataStore
 {
     public async Task<IReadOnlyList<RevenuePoint>> GetRevenueTrendAsync(ReportingScope scope, ReportingFilter filter, CancellationToken ct)
     {
-        var rows = await Orders(scope, filter).Where(x => x.Status == OrderStatus.Completed)
-            .Select(x => new { x.OrderedAt, x.TotalAmount, x.Currency }).ToListAsync(ct);
+        var rows = (await MaterializedOrdersAsync(scope, filter, ct)).Where(x => x.Status == OrderStatus.Completed)
+            .Select(x => new { x.OrderedAt, x.TotalAmount, x.Currency }).ToList();
         return rows.GroupBy(x => new { Date = DateOnly.FromDateTime(x.OrderedAt.UtcDateTime), x.Currency })
             .OrderBy(x => x.Key.Date).Select(x => new RevenuePoint(x.Key.Date, x.Sum(v => v.TotalAmount), x.Key.Currency)).ToList();
     }
@@ -83,9 +83,89 @@ public sealed class ReportingDataStore(HoscoDbContext db) : IReportingDataStore
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<OrderTrendPoint>> GetOrderTrendAsync(ReportingScope scope, ReportingFilter filter, CancellationToken ct)
+    {
+        var orders = await MaterializedOrdersAsync(scope, filter, ct);
+        return orders.GroupBy(x => DateOnly.FromDateTime(x.OrderedAt.UtcDateTime)).OrderBy(x => x.Key)
+            .Select(x => new OrderTrendPoint(x.Key, x.Count(), x.Count(v => v.Status == OrderStatus.Cancelled),
+                x.Count(v => v.Status is OrderStatus.Returned or OrderStatus.PartiallyReturned))).ToList();
+    }
+
+    public async Task<DashboardSummary> GetDashboardSummaryAsync(ReportingScope scope, ReportingFilter filter, AlertSummary alertSummary, CancellationToken ct)
+    {
+        var orders = await MaterializedOrdersAsync(scope, filter, ct);
+        var completed = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
+        var completedIds = completed.Select(x => x.Id).ToArray();
+        var items = await db.OrderItems.AsNoTracking().Where(x => x.TenantId == scope.TenantId && completedIds.Contains(x.OrderId)).ToListAsync(ct);
+        var revenue = completed.Sum(x => x.TotalAmount);
+        var grossProfit = items.Sum(x => x.LineTotal - x.UnitCostAtSale * x.Quantity);
+        var dangerous = await GetDangerousInventoryAsync(scope, filter with { PageSize = ReportingFilter.MaxPageSize }, ct);
+        var currency = completed.Select(x => x.Currency).FirstOrDefault() ?? "VND";
+        return new DashboardSummary(
+            revenue,
+            orders.Count,
+            completed.Count == 0 ? 0 : completed.Average(x => x.TotalAmount),
+            grossProfit,
+            revenue == 0 ? 0 : 100m * grossProfit / revenue,
+            orders.Count == 0 ? 0 : 100m * orders.Count(x => x.Status == OrderStatus.Cancelled) / orders.Count,
+            orders.Count == 0 ? 0 : 100m * orders.Count(x => x.Status is OrderStatus.Returned or OrderStatus.PartiallyReturned) / orders.Count,
+            dangerous.Count,
+            currency,
+            alertSummary.Open,
+            alertSummary.Urgent,
+            "ProvisionalTechnicalPreview",
+            "TODO(BA): revenue/order/AOV/COGS/return/cancellation and stock definitions remain PENDING.");
+    }
+
+    public async Task<IReadOnlyList<KpiDrilldownPoint>> GetKpiDrilldownAsync(string metricCode, ReportingScope scope, ReportingFilter filter, CancellationToken ct)
+    {
+        var orders = await MaterializedOrdersAsync(scope, filter, ct);
+        if (metricCode.Equals("dangerous-stock", StringComparison.OrdinalIgnoreCase))
+        {
+            var dangerous = await GetDangerousInventoryAsync(scope, filter, ct);
+            return [new KpiDrilldownPoint(DateOnly.FromDateTime(DateTime.UtcNow), dangerous.Count)];
+        }
+
+        if (metricCode.Equals("gross-profit", StringComparison.OrdinalIgnoreCase))
+        {
+            var ids = orders.Where(x => x.Status == OrderStatus.Completed).Select(x => x.Id).ToArray();
+            var items = await db.OrderItems.AsNoTracking().Where(x => x.TenantId == scope.TenantId && ids.Contains(x.OrderId)).ToListAsync(ct);
+            var dayByOrder = orders.ToDictionary(x => x.Id, x => DateOnly.FromDateTime(x.OrderedAt.UtcDateTime));
+            return items.GroupBy(x => dayByOrder[x.OrderId]).OrderBy(x => x.Key)
+                .Select(x => new KpiDrilldownPoint(x.Key, x.Sum(v => v.LineTotal - v.UnitCostAtSale * v.Quantity))).ToList();
+        }
+
+        return orders.GroupBy(x => DateOnly.FromDateTime(x.OrderedAt.UtcDateTime)).OrderBy(x => x.Key).Select(group =>
+        {
+            var completed = group.Where(x => x.Status == OrderStatus.Completed).ToList();
+            var value = metricCode.ToLowerInvariant() switch
+            {
+                "revenue" => completed.Sum(x => x.TotalAmount),
+                "gmv" => group.Sum(x => x.TotalAmount),
+                "total-orders" => group.Count(),
+                "aov" => completed.Count == 0 ? 0 : completed.Average(x => x.TotalAmount),
+                "cancel-return-rate" => group.Any() ? 100m * group.Count(x => x.Status is OrderStatus.Cancelled or OrderStatus.Returned or OrderStatus.PartiallyReturned) / group.Count() : 0,
+                "sku-ranking" => completed.Sum(x => x.TotalAmount),
+                _ => throw new KeyNotFoundException($"Unknown metric code '{metricCode}'.")
+            };
+            return new KpiDrilldownPoint(group.Key, value);
+        }).ToList();
+    }
+
+    public async Task<IReadOnlyList<BranchRow>> GetBranchesAsync(ReportingScope scope, CancellationToken ct)
+    {
+        var query = db.Branches.AsNoTracking().Where(x => x.TenantId == scope.TenantId && x.IsActive);
+        if (scope.RestrictedBranchIds is not null)
+        {
+            var ids = scope.RestrictedBranchIds.ToArray();
+            query = query.Where(x => ids.Contains(x.Id));
+        }
+        return await query.OrderBy(x => x.Name).Select(x => new BranchRow(x.Id, x.Code, x.Name)).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyDictionary<string, decimal>> GetTechnicalPreviewSummaryAsync(ReportingScope scope, ReportingFilter filter, CancellationToken ct)
     {
-        var orders = await Orders(scope, filter).Select(x => new { x.Status, x.TotalAmount }).ToListAsync(ct);
+        var orders = (await MaterializedOrdersAsync(scope, filter, ct)).Select(x => new { x.Status, x.TotalAmount }).ToList();
         var completed = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
         return new Dictionary<string, decimal>
         {
@@ -116,6 +196,15 @@ public sealed class ReportingDataStore(HoscoDbContext db) : IReportingDataStore
             if (filter.To.HasValue) query = query.Where(x => x.OrderedAt <= filter.To.Value);
         }
         return query;
+    }
+
+    private async Task<List<Order>> MaterializedOrdersAsync(ReportingScope scope, ReportingFilter filter, CancellationToken ct)
+    {
+        var rows = await Orders(scope, filter).ToListAsync(ct);
+        if (db.Database.IsSqlite())
+            rows = rows.Where(x => (!filter.From.HasValue || x.OrderedAt >= filter.From.Value) &&
+                                   (!filter.To.HasValue || x.OrderedAt <= filter.To.Value)).ToList();
+        return rows;
     }
 
     private static IQueryable<T> ApplyBranchScope<T>(IQueryable<T> query, ReportingScope scope, System.Linq.Expressions.Expression<Func<T, Guid>> branchSelector)

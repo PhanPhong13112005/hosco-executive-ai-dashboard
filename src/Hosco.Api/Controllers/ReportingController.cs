@@ -18,11 +18,21 @@ namespace Hosco.Api.Controllers;
 [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public sealed class ReportingController(
     IReportingDataStore data,
+    IAlertRepository alerts,
     IReportingScopeFactory scopes,
     IMetricCatalog metrics,
     IAuditWriter audit,
     ICorrelationContext correlation) : ControllerBase
 {
+    [HttpGet("dashboard/summary")]
+    [ProducesResponseType<ApiEnvelope<DashboardSummary>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiEnvelope<DashboardSummary>>> Dashboard([FromQuery] ReportingFilter filter, CancellationToken ct)
+    {
+        filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
+        var result = await data.GetDashboardSummaryAsync(scope, filter, await alerts.GetSummaryAsync(scope, ct), ct);
+        return Ok(new ApiEnvelope<DashboardSummary>(result, await Meta(scope, filter, "dashboard.summary.v1", null, ct)));
+    }
+
     [HttpGet("kpis/summary")]
     [ProducesResponseType<ApiEnvelope<IReadOnlyList<KpiValue>>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiEnvelope<IReadOnlyList<KpiValue>>>> Summary([FromQuery] ReportingFilter filter, CancellationToken ct)
@@ -41,6 +51,19 @@ public sealed class ReportingController(
         filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
         var result = await data.GetRevenueTrendAsync(scope, filter, ct);
         return Ok(new ApiEnvelope<IReadOnlyList<RevenuePoint>>(result, await Meta(scope, filter, "revenue.trend.v1", null, ct)));
+    }
+
+    [HttpGet("revenue/trend")]
+    [ProducesResponseType<ApiEnvelope<IReadOnlyList<RevenuePoint>>>(StatusCodes.Status200OK)]
+    public Task<ActionResult<ApiEnvelope<IReadOnlyList<RevenuePoint>>>> RevenueTrend([FromQuery] ReportingFilter filter, CancellationToken ct) => Revenue(filter, ct);
+
+    [HttpGet("orders/trend")]
+    [ProducesResponseType<ApiEnvelope<IReadOnlyList<OrderTrendPoint>>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiEnvelope<IReadOnlyList<OrderTrendPoint>>>> OrderTrend([FromQuery] ReportingFilter filter, CancellationToken ct)
+    {
+        filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
+        var result = await data.GetOrderTrendAsync(scope, filter, ct);
+        return Ok(new ApiEnvelope<IReadOnlyList<OrderTrendPoint>>(result, await Meta(scope, filter, "orders.trend.v1", null, ct)));
     }
 
     [HttpGet("orders")]
@@ -63,6 +86,14 @@ public sealed class ReportingController(
         return Ok(new ApiEnvelope<IReadOnlyList<ProductRankRow>>(result, await Meta(scope, filter, "products.ranking.v1", null, ct)));
     }
 
+    [HttpGet("products/top")]
+    [ProducesResponseType<ApiEnvelope<IReadOnlyList<ProductRankRow>>>(StatusCodes.Status200OK)]
+    public Task<ActionResult<ApiEnvelope<IReadOnlyList<ProductRankRow>>>> TopProducts([FromQuery] ReportingFilter filter, CancellationToken ct) => Products(filter, false, ct);
+
+    [HttpGet("products/bottom")]
+    [ProducesResponseType<ApiEnvelope<IReadOnlyList<ProductRankRow>>>(StatusCodes.Status200OK)]
+    public Task<ActionResult<ApiEnvelope<IReadOnlyList<ProductRankRow>>>> BottomProducts([FromQuery] ReportingFilter filter, CancellationToken ct) => Products(filter, true, ct);
+
     [HttpGet("inventory/dangerous")]
     [ProducesResponseType<ApiEnvelope<IReadOnlyList<DangerousInventoryRow>>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiEnvelope<IReadOnlyList<DangerousInventoryRow>>>> Inventory([FromQuery] ReportingFilter filter, CancellationToken ct)
@@ -70,6 +101,33 @@ public sealed class ReportingController(
         filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
         var result = await data.GetDangerousInventoryAsync(scope, filter, ct);
         return Ok(new ApiEnvelope<IReadOnlyList<DangerousInventoryRow>>(result, await Meta(scope, filter, "inventory.dangerous.v1", null, ct)));
+    }
+
+    [HttpGet("branches")]
+    [ProducesResponseType<ApiEnvelope<IReadOnlyList<BranchRow>>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiEnvelope<IReadOnlyList<BranchRow>>>> Branches(CancellationToken ct)
+    {
+        var filter = new ReportingFilter();
+        var scope = await scopes.CreateAsync(null, ct);
+        var result = await data.GetBranchesAsync(scope, ct);
+        return Ok(new ApiEnvelope<IReadOnlyList<BranchRow>>(result, await Meta(scope, filter, "branches.list.v1", null, ct)));
+    }
+
+    [HttpGet("kpis/{metricId}/drilldown")]
+    [ProducesResponseType<ApiEnvelope<KpiDrilldown>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiEnvelope<KpiDrilldown>>> Drilldown(string metricId, [FromQuery] ReportingFilter filter, CancellationToken ct)
+    {
+        filter.Validate();
+        var metric = metrics.All.FirstOrDefault(x => x.MetricId.Equals(metricId, StringComparison.OrdinalIgnoreCase) ||
+                                                     x.Code.Equals(metricId, StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Unknown metric '{metricId}'.");
+        var scope = await scopes.CreateAsync(filter.BranchId, ct);
+        var trend = await data.GetKpiDrilldownAsync(metric.Code, scope, filter, ct);
+        var preview = await data.GetTechnicalPreviewSummaryAsync(scope, filter, ct);
+        var result = new KpiDrilldown(metric.MetricId, metric.Code, metric.Name, metric.Unit,
+            preview.GetValueOrDefault(metric.Code), trend, metric.Status.ToString(), metric.Blocker);
+        return Ok(new ApiEnvelope<KpiDrilldown>(result, await Meta(scope, filter, $"{metric.Code}.drilldown.v1", null, ct)));
     }
 
     private async Task<ReportMeta> Meta(ReportingScope scope, ReportingFilter filter, string queryId, int? total, CancellationToken ct)
