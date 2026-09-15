@@ -1,29 +1,29 @@
-# Authentication, Tenant and Branch Scope
+# Xác thực và phạm vi Tenant/Branch
 
 ## Claims
 
-Development JWTs contain:
+JWT dùng trong môi trường phát triển chứa:
 
-| Claim | Meaning |
+| Claim | Ý nghĩa |
 |---|---|
-| `sub` / NameIdentifier | immutable user ID |
-| `role` | one or more `Owner`, `BranchManager`, `ChainManager`, `SystemAdmin` |
-| `tenant_id` | immutable tenant selected from the stored identity |
-| `branch_id` | zero or more assigned branch IDs |
+| `sub` / NameIdentifier | ID người dùng bất biến |
+| `role` | Một hoặc nhiều giá trị `Owner`, `BranchManager`, `ChainManager`, `SystemAdmin` |
+| `tenant_id` | Tenant bất biến lấy từ danh tính đã lưu |
+| `branch_id` | Không, một hoặc nhiều ID Branch được phân công |
 
-`TenantId` is deliberately absent from every reporting filter contract. An unknown query parameter named `tenantId` is ignored by model binding and cannot affect the scope derived from JWT claims.
+`TenantId` được chủ động loại khỏi mọi contract bộ lọc báo cáo. Query parameter không xác định tên `tenantId` bị model binding bỏ qua và không thể tác động đến phạm vi được suy ra từ JWT claim.
 
-## Rules
+## Quy tắc
 
-| Actor | Effective scope |
+| Chủ thể | Phạm vi hiệu lực |
 |---|---|
-| Owner | all active branches in own tenant |
-| Branch Manager | assigned branches only; omission of `branchId` remains restricted |
-| Chain Manager | all active branches in own tenant |
-| System Admin | technical role, still constrained to its own tenant |
+| Owner | Tất cả Branch đang hoạt động trong Tenant của mình |
+| Branch Manager | Chỉ các Branch được phân công; nếu bỏ `branchId` thì vẫn bị giới hạn |
+| Chain Manager | Tất cả Branch đang hoạt động trong Tenant của mình |
+| System Admin | Vai trò kỹ thuật, vẫn bị giới hạn trong Tenant của mình |
 
-For an explicit `branchId`, `BranchScopeValidator` first verifies tenant ownership and then role/assignment. Foreign tenant and unassigned branch requests return 403. Every reporting query independently includes `TenantId == currentUser.TenantId` and the resolved branch predicate.
+Khi có `branchId` cụ thể, `BranchScopeValidator` kiểm tra Branch thuộc Tenant trước, sau đó kiểm tra vai trò/phân công. Request tới Tenant khác hoặc Branch chưa được phân công trả về 403. Mỗi truy vấn báo cáo đều độc lập bổ sung điều kiện `TenantId == currentUser.TenantId` và điều kiện Branch đã được xác định.
 
-## Evidence
+## Minh chứng
 
-Unit tests cover scope policy. HTTP integration tests cover 401, assigned branch, unassigned branch, cross-tenant branch, chain manager, omitted-branch tenant isolation, and attempted `tenantId` override.
+Unit Test bao phủ policy về phạm vi. HTTP Integration Test bao phủ 401, Branch được phân công, Branch chưa được phân công, Branch khác Tenant, Chain Manager, cô lập Tenant khi không truyền Branch và hành vi cố gắng ghi đè bằng `tenantId`.

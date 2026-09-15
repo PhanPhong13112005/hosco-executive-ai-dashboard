@@ -1,4 +1,4 @@
-# GD2 Entity Relationship Diagram
+# Sơ đồ quan hệ thực thể GD2
 
 ```mermaid
 erDiagram
@@ -42,4 +42,4 @@ erDiagram
     AUDIT_LOG { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier UserId uniqueidentifier BranchId string Action string QueryId string CorrelationId }
 ```
 
-All aggregate roots except `Role` carry `TenantId`; branch-bound transactions additionally carry `BranchId`. `OrderItem.UnitCostAtSale` preserves historical COGS input and prevents recalculating past gross profit from `Product.CurrentCost`.
+Mọi aggregate root, ngoại trừ `Role`, đều mang `TenantId`; các giao dịch gắn với Branch có thêm `BranchId`. `OrderItem.UnitCostAtSale` lưu đầu vào COGS lịch sử, tránh tính lại lợi nhuận gộp quá khứ bằng `Product.CurrentCost` hiện tại.

@@ -1,47 +1,46 @@
-# GD2 Evidence Index
+# Chỉ mục minh chứng GD2
 
-Audited repository: `D:\\Code\\hosco-executive-ai-dashboard`  
-Branch: `chore/gd2-evidence`  
-Checkpoint: `f75ac38c323ac2b61dd127081cc742852200f197` (`gd2-complete`)  
-Audit date: 2026-09-15 (Asia/Saigon)
+- Repository được audit: `D:\\Code\\hosco-executive-ai-dashboard`
+- Branch: `chore/gd2-evidence`
+- Checkpoint: `f75ac38c323ac2b61dd127081cc742852200f197` (`gd2-complete`)
+- Ngày audit: 2026-09-15 (Asia/Saigon)
 
-Status vocabulary in this index is restricted to `VERIFIED`, `PARTIALLY VERIFIED`, `NOT VERIFIED`, and `NOT RUN`.
+Các trạng thái trong chỉ mục này được giới hạn ở `VERIFIED` (Đã xác minh), `PARTIALLY VERIFIED` (Xác minh một phần), `NOT VERIFIED` (Chưa xác minh) và `NOT RUN` (Chưa chạy).
 
-| GD2 Item | Evidence in Source | Runtime Evidence | Status |
+| Hạng mục GD2 | Minh chứng trong source | Minh chứng Runtime | Trạng thái |
 |---|---|---|---|
-| GD2-01 Repository & project structure | `Hosco.slnx`, six project files, project references, `src/`, `tests/`, `docs/gd2/` | Restore/build completed for all six projects; Git branch/tag/commit checked | VERIFIED |
-| GD2-02 ERD / data dictionary / seed dataset | `ERD.md`, `DATA_DICTIONARY.md`, 16 `DbSet`s, initial migration, deterministic `DemoSeed` | Migration applied to SQL Server LocalDB; SQL artifact generated; seeded counts queried | PARTIALLY VERIFIED |
-| GD2-03 Auth / tenant / branch scope | JWT configuration, `CurrentUser`, `IdentityStore`, `BranchScopeValidator`, `ReportingScopeFactory` | 401, 403, authenticated request, cross-tenant and query-parameter isolation tests passed | VERIFIED |
-| GD2-04 Semantic layer / query catalog | Eight metric definitions, 11 allow-listed query IDs, version and filter metadata | Catalog/filter tests passed; only `orders.list.v1` is implemented and KPI formulas remain BA-pending | PARTIALLY VERIFIED |
-| GD2-05 Observability / audit baseline | Correlation and exception middleware, JSON logging, `AuditLog`, `AuditWriter` | Correlation reuse test passed; runtime reporting request created an audit row | PARTIALLY VERIFIED |
-| GD2-06 Secrets / env / health | `.gitignore`, `.env.example`, settings files, live/ready registrations | SQL-backed live and ready returned 200; scan found no identified production credential, but tracked demo credential material requires review | PARTIALLY VERIFIED |
-| GD2-07 Reporting API v1 | `AuthController`, `ReportingController`, `ReportingDataStore`, OpenAPI setup | SQL-backed API: login 200, reporting 200, unauthenticated 401, out-of-scope 403; OpenAPI fetched | VERIFIED |
+| GD2-01 Repository và cấu trúc project | `Hosco.slnx`, sáu file project, project reference, `src/`, `tests/`, `docs/gd2/` | Restore/Build hoàn tất cho cả sáu project; đã kiểm tra Git branch/tag/commit | VERIFIED (Đã xác minh) |
+| GD2-02 ERD / Data Dictionary / Seed Dataset | `ERD.md`, `DATA_DICTIONARY.md`, 16 `DbSet`, Migration đầu tiên, `DemoSeed` xác định | Migration đã apply lên SQL Server LocalDB; đã sinh artifact SQL; đã truy vấn số lượng dữ liệu Seed | PARTIALLY VERIFIED (Xác minh một phần) |
+| GD2-03 Auth / phạm vi Tenant/Branch | Cấu hình JWT, `CurrentUser`, `IdentityStore`, `BranchScopeValidator`, `ReportingScopeFactory` | Test 401, 403, request đã xác thực, cô lập khác Tenant và chống ghi đè bằng query parameter đều PASS | VERIFIED (Đã xác minh) |
+| GD2-04 Semantic Layer / Query Catalog | Tám định nghĩa metric, 11 Query ID trong allow-list, metadata version và bộ lọc | Test catalog/filter PASS; chỉ `orders.list.v1` đã triển khai và công thức KPI vẫn chờ BA | PARTIALLY VERIFIED (Xác minh một phần) |
+| GD2-05 Observability / audit baseline | Correlation/exception middleware, JSON logging, `AuditLog`, `AuditWriter` | Test tái sử dụng Correlation ID PASS; request báo cáo Runtime đã tạo một dòng audit | PARTIALLY VERIFIED (Xác minh một phần) |
+| GD2-06 Secret / môi trường / Health Check | `.gitignore`, `.env.example`, file settings, đăng ký live/ready | live và ready dùng SQL đều trả 200; không xác định được production credential, nhưng tài liệu credential demo được track cần xem xét | PARTIALLY VERIFIED (Xác minh một phần) |
+| GD2-07 Reporting API v1 | `AuthController`, `ReportingController`, `ReportingDataStore`, cấu hình OpenAPI | API dùng SQL: login 200, báo cáo 200, chưa xác thực 401, ngoài phạm vi 403; đã tải OpenAPI | VERIFIED (Đã xác minh) |
 
-## Project structure and references
+## Cấu trúc project và quan hệ tham chiếu
 
-| Layer/project | Verified role | Direct project references |
+| Layer/project | Vai trò đã xác minh | Project reference trực tiếp |
 |---|---|---|
-| `Hosco.Domain` | Entities, common base types, enums | None |
-| `Hosco.Application` | Interfaces, report models, scope services, semantic/query catalogs | `Hosco.Domain` |
-| `Hosco.Infrastructure` | EF Core mappings/migration/seed, reporting and identity stores, password verification, audit writer | `Hosco.Domain`, `Hosco.Application` |
-| `Hosco.Api` | HTTP controllers, JWT/authorization, middleware, health, composition root, Swagger | `Hosco.Application`, `Hosco.Infrastructure` |
-| `Hosco.UnitTests` | Catalog, filter, and branch-scope unit tests | `Hosco.Application`, `Hosco.Domain` |
-| `Hosco.IntegrationTests` | Real child-process HTTP API with relational SQLite in-memory database | `Hosco.Api` (`ReferenceOutputAssembly=false`, `Private=false`) |
+| `Hosco.Domain` | Entity, kiểu cơ sở dùng chung, enum | Không có |
+| `Hosco.Application` | Interface, model báo cáo, dịch vụ phạm vi, Semantic/Query Catalog | `Hosco.Domain` |
+| `Hosco.Infrastructure` | EF Core mapping/Migration/Seed, reporting/identity store, xác minh mật khẩu, audit writer | `Hosco.Domain`, `Hosco.Application` |
+| `Hosco.Api` | HTTP controller, JWT/authorization, middleware, Health Check, composition root, Swagger | `Hosco.Application`, `Hosco.Infrastructure` |
+| `Hosco.UnitTests` | Unit Test cho catalog, bộ lọc và phạm vi Branch | `Hosco.Application`, `Hosco.Domain` |
+| `Hosco.IntegrationTests` | HTTP API bằng child process thực với cơ sở dữ liệu quan hệ SQLite in-memory | `Hosco.Api` (`ReferenceOutputAssembly=false`, `Private=false`) |
 
-## Detailed evidence
+## Minh chứng chi tiết
 
-- [Build verification](BUILD_VERIFICATION.md)
-- [Test verification](TEST_VERIFICATION.md)
-- [Database verification](DATABASE_VERIFICATION.md)
-- [Seed verification](SEED_VERIFICATION.md)
-- [Security verification](SECURITY_VERIFICATION.md)
-- [Semantic/query verification](SEMANTIC_QUERY_VERIFICATION.md)
-- [API verification](API_VERIFICATION.md)
-- [Observability and audit verification](OBSERVABILITY_AUDIT_VERIFICATION.md)
-- [Secret audit](SECRET_AUDIT.md)
-- [Dependency audit](DEPENDENCY_AUDIT.md)
-- [Defects found](DEFECTS_FOUND.md)
-- [Consolidated report](GD2_EVIDENCE_REPORT.md)
-- [Generated SQL](sql/gd2-schema.sql)
-- [Captured OpenAPI](openapi/gd2-openapi.json)
-
+- [Xác minh Build](BUILD_VERIFICATION.md)
+- [Xác minh Test](TEST_VERIFICATION.md)
+- [Xác minh cơ sở dữ liệu](DATABASE_VERIFICATION.md)
+- [Xác minh Seed](SEED_VERIFICATION.md)
+- [Xác minh bảo mật](SECURITY_VERIFICATION.md)
+- [Xác minh Semantic Layer và Query Catalog](SEMANTIC_QUERY_VERIFICATION.md)
+- [Xác minh API](API_VERIFICATION.md)
+- [Xác minh Observability và audit](OBSERVABILITY_AUDIT_VERIFICATION.md)
+- [Audit secret](SECRET_AUDIT.md)
+- [Audit dependency](DEPENDENCY_AUDIT.md)
+- [Các defect đã phát hiện](DEFECTS_FOUND.md)
+- [Báo cáo tổng hợp](GD2_EVIDENCE_REPORT.md)
+- [SQL đã sinh](sql/gd2-schema.sql)
+- [OpenAPI đã thu thập](openapi/gd2-openapi.json)
