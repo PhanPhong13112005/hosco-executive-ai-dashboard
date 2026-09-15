@@ -1,98 +1,97 @@
-# GD2 Evidence Report
+# Báo cáo minh chứng GD2
 
 ## Repository
 
 `D:\\Code\\hosco-executive-ai-dashboard`, branch `chore/gd2-evidence`.
 
-## Commit Audited
+## Commit được audit
 
-`f75ac38c323ac2b61dd127081cc742852200f197`; tag `gd2-complete` resolves to the same commit. Source diff from that commit was empty before evidence generation.
+`f75ac38c323ac2b61dd127081cc742852200f197`; tag `gd2-complete` trỏ đến cùng commit. Diff source so với commit này trống trước khi tạo evidence.
 
-## Date
+## Ngày thực hiện
 
 2026-09-15 (Asia/Saigon).
 
-## Environment
+## Môi trường
 
-Windows 10.0.26200, .NET SDK 10.0.400, runtime 10.0.11, EF CLI 10.0.11, SQL Server LocalDB 17.0.4025.3.
+Windows 10.0.26200, .NET SDK 10.0.400, Runtime 10.0.11, EF CLI 10.0.11, SQL Server LocalDB 17.0.4025.3.
 
-## GD2-01 Repository & Project Structure
+## GD2-01 Repository và cấu trúc project
 
-Status: VERIFIED
+Trạng thái: VERIFIED (Đã xác minh)
 
-Evidence: `Hosco.slnx` contains Domain, Application, Infrastructure, API, UnitTests, and IntegrationTests. Project references match the intended dependency direction. All six restored and built.
+Minh chứng: `Hosco.slnx` chứa Domain, Application, Infrastructure, API, UnitTests và IntegrationTests. Project reference tuân thủ chiều phụ thuộc dự kiến. Cả sáu project đều Restore và Build thành công.
 
 ## GD2-02 ERD / Data Dictionary / Seed Dataset
 
-Status: PARTIALLY VERIFIED
+Trạng thái: PARTIALLY VERIFIED (Xác minh một phần)
 
-Evidence: 16 application tables were counted from model/migration; SQL was generated and the migration applied to LocalDB. SQL queries confirmed two tenants, four branches, 2,084 orders across 2026-01-01..2026-06-30, related records, and four anomaly types. Some BranchId columns lack physical branch FKs.
+Minh chứng: Đã đếm 16 bảng ứng dụng từ model/Migration; SQL được sinh và Migration đã apply lên LocalDB. Truy vấn SQL xác nhận hai Tenant, bốn Branch, 2,084 Order trong khoảng 2026-01-01..2026-06-30, các bản ghi liên quan và bốn loại anomaly. Một số cột BranchId thiếu Branch FK vật lý.
 
-## GD2-03 Auth / Tenant / Branch Scope
+## GD2-03 Auth / phạm vi Tenant/Branch
 
-Status: VERIFIED
+Trạng thái: VERIFIED (Đã xác minh)
 
-Evidence: JWT claims/validation, claim-derived tenant scope, branch validation, PBKDF2 hashes, tests, and SQL-backed 401/403/200 behavior were verified.
+Minh chứng: Đã xác minh JWT claim/validation, phạm vi Tenant suy ra từ claim, kiểm tra Branch, hash PBKDF2, các test và hành vi 401/403/200 trên Runtime dùng SQL.
 
 ## GD2-04 Semantic Layer / Query Catalog
 
-Status: PARTIALLY VERIFIED
+Trạng thái: PARTIALLY VERIFIED (Xác minh một phần)
 
-Evidence: eight KPI contracts and 11 versioned allow-listed query IDs exist; catalog/filter tests pass. Only the order list is implemented status, the KPI summary is provisional, and BA formulas remain blocked.
+Minh chứng: Có tám contract KPI và 11 Query ID có version trong allow-list; test catalog/filter PASS. Chỉ danh sách đơn hàng có trạng thái đã triển khai, bản tổng hợp KPI là provisional và công thức BA vẫn bị chặn.
 
-## GD2-05 Observability / Audit
+## GD2-05 Observability / audit
 
-Status: PARTIALLY VERIFIED
+Trạng thái: PARTIALLY VERIFIED (Xác minh một phần)
 
-Evidence: correlation generation/reuse, structured request metadata, exception mapping, production-safe error message behavior, audit schema/writer, and order-list usage exist. Full endpoint/business audit coverage does not.
+Minh chứng: Đã xác minh việc tạo/tái sử dụng Correlation ID, metadata request có cấu trúc, ánh xạ exception, hành vi message lỗi an toàn cho production, schema/audit writer và việc dùng audit ở danh sách đơn hàng. Chưa có phạm vi audit đầy đủ cho mọi endpoint/nghiệp vụ.
 
-## GD2-06 Secrets / Env / Health
+## GD2-06 Secret / môi trường / Health Check
 
-Status: PARTIALLY VERIFIED
+Trạng thái: PARTIALLY VERIFIED (Xác minh một phần)
 
-Evidence: required ignore patterns and configuration boundaries exist; live and database-ready checks returned 200 on LocalDB. No production credential was identified, but tracked demo credential material remains a review finding and cold-start liveness is database-dependent.
+Minh chứng: Có các ignore pattern và ranh giới cấu hình cần thiết; live và ready có kiểm tra database đều trả 200 trên LocalDB. Không xác định được production credential, nhưng tài liệu credential demo được track vẫn là một finding cần xem xét và liveness khi cold start còn phụ thuộc database.
 
 ## GD2-07 Reporting API v1
 
-Status: VERIFIED
+Trạng thái: VERIFIED (Đã xác minh)
 
-Evidence: five reporting routes plus login were found in source/OpenAPI. SQL-backed runtime verified login, authorized reporting, 401, 403, correlation reuse, health, and Swagger.
+Minh chứng: Tìm thấy năm reporting route và route login trong source/OpenAPI. Runtime dùng SQL đã xác minh login, báo cáo có xác thực, 401, 403, tái sử dụng correlation, Health Check và Swagger.
 
-## Automated Validation
+## Xác minh tự động
 
 Build: PASS — 0 warnings, 0 errors.
 
-Tests: 28/28 PASS — 11 unit, 17 integration, 0 failed, 0 skipped.
+Tests: 28/28 PASS — 11 Unit Test, 17 Integration Test, 0 failed, 0 skipped.
 
-Migration artifacts: `20260914161316_InitialCreate` verified; no pending model changes; idempotent SQL generated.
+Artifact Migration: đã xác minh `20260914161316_InitialCreate`; model không có thay đổi chưa được Migration ghi nhận; đã sinh SQL idempotent.
 
-DB Apply: PASS — migration applied and seeded on SQL Server LocalDB.
+DB Apply: PASS — Migration đã apply và dữ liệu đã Seed trên SQL Server LocalDB.
 
-Dependency Audit: PASS query; no vulnerable packages from current feeds; outdated candidates documented and not updated.
+Dependency Audit: Truy vấn PASS; không có package chứa lỗ hổng theo feed hiện tại; các phiên bản outdated đã được ghi nhận và không update.
 
-Secret Audit: PARTIAL — no identified production credential; development/demo material and scanner limitations documented.
+Secret Audit: PARTIAL — không xác định được production credential; tài liệu phát triển/demo và giới hạn của công cụ scan đã được ghi nhận.
 
-## BA Pending Items
+## Hạng mục chờ BA
 
-- Revenue recognition: included statuses, discount treatment, refund timing/allocation.
-- GMV: included/excluded order states and gross basis.
-- Total orders: status inclusion and time semantics.
-- AOV: numerator, denominator, exclusions, and zero-order behavior.
-- Gross profit/margin: `UnitCostAtSale` use, refund/return allocation, margin denominator.
-- Cancellation/return rate: count versus value and denominator.
-- Product ranking: revenue versus quantity, tie handling, and time/status rules.
-- Dangerous stock: threshold source, comparison rule, and branch/product overrides.
+- Ghi nhận Revenue: trạng thái được tính, cách xử lý discount, thời điểm/phân bổ refund.
+- GMV: trạng thái đơn hàng được tính/loại và cơ sở gross.
+- Total Orders: trạng thái được tính và ngữ nghĩa thời gian.
+- AOV: tử số, mẫu số, điều kiện loại trừ và hành vi khi không có đơn hàng.
+- Gross Profit/Margin: cách dùng `UnitCostAtSale`, phân bổ refund/return và mẫu số margin.
+- Cancellation/Return Rate: tính theo số lượng hay giá trị và mẫu số.
+- Xếp hạng sản phẩm: theo revenue hay quantity, cách xử lý đồng hạng, quy tắc thời gian/trạng thái.
+- Dangerous Stock: nguồn ngưỡng, phép so sánh và cấu hình ghi đè theo Branch/Product.
 
-## Known Limitations
+## Giới hạn đã biết
 
-- Integration tests use SQLite; SQL Server behavior is covered by separate migration/runtime checks, not by the automated suite.
-- Seed is deterministic for an empty database but does not repair partial data.
-- AuditWriter is invoked only for order-list reporting.
-- Health failure behavior was inspected in code; the shared LocalDB service was not intentionally disrupted.
-- OpenAPI does not list direct-mapped health endpoints.
-- Dependency and secret scans are point-in-time/basic checks, not a replacement for CI scanning.
+- Integration Test dùng SQLite; hành vi SQL Server được kiểm tra bằng Migration/Runtime riêng, không nằm trong bộ test tự động.
+- Seed có tính xác định trên cơ sở dữ liệu trống nhưng không khôi phục dữ liệu bị thiếu một phần.
+- AuditWriter chỉ được gọi cho báo cáo danh sách đơn hàng.
+- Hành vi khi Health Check thất bại được kiểm tra từ code; dịch vụ LocalDB dùng chung không bị cố tình gián đoạn.
+- OpenAPI không liệt kê các Health Check endpoint được map trực tiếp.
+- Dependency scan và secret scan là kiểm tra cơ bản tại một thời điểm, không thay thế scanning trong CI.
 
-## Conclusion
+## Kết luận
 
-The GD2 technical foundation is executable: all projects build, 28 tests pass, the migration applies, deterministic data exists on SQL Server, and the secured API/OpenAPI run. Evidence does not claim BA approval or complete audit coverage. The documented integrity, cold-start health, semantic-labeling, demo-credential, and query-warning findings require owner triage; no business code was altered.
-
+Nền tảng kỹ thuật GD2 có thể thực thi: mọi project đều Build, 28 test PASS, Migration apply thành công, dữ liệu xác định tồn tại trên SQL Server và API/OpenAPI có bảo mật hoạt động. Evidence không tuyên bố BA đã phê duyệt hoặc phạm vi audit đã đầy đủ. Các finding về toàn vẹn dữ liệu, Health Check khi cold start, nhãn Semantic, credential demo và cảnh báo truy vấn cần chủ sở hữu phân loại xử lý; không có business code nào bị thay đổi.

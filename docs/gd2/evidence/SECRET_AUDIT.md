@@ -1,8 +1,8 @@
-# Secret and Environment Audit
+# Audit secret và môi trường
 
-A case-insensitive tracked-file scan covered password, secret, token, API-key, signing-key, connection-string, and private-key terms. Values were not copied into this evidence.
+Đã thực hiện scan không phân biệt hoa/thường trên các file được track cho các thuật ngữ password, secret, token, API key, signing key, connection string và private key. Giá trị khớp không được sao chép vào evidence này.
 
-No production credential was identified. The following tracked development/demo material requires explicit review and must never be promoted as a production secret:
+Không xác định được production credential. Các tài liệu phát triển/demo được track dưới đây cần được xem xét rõ ràng và không bao giờ được dùng như secret production:
 
 - Potential secret found at `.env.example:5`
 - Potential secret found at `src/Hosco.Api/appsettings.json:11`
@@ -13,19 +13,18 @@ No production credential was identified. The following tracked development/demo 
 - Potential secret found at `README.md:73`
 - Potential secret found at `README.md:84`
 
-The SQL Server connection string uses LocalDB integrated security and contains no database password. Settings and README identify committed values as development-only placeholders and direct real local values to user-secrets/environment variables.
+Connection string SQL Server dùng LocalDB integrated security và không chứa mật khẩu database. Settings và README xác định các giá trị đã commit là placeholder chỉ dành cho phát triển, đồng thời hướng dẫn đưa giá trị local thực vào user-secrets/biến môi trường.
 
-## Ignore controls
+## Quy tắc ignore
 
-`.gitignore` was verified to block:
+Đã xác minh `.gitignore` chặn:
 
-- `.env` and `.env.*` while allowing `.env.example`
+- `.env` và `.env.*`, đồng thời vẫn cho phép `.env.example`
 - `appsettings.Local.json`
-- `*.pfx` and `*.key`
+- `*.pfx` và `*.key`
 - `secrets.json`
-- all `bin/` and `obj/` directories
+- mọi thư mục `bin/` và `obj/`
 
-The reusable verifier reports only file and line locations, never matched values. It does not perform Git-history scanning or entropy-based secret detection; a dedicated CI secret scanner remains recommended.
+Script xác minh dùng lại chỉ báo vị trí file và dòng, không bao giờ in giá trị khớp. Script không scan Git history hoặc phát hiện secret dựa trên entropy; vẫn nên dùng secret scanner chuyên dụng trong CI.
 
-Verdict: `PARTIALLY VERIFIED` because ignore/config controls exist and no production credential was identified, but a shared development demo credential is tracked in several files.
-
+Kết luận: `PARTIALLY VERIFIED` (Xác minh một phần) vì có quy tắc ignore/kiểm soát cấu hình và không xác định được production credential, nhưng credential demo dùng chung được track trong nhiều file.

@@ -1,14 +1,14 @@
-# Seed Verification
+# Xác minh dữ liệu mẫu (Seed Dataset)
 
-## Determinism and time range
+## Tính xác định và khoảng thời gian
 
-`DemoSeedIds.Id` derives GUID bytes from SHA-256 of stable labels. The generator uses a fixed UTC start and loops 181 days, producing order timestamps from 2026-01-01 08:00 UTC through 2026-06-30 14:00 UTC. IDs, dates, products, users, and anomaly rules are therefore deterministic for an empty database.
+`DemoSeedIds.Id` tạo byte GUID từ SHA-256 của các nhãn ổn định. Generator dùng mốc UTC cố định và lặp 181 ngày, tạo timestamp đơn hàng từ 2026-01-01 08:00 UTC đến 2026-06-30 14:00 UTC. Vì vậy, ID, ngày, sản phẩm, người dùng và quy tắc anomaly có tính xác định khi chạy trên cơ sở dữ liệu trống.
 
-The seed returns immediately when any tenant already exists. This prevents duplicate seeding but does not repair a partially seeded database.
+Seed kết thúc ngay khi đã tồn tại bất kỳ Tenant nào. Điều này ngăn tạo dữ liệu trùng nhưng không sửa chữa cơ sở dữ liệu chỉ được Seed một phần.
 
-## SQL Server counts after migration and seed
+## Số lượng trên SQL Server sau Migration và Seed
 
-| Entity | Count |
+| Entity | Số lượng |
 |---|---:|
 | Tenants | 2 |
 | Branches | 4 |
@@ -24,15 +24,14 @@ The seed returns immediately when any tenant already exists. This prevents dupli
 | Refunds | 70 |
 | Alerts | 4 |
 
-Each tenant has 1,042 orders across two branches. A later API verification request created one audit row; `DemoSeed` itself does not insert audit rows.
+Mỗi Tenant có 1,042 đơn hàng trên hai Branch. Một request xác minh API sau đó đã tạo một dòng audit; bản thân `DemoSeed` không chèn dòng audit.
 
-## Anomaly and isolation fixtures
+## Anomaly fixture và dữ liệu cô lập
 
-Four explicit Tenant-A alert fixtures exist and were queried from SQL Server: `abnormal-discount`, `cancellation-spike`, `low-stock`, and `revenue-drop`. The generator also changes order frequency, cancellation status, discounts, and low-stock quantities in the corresponding windows.
+Có bốn Alert fixture cụ thể cho Tenant A và đã được truy vấn từ SQL Server: `abnormal-discount`, `cancellation-spike`, `low-stock` và `revenue-drop`. Generator cũng thay đổi tần suất đơn hàng, trạng thái hủy, mức giảm giá và số lượng tồn kho thấp trong các khoảng tương ứng.
 
-Tenant B, its two branches, owner, products, customers, employees, inventory, and commerce records provide real cross-tenant isolation fixtures.
+Tenant B, hai Branch, Owner, Product, Customer, Employee, Inventory và bản ghi thương mại tương ứng tạo dữ liệu thực để kiểm tra cô lập khác Tenant.
 
-All five stored password values matched the expected PBKDF2-SHA256 encoded format; no stored value was printed during verification.
+Cả năm giá trị mật khẩu đã lưu đều khớp định dạng mã hóa PBKDF2-SHA256 dự kiến; không giá trị nào được in trong quá trình xác minh.
 
-Verdict: `VERIFIED` for an empty database and the audited seed implementation; partial-database recovery is a known limitation.
-
+Kết luận: `VERIFIED` (Đã xác minh) cho cơ sở dữ liệu trống và implementation Seed đã audit; khả năng khôi phục database một phần là giới hạn đã biết.

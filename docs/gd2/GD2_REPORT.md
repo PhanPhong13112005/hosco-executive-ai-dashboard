@@ -1,41 +1,41 @@
-# GD2 Completion Report
+# Báo cáo hoàn thành GD2
 
 ## 1. Tổng quan
 
-Đã hoàn thành backend foundation .NET 10 cho HOSCO theo kiến trúc Domain/Application/Infrastructure/API. Reporting API là boundary duy nhất cho Dashboard và Future Chatbot; không có đường Chatbot → Database hay arbitrary SQL.
+Đã hoàn thành nền tảng backend .NET 10 cho HOSCO theo kiến trúc Domain/Application/Infrastructure/API. Reporting API là ranh giới duy nhất cho Dashboard và Chatbot tương lai; không có đường Chatbot → Database hoặc khả năng thực thi SQL tùy ý.
 
 ## 2. File đã tạo/sửa
 
-- Solution/project: `Hosco.slnx`, `global.json`, 4 source projects, 2 test projects, local `dotnet-ef` manifest.
-- Domain: organization/auth, commerce/inventory/order/payment/refund, alert/audit entities và enums.
-- Application: current-user/scope contracts, filter/response contracts, metric/query catalogs, branch/reporting scope rules.
-- Infrastructure: SQL Server `DbContext`, mappings/index/FK, migration, deterministic seed, identity/password, reporting/audit stores.
-- API: JWT/auth controller, five Reporting API endpoints, correlation/exception/request logging, health, timeout, Swagger.
-- Operations/docs: `.gitignore`, `.env.example`, appsettings, request examples, README và toàn bộ `docs/gd2`.
+- Solution/project: `Hosco.slnx`, `global.json`, 4 project source, 2 project test, manifest `dotnet-ef` local.
+- Domain: entity và enum cho tổ chức/xác thực, thương mại/tồn kho/đơn hàng/thanh toán/hoàn tiền, cảnh báo/audit.
+- Application: contract current-user/scope, contract filter/response, metric/query catalog, quy tắc phạm vi Branch/báo cáo.
+- Infrastructure: SQL Server `DbContext`, mapping/index/FK, Migration, Seed xác định, identity/password, reporting/audit store.
+- API: JWT/auth controller, năm Reporting API endpoint, correlation/exception/request logging, Health Check, timeout, Swagger.
+- Vận hành/tài liệu: `.gitignore`, `.env.example`, appsettings, ví dụ request, README và toàn bộ `docs/gd2`.
 
 ## 3. Database/ERD
 
-Schema có 16 table chính: Tenant, Branch, AppUser, Role, UserRole, UserBranch, Customer, Employee, Product, Inventory, Order, OrderItem, Payment, Refund, Alert, AuditLog. Tenant FK và các reporting index được tạo. `OrderItem.UnitCostAtSale` lưu cost snapshot lịch sử. Mermaid ERD nằm trong `ERD.md`; technical fields nằm trong `DATA_DICTIONARY.md`.
+Schema có 16 bảng chính: Tenant, Branch, AppUser, Role, UserRole, UserBranch, Customer, Employee, Product, Inventory, Order, OrderItem, Payment, Refund, Alert, AuditLog. Tenant FK và các index phục vụ báo cáo đã được tạo. `OrderItem.UnitCostAtSale` lưu snapshot giá vốn lịch sử. Mermaid ERD nằm trong `ERD.md`; các trường kỹ thuật nằm trong `DATA_DICTIONARY.md`.
 
-Migration `20260914161316_InitialCreate` đã được sinh. `dotnet-ef migrations has-pending-model-changes` trả về “No changes”; idempotent SQL Server script sinh thành công (19,503 byte). Apply lên SQL Server/LocalDB không chạy vì máy hiện tại không có LocalDB instance khả dụng; command chuẩn đã có trong README.
+Migration `20260914161316_InitialCreate` đã được sinh. `dotnet-ef migrations has-pending-model-changes` trả về “No changes”; script SQL Server idempotent được sinh thành công (19,503 byte). Việc apply lên SQL Server/LocalDB không được chạy vì máy hiện tại không có LocalDB instance khả dụng; lệnh chuẩn đã có trong README.
 
-## 4. Seed Dataset
+## 4. Dữ liệu mẫu (Seed Dataset)
 
-Generator dùng SHA-256-derived deterministic GUIDs và mốc cố định 2026-01-01 đến 2026-06-30. Dataset gồm 2 tenant, 4 branch, 5 demo identities, 8 product/tenant, customer, cashier, inventory, 2,084 order, 4,168 order item, 2,084 payment và refund fixtures. Alert fixture đánh dấu cancellation spike, revenue drop, low stock và abnormal discount. Seed không lưu plaintext password; demo password được PBKDF2-SHA256 hash.
+Generator dùng GUID xác định được suy ra từ SHA-256 và mốc cố định từ 2026-01-01 đến 2026-06-30. Dataset gồm 2 Tenant, 4 Branch, 5 danh tính demo, 8 Product/Tenant, Customer, thu ngân, Inventory, 2,084 Order, 4,168 OrderItem, 2,084 Payment và các Refund fixture. Alert fixture đánh dấu đột biến hủy đơn, sụt giảm doanh thu, tồn kho thấp và giảm giá bất thường. Seed không lưu mật khẩu plaintext; mật khẩu demo được hash bằng PBKDF2-SHA256.
 
-## 5. Auth/Tenant/Branch
+## 5. Xác thực và phạm vi Tenant/Branch
 
-JWT xác minh issuer/audience/signature/lifetime và chứa `sub`, role, `tenant_id`, `branch_id`. `CurrentUser` là nơi duy nhất parse claims. `ReportingScopeFactory` lấy tenant từ identity, xác minh branch thuộc tenant, áp scope assigned cho Branch Manager kể cả khi bỏ `branchId`, và giữ System Admin tenant-scoped.
+JWT xác minh issuer/audience/signature/lifetime và chứa `sub`, role, `tenant_id`, `branch_id`. `CurrentUser` là nơi duy nhất phân tích claim. `ReportingScopeFactory` lấy Tenant từ identity, xác minh Branch thuộc Tenant, áp dụng phạm vi được phân công cho Branch Manager kể cả khi bỏ `branchId`, đồng thời vẫn giới hạn System Admin trong Tenant.
 
-Integration test xác nhận unauthenticated 401, branch hợp lệ, branch ngoài quyền 403, foreign tenant 403, Chain Manager own-tenant access, không leak tenant khi bỏ branch, và query parameter `tenantId` không override claim.
+Integration Test xác nhận request chưa xác thực trả 401, Branch hợp lệ, Branch ngoài quyền trả 403, Tenant khác trả 403, Chain Manager truy cập trong Tenant của mình, không rò rỉ Tenant khi bỏ Branch và query parameter `tenantId` không ghi đè claim.
 
-## 6. Semantic Layer
+## 6. Lớp ngữ nghĩa (Semantic Layer)
 
-Metric catalog có KPI-01 đến KPI-08 với code/name/description/unit/filters/dimensions/version/query ID/status/blocker. Vì không có KPI Dictionary BA đã duyệt, mọi KPI được đánh dấu `BlockedByBusinessDefinition`; summary technical preview không được mô tả như số liệu business đã chốt.
+Metric catalog có KPI-01 đến KPI-08 với code/name/description/unit/filters/dimensions/version/query ID/status/blocker. Vì không có KPI Dictionary đã được BA phê duyệt, mọi KPI được đánh dấu `BlockedByBusinessDefinition`; bản tổng hợp technical preview không được mô tả như số liệu nghiệp vụ đã chốt.
 
-## 7. Query Catalog
+## 7. Danh mục truy vấn (Query Catalog)
 
-Catalog allow-list version 1 có revenue/GMV/orders/AOV/gross-profit/cancel-return/product-ranking/dangerous-inventory/summary IDs. `orders.list.v1` implemented; các KPI query còn lại giữ blocked/preview status. EF Core parameterize filter; sort dùng code allow-list; tất cả handler nhận `CancellationToken` và scope bắt buộc.
+Catalog allow-list version 1 có các ID cho revenue/GMV/orders/AOV/gross-profit/cancel-return/product-ranking/dangerous-inventory/summary. `orders.list.v1` đã được triển khai; các truy vấn KPI còn lại giữ trạng thái blocked/preview. EF Core parameterize bộ lọc; sắp xếp dùng allow-list trong code; mọi handler nhận `CancellationToken` và phạm vi bắt buộc.
 
 ## 8. Reporting API
 
@@ -45,49 +45,49 @@ Catalog allow-list version 1 có revenue/GMV/orders/AOV/gross-profit/cancel-retu
 - `GET /api/v1/reporting/products/ranking`
 - `GET /api/v1/reporting/inventory/dangerous`
 
-API hỗ trợ range/branch và pagination/sort khi phù hợp; page size tối đa 200. Response có `data`, `meta`, `lastUpdatedAt`, stale flag, query ID và correlation ID. OpenAPI integration test xác minh document và cả năm contract endpoint đều thực thi.
+API hỗ trợ khoảng thời gian/Branch và pagination/sort khi phù hợp; page size tối đa 200. Response có `data`, `meta`, `lastUpdatedAt`, cờ stale, query ID và Correlation ID. OpenAPI Integration Test xác minh tài liệu và cả năm contract endpoint đều thực thi.
 
-## 9. Observability/Audit
+## 9. Khả năng quan sát và audit
 
-`X-Correlation-ID` hợp lệ được reuse, giá trị thiếu/không hợp lệ được tạo lại và trả trong response. JSON request log có path/status/latency/correlation/user/tenant/branch/query ID. Global error response dùng code/message/correlation; production không trả stack trace. `AuditLog` và `IAuditWriter` tồn tại; `orders.list.v1` ghi permission-sensitive query metadata đã sanitize.
+`X-Correlation-ID` hợp lệ được tái sử dụng; giá trị thiếu/không hợp lệ được tạo lại và trả trong response. JSON request log có path/status/latency/correlation/user/tenant/branch/query ID. Global error response dùng code/message/correlation; production không trả stack trace. `AuditLog` và `IAuditWriter` tồn tại; `orders.list.v1` ghi metadata của truy vấn nhạy cảm về quyền sau khi đã làm sạch.
 
-## 10. Security/Secrets
+## 10. Bảo mật và secret
 
-Không có raw SQL input, raw JWT/password/API key logging hoặc client tenant filter. `.env`, local settings, key/certificate/secrets files, build và work outputs được gitignore. Secret-pattern scan chỉ tìm thấy explicit development placeholders/demo credential. NuGet vulnerability audit báo không project nào có vulnerable package theo feed hiện tại.
+Không có đầu vào raw SQL, ghi log raw JWT/password/API key hoặc bộ lọc Tenant do client cung cấp. `.env`, local settings, file key/certificate/secrets, output Build và thư mục làm việc được Git bỏ qua. Secret-pattern scan chỉ tìm thấy placeholder phát triển/credential demo rõ ràng. NuGet vulnerability audit cho biết không project nào có package chứa lỗ hổng theo feed hiện tại.
 
-## 11. Health/Resilience
+## 11. Health Check và khả năng phục hồi
 
-`/health/live` không phụ thuộc DB; `/health/ready` gọi `CanConnectAsync`. SQL command/request timeout là 10 giây. SQL transient retry tối đa 3 lần. Không có infinite retry. Integration tests chạy relational SQLite in-memory; runtime chính vẫn là SQL Server.
+`/health/live` không phụ thuộc DB; `/health/ready` gọi `CanConnectAsync`. SQL command timeout/request timeout là 10 giây. SQL transient retry tối đa 3 lần, không có retry vô hạn. Integration Test chạy SQLite quan hệ in-memory; Runtime chính vẫn là SQL Server.
 
 ## 12. Test đã chạy
 
-- Unit: 11/11 PASS — metric/query catalog, raw query rejection, date/filter/pagination validation, role/branch/tenant scope.
-- Integration: 17/17 PASS — auth/scope/isolation, attempted tenant override, all Reporting API contracts, health, Swagger, error format, correlation reuse, six-month seed count/date.
+- Unit: 11/11 PASS — metric/query catalog, từ chối raw query, kiểm tra date/filter/pagination, phạm vi role/Branch/Tenant.
+- Integration: 17/17 PASS — auth/scope/isolation, cố gắng ghi đè Tenant, toàn bộ contract Reporting API, Health Check, Swagger, định dạng lỗi, tái sử dụng correlation, số lượng/ngày của Seed sáu tháng.
 - Tổng: 28/28 PASS, 0 skipped.
 
-## 13. Kết quả build
+## 13. Kết quả Build
 
-`dotnet build Hosco.slnx --no-restore`: PASS, 0 errors. Trong sandbox, một lần build có warning NU1900 do vulnerability feed không truy cập được; audit command riêng có network đã chạy thành công và báo không có vulnerable package.
+`dotnet build Hosco.slnx --no-restore`: PASS, 0 errors. Trong sandbox, một lần Build có warning NU1900 do không truy cập được vulnerability feed; lệnh audit riêng có network đã chạy thành công và báo không có package chứa lỗ hổng.
 
-## 14. KPI/business rule còn chờ BA chốt
+## 14. KPI/quy tắc nghiệp vụ còn chờ BA chốt
 
-1. Revenue: discount/order status/refund recognition.
-2. GMV: included order statuses và gross/net discount treatment.
-3. Total Orders/AOV: status và denominator.
-4. Gross Profit/Margin: return/refund/discount allocation; cost snapshot đã sẵn sàng.
-5. Cancellation/Return Rate: count hay amount/value và mẫu số.
-6. Top/Bottom SKU: revenue, quantity hay gross profit.
-7. Dangerous Stock: `<= SafetyStock`, projected days, warehouse/branch hoặc rule khác.
-8. Currency/multi-currency aggregation và reporting timezone.
+1. Revenue: discount/trạng thái đơn hàng/ghi nhận refund.
+2. GMV: các trạng thái đơn hàng được tính và cách xử lý gross/net discount.
+3. Total Orders/AOV: trạng thái và mẫu số.
+4. Gross Profit/Margin: phân bổ return/refund/discount; snapshot giá vốn đã sẵn sàng.
+5. Cancellation/Return Rate: tính theo số lượng hay giá trị và mẫu số.
+6. Top/Bottom SKU: theo revenue, quantity hay gross profit.
+7. Dangerous Stock: `<= SafetyStock`, số ngày dự kiến, warehouse/Branch hoặc quy tắc khác.
+8. Tổng hợp đa tiền tệ và múi giờ báo cáo.
 
 ## 15. Blocker
 
-- Chưa có SRS v1/KPI Dictionary/Vai trò-Phân quyền/Luồng nghiệp vụ bản BA mới nhất để sign off KPI formulas.
-- SQL Server/LocalDB instance không khả dụng trên máy chạy hiện tại, nên database update là NOT RUN dù migration/model/script validation PASS.
-- Git repository đã được khởi tạo local nhưng không commit/push. Sandbox user cần dùng per-command safe-directory override để đọc status vì owner của thư mục là Windows user thật.
+- Chưa có SRS v1/KPI Dictionary/Vai trò-Phân quyền/Luồng nghiệp vụ bản BA mới nhất để phê duyệt công thức KPI.
+- SQL Server/LocalDB instance không khả dụng trên máy chạy hiện tại, nên database update là NOT RUN dù kiểm tra Migration/model/script là PASS.
+- Git repository đã được khởi tạo local nhưng chưa commit/push. Người dùng sandbox cần dùng tùy chọn safe-directory theo từng lệnh để đọc trạng thái vì chủ sở hữu thư mục là người dùng Windows thật.
 
-## 16. Việc sẵn sàng chuyển sang GD3
+## 16. Mức sẵn sàng để chuyển sang GD3
 
-GD3 có thể bắt đầu tích hợp Dashboard vào versioned Reporting API, dùng seed anomaly và `lastUpdatedAt/isStale`, đồng thời xây Alert Engine trên Alert/Audit schema. Trước khi nghiệm thu số KPI hoặc đặt alert threshold, BA phải chốt các mục ở phần 14. GD4 có sẵn boundary API/query catalog; không cần và không được cấp direct DB access cho Chatbot.
+GD3 có thể bắt đầu tích hợp Dashboard với Reporting API có version, dùng anomaly trong Seed và `lastUpdatedAt/isStale`, đồng thời xây dựng Alert Engine trên schema Alert/Audit. Trước khi nghiệm thu số KPI hoặc đặt ngưỡng cảnh báo, BA phải chốt các mục ở phần 14. GD4 đã có ranh giới API/Query Catalog; Chatbot không cần và không được cấp quyền truy cập trực tiếp cơ sở dữ liệu.
 
-Ngoài phạm vi và chưa làm: Dashboard UI, Alert Engine/scheduler hoàn chỉnh, Telegram/FCM, LLM/OpenAI/Gemini, chatbot UI/prompt/classifier và production deployment.
+Ngoài phạm vi và chưa thực hiện: Dashboard UI, Alert Engine/scheduler hoàn chỉnh, Telegram/FCM, LLM/OpenAI/Gemini, chatbot UI/prompt/classifier và triển khai production.

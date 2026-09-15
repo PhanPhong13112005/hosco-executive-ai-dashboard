@@ -1,10 +1,10 @@
 # HOSCO – Executive AI Dashboard & Smart Alert Chatbot
 
-GD2 backend foundation for a tenant-safe reporting API shared by the future Dashboard and Chatbot. The Chatbot boundary is the Reporting API/query catalog; it never receives direct database access.
+Nền tảng backend GD2 cung cấp Reporting API an toàn theo Tenant, dùng chung cho Dashboard và Chatbot trong tương lai. Ranh giới truy cập của Chatbot là Reporting API/Danh mục truy vấn (Query Catalog); Chatbot không bao giờ được truy cập trực tiếp cơ sở dữ liệu.
 
-## Stack and structure
+## Công nghệ và cấu trúc
 
-The repository targets .NET 10 because .NET SDK 10.0.400 is the supported SDK installed during the initial workspace audit. Packages are pinned to patched 10.0.11 releases.
+Repository sử dụng .NET 10 vì .NET SDK 10.0.400 là SDK được hỗ trợ và đã cài đặt khi audit workspace ban đầu. Các package được cố định ở bản vá 10.0.11.
 
 ```text
 src/
@@ -18,22 +18,22 @@ tests/
 docs/gd2/
 ```
 
-## 1. Prerequisites
+## 1. Điều kiện tiên quyết
 
-- .NET SDK 10.0.400 or compatible 10.0.x SDK
-- SQL Server, SQL Server Express, container, or LocalDB
-- PowerShell examples below; equivalent shell commands also work
+- .NET SDK 10.0.400 hoặc SDK 10.0.x tương thích
+- SQL Server, SQL Server Express, container hoặc LocalDB
+- Các ví dụ bên dưới dùng PowerShell; có thể sử dụng lệnh tương đương trên shell khác
 
-## 2. Restore packages and tools
+## 2. Khôi phục package và công cụ
 
 ```powershell
 dotnet restore Hosco.slnx
 dotnet tool restore
 ```
 
-## 3. Configure database and secrets
+## 3. Cấu hình cơ sở dữ liệu và secret
 
-The committed connection string and JWT key are development placeholders, not production secrets. Prefer user-secrets:
+Connection string và JWT key được commit chỉ là placeholder cho môi trường phát triển, không phải secret production. Nên ưu tiên user-secrets:
 
 ```powershell
 dotnet user-secrets init --project src/Hosco.Api
@@ -42,73 +42,73 @@ dotnet user-secrets set "Jwt:SigningKey" "replace-with-at-least-32-random-charac
 dotnet user-secrets set "Seed:Enabled" "true" --project src/Hosco.Api
 ```
 
-Environment variables matching [.env.example](.env.example) are also supported. `.env` is gitignored and is not automatically loaded by the app.
+Hệ thống cũng hỗ trợ các biến môi trường tương ứng với [.env.example](.env.example). File `.env` đã được Git bỏ qua và ứng dụng không tự động nạp file này.
 
-## 4. Apply migration
+## 4. Áp dụng Migration
 
 ```powershell
 dotnet tool run dotnet-ef database update --project src/Hosco.Infrastructure --startup-project src/Hosco.Api
 ```
 
-The API also calls `MigrateAsync` at startup. Production deployments should normally run migrations as a controlled release step before starting new instances.
+API cũng gọi `MigrateAsync` khi khởi động. Trong production, thông thường nên chạy Migration như một bước phát hành có kiểm soát trước khi khởi động instance mới.
 
-## 5. Seed deterministic demo data
+## 5. Tạo dữ liệu demo xác định
 
-Set `Seed:Enabled=true` or run with the Development profile. On an empty database the startup seed creates two tenants, four branches, six months of orders and anomaly fixtures. A second run is idempotent because it exits once tenant data exists.
-
-```powershell
-dotnet run --project src/Hosco.Api --environment Development
-```
-
-## 6. Run API and Swagger
+Đặt `Seed:Enabled=true` hoặc chạy bằng profile Development. Trên cơ sở dữ liệu trống, Seed khi khởi động sẽ tạo hai Tenant, bốn Branch, sáu tháng dữ liệu đơn hàng và các anomaly fixture. Lần chạy thứ hai có tính idempotent vì tiến trình dừng khi đã tồn tại dữ liệu Tenant.
 
 ```powershell
 dotnet run --project src/Hosco.Api --environment Development
 ```
 
-Open the URL printed by ASP.NET Core and append `/swagger`. Swagger is enabled in Development and can be explicitly controlled by `Swagger:Enabled`.
+## 6. Chạy API và Swagger
 
-## 7. Login and get a development JWT
+```powershell
+dotnet run --project src/Hosco.Api --environment Development
+```
 
-All demo accounts use the development-only password `HoscoDemo!2026`; only a PBKDF2-SHA256 hash is stored in the database.
+Mở URL do ASP.NET Core hiển thị và thêm `/swagger`. Swagger được bật trong Development và có thể được điều khiển rõ ràng bằng `Swagger:Enabled`.
 
-| Role | Email | Scope |
+## 7. Đăng nhập và nhận JWT phát triển
+
+Tất cả tài khoản demo dùng mật khẩu chỉ dành cho môi trường phát triển `HoscoDemo!2026`; cơ sở dữ liệu chỉ lưu hash PBKDF2-SHA256.
+
+| Vai trò | Email | Phạm vi |
 |---|---|---|
-| Owner | `owner@hosco.local` | tenant HOSCO-A |
-| Branch Manager | `branch.manager@hosco.local` | branch A-HCM only |
-| Chain Manager | `chain.manager@hosco.local` | all HOSCO-A branches |
-| System Admin | `admin@hosco.local` | technical admin, tenant HOSCO-A |
-| Isolation fixture | `owner@fixture.local` | tenant HOSCO-B |
+| Owner | `owner@hosco.local` | Tenant HOSCO-A |
+| Branch Manager | `branch.manager@hosco.local` | Chỉ Branch A-HCM |
+| Chain Manager | `chain.manager@hosco.local` | Tất cả Branch thuộc HOSCO-A |
+| System Admin | `admin@hosco.local` | Quản trị kỹ thuật, Tenant HOSCO-A |
+| Dữ liệu kiểm thử cô lập | `owner@fixture.local` | Tenant HOSCO-B |
 
 ```powershell
 $body = @{ email = "owner@hosco.local"; password = "HoscoDemo!2026" } | ConvertTo-Json
 Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/v1/auth/login" -ContentType "application/json" -Body $body
 ```
 
-Copy `accessToken` into Swagger's **Authorize** dialog.
+Sao chép `accessToken` vào hộp thoại **Authorize** của Swagger.
 
-## 8. Health checks
+## 8. Health Check
 
 ```powershell
 Invoke-RestMethod http://localhost:5000/health/live
 Invoke-RestMethod http://localhost:5000/health/ready
 ```
 
-`live` does not depend on SQL Server. `ready` calls the database and becomes unhealthy if it is unavailable.
+`live` không phụ thuộc SQL Server. `ready` kiểm tra cơ sở dữ liệu và chuyển sang trạng thái không khỏe mạnh khi cơ sở dữ liệu không khả dụng.
 
-## 9. Run build and tests
+## 9. Chạy Build và Test
 
 ```powershell
 dotnet build Hosco.slnx
 dotnet test Hosco.slnx --no-build
 ```
 
-Integration tests start the actual HTTP pipeline on an ephemeral local port with an isolated relational SQLite in-memory database. They do not need SQL Server.
+Integration Test khởi chạy HTTP pipeline thực trên cổng local tạm thời với cơ sở dữ liệu quan hệ SQLite in-memory cô lập. Các test này không cần SQL Server.
 
-## Business-definition status
+## Trạng thái định nghĩa nghiệp vụ
 
-No approved BA SRS/KPI Dictionary was present in the initial workspace. Metric and query contracts exist, but KPI formulas are marked `BlockedByBusinessDefinition` or `ProvisionalTechnicalPreview`. Do not treat preview aggregates as signed-off business figures; see [GD2 report](docs/gd2/GD2_REPORT.md).
+Không có SRS/KPI Dictionary đã được BA phê duyệt trong workspace ban đầu. Các contract cho metric và truy vấn đã tồn tại, nhưng công thức KPI được đánh dấu `BlockedByBusinessDefinition` hoặc `ProvisionalTechnicalPreview`. Không được coi các số liệu tổng hợp preview là số liệu nghiệp vụ đã được chốt; xem [báo cáo GD2](docs/gd2/GD2_REPORT.md).
 
-## GD2 Verification Evidence
+## Minh chứng xác minh GD2
 
-The reproducible GD2 audit, runtime results, generated migration SQL, captured OpenAPI document, and known limitations are indexed in [GD2 Evidence Report](docs/gd2/evidence/GD2_EVIDENCE_REPORT.md). Run `./scripts/verify-gd2.ps1` for the non-mutating build/test checks.
+Bộ audit GD2 có thể tái lập, kết quả Runtime, SQL Migration đã sinh, tài liệu OpenAPI đã thu thập và các giới hạn đã biết được tổng hợp tại [Báo cáo minh chứng GD2](docs/gd2/evidence/GD2_EVIDENCE_REPORT.md). Chạy `./scripts/verify-gd2.ps1` để thực hiện các kiểm tra Build/Test không làm thay đổi source.

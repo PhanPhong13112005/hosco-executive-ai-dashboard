@@ -1,14 +1,14 @@
-# Semantic and Query Catalog Verification
+# Xác minh Semantic Layer và Query Catalog
 
 ## Metric catalog
 
-Eight definitions exist: KPI-01 revenue, KPI-02 GMV, KPI-03 total orders, KPI-04 AOV, KPI-05 gross profit/margin, KPI-06 cancellation/return rate, KPI-07 top/bottom SKU, and KPI-08 dangerous stock. Each definition contains code, name, description, unit, supported filters/dimensions, version `1.0`, query ID, status, and blocker.
+Có tám định nghĩa: KPI-01 revenue, KPI-02 GMV, KPI-03 total orders, KPI-04 AOV, KPI-05 gross profit/margin, KPI-06 cancellation/return rate, KPI-07 top/bottom SKU và KPI-08 dangerous stock. Mỗi định nghĩa chứa code, name, description, unit, bộ lọc/chiều dữ liệu được hỗ trợ, version `1.0`, Query ID, trạng thái và blocker.
 
-All eight are `BlockedByBusinessDefinition`; this audit does not mark their business formulas as verified.
+Cả tám đều có trạng thái `BlockedByBusinessDefinition`; lần audit này không đánh dấu công thức nghiệp vụ của chúng là đã xác minh.
 
 ## Query allow-list
 
-| Query ID | Catalog status |
+| Query ID | Trạng thái trong catalog |
 |---|---|
 | `orders.list.v1` | Implemented |
 | `kpis.summary.v1` | ProvisionalTechnicalPreview |
@@ -22,13 +22,12 @@ All eight are `BlockedByBusinessDefinition`; this audit does not mark their busi
 | `gross-profit.summary.v1` | BlockedByBusinessDefinition |
 | `cancel-return-rate.summary.v1` | BlockedByBusinessDefinition |
 
-The catalog stores allowed roles, parameters, output type, and version `1`. Unknown query IDs throw instead of accepting arbitrary SQL or identifiers.
+Catalog lưu vai trò được phép, parameter, kiểu đầu ra và version `1`. Query ID không xác định sẽ phát sinh exception thay vì chấp nhận SQL hoặc identifier tùy ý.
 
-`ReportingFilter.Validate` enforces page >= 1, page size 1..200, `from <= to`, and sort direction `asc`/`desc`. Date/branch filters are documented across metric definitions; query-specific parameter arrays are present in the query catalog.
+`ReportingFilter.Validate` buộc page >= 1, page size từ 1..200, `from <= to` và sort direction là `asc`/`desc`. Bộ lọc ngày/Branch được ghi trong các định nghĩa metric; mảng parameter riêng cho từng truy vấn tồn tại trong Query Catalog.
 
-## BA-pending rules
+## Quy tắc đang chờ BA
 
-Revenue recognition statuses/refunds/discounts, GMV included statuses, total-order statuses, AOV numerator/denominator, gross-profit return allocation, cancellation/return denominator, ranking basis, and dangerous-stock threshold source are not approved. Data-store preview computations exist, but are not evidence of approved formulas. Individual revenue/ranking/inventory responses do not carry the catalog status; see the semantic contract defect in `DEFECTS_FOUND.md`.
+Chưa được phê duyệt: trạng thái ghi nhận Revenue/cách xử lý refund và discount, trạng thái được tính vào GMV, trạng thái của Total Order, tử số/mẫu số AOV, phân bổ return cho Gross Profit, mẫu số Cancellation/Return, cơ sở xếp hạng và nguồn ngưỡng Dangerous Stock. Data store có phép tính preview nhưng đây không phải bằng chứng về công thức đã được phê duyệt. Response riêng của revenue/ranking/inventory không mang trạng thái catalog; xem defect về semantic contract trong `DEFECTS_FOUND.md`.
 
-Verdict: `PARTIALLY VERIFIED`: catalog, allow-list, versioning, and validation exist and tests pass; business semantics remain BA-blocked.
-
+Kết luận: `PARTIALLY VERIFIED` (Xác minh một phần): catalog, allow-list, versioning và validation tồn tại, test PASS; semantic nghiệp vụ vẫn bị chặn bởi BA.

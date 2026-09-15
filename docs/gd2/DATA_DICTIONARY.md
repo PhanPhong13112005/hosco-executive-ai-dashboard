@@ -1,179 +1,179 @@
-# GD2 Technical Data Dictionary
+# Từ điển dữ liệu kỹ thuật GD2
 
-No BA Business Data Dictionary was present during implementation. This technical dictionary must be reconciled with, and must not overwrite, the latest BA dictionary when it becomes available. Unless noted, every entity with `Id` also has non-null `CreatedAt` and `UpdatedAt` (`datetimeoffset`) for traceability.
+Không có Business Data Dictionary của BA tại thời điểm triển khai. Từ điển kỹ thuật này phải được đối chiếu với bản mới nhất của BA và không được ghi đè tài liệu đó khi được cung cấp. Trừ khi có ghi chú khác, mọi entity có `Id` đều có thêm `CreatedAt` và `UpdatedAt` không null (`datetimeoffset`) để phục vụ truy vết.
 
 ## Tenant
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Tenant identifier |
-| Code | nvarchar(50) | No | UK | Stable tenant code |
-| Name | nvarchar(200) | No | | Display name |
-| IsActive | bit | No | | Tenant enabled flag |
+| Id | uniqueidentifier | Không | PK | Định danh Tenant |
+| Code | nvarchar(50) | Không | UK | Mã Tenant ổn định |
+| Name | nvarchar(200) | Không | | Tên hiển thị |
+| IsActive | bit | Không | | Cờ bật/tắt Tenant |
 
 ## Branch
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Branch identifier |
-| TenantId | uniqueidentifier | No | FK Tenant | Mandatory security partition |
-| Code | nvarchar(max) | No | UK with TenantId | Tenant-local branch code |
-| Name | nvarchar(max) | No | | Display name |
-| Address | nvarchar(max) | Yes | | Optional address |
-| IsActive | bit | No | | Branch enabled flag |
+| Id | uniqueidentifier | Không | PK | Định danh Branch |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng bảo mật bắt buộc |
+| Code | nvarchar(max) | Không | UK với TenantId | Mã Branch duy nhất trong Tenant |
+| Name | nvarchar(max) | Không | | Tên hiển thị |
+| Address | nvarchar(max) | Có | | Địa chỉ tùy chọn |
+| IsActive | bit | Không | | Cờ bật/tắt Branch |
 
 ## AppUser
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Authenticated subject |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant claim source |
-| Email | nvarchar(320) | No | UK | Normalized lower-case login |
-| DisplayName | nvarchar(max) | No | | Non-sensitive display name |
-| PasswordHash | nvarchar(500) | No | | PBKDF2 encoded hash, never plaintext |
-| IsActive | bit | No | | Login enabled flag |
+| Id | uniqueidentifier | Không | PK | Chủ thể đã xác thực |
+| TenantId | uniqueidentifier | Không | FK Tenant | Nguồn của Tenant claim |
+| Email | nvarchar(320) | Không | UK | Thông tin đăng nhập đã chuẩn hóa chữ thường |
+| DisplayName | nvarchar(max) | Không | | Tên hiển thị không nhạy cảm |
+| PasswordHash | nvarchar(500) | Không | | Hash mã hóa PBKDF2, không bao giờ lưu plaintext |
+| IsActive | bit | Không | | Cờ cho phép đăng nhập |
 
 ## Role, UserRole, UserBranch
 
-| Table.Column | SQL type | Null | Key | Description / rule |
+| Bảng.Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Role.Id | uniqueidentifier | No | PK | Role ID |
-| Role.Name | int | No | UK | `Owner`, `BranchManager`, `ChainManager`, `SystemAdmin` enum |
-| UserRole.UserId | uniqueidentifier | No | PK/FK AppUser | Assigned user |
-| UserRole.RoleId | uniqueidentifier | No | PK/FK Role | Assigned role |
-| UserBranch.UserId | uniqueidentifier | No | PK/FK AppUser | Scoped user |
-| UserBranch.BranchId | uniqueidentifier | No | PK/FK Branch | Permitted branch |
+| Role.Id | uniqueidentifier | Không | PK | ID vai trò |
+| Role.Name | int | Không | UK | Enum `Owner`, `BranchManager`, `ChainManager`, `SystemAdmin` |
+| UserRole.UserId | uniqueidentifier | Không | PK/FK AppUser | Người dùng được phân quyền |
+| UserRole.RoleId | uniqueidentifier | Không | PK/FK Role | Vai trò được phân công |
+| UserBranch.UserId | uniqueidentifier | Không | PK/FK AppUser | Người dùng bị giới hạn phạm vi |
+| UserBranch.BranchId | uniqueidentifier | Không | PK/FK Branch | Branch được phép truy cập |
 
 ## Customer
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Customer ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| Name | nvarchar(max) | No | | Customer name; avoid logging |
-| Email | nvarchar(max) | Yes | index with TenantId | Optional PII; avoid logging |
-| PhoneMasked | nvarchar(max) | Yes | | Masked value only in demo seed |
+| Id | uniqueidentifier | Không | PK | ID khách hàng |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| Name | nvarchar(max) | Không | | Tên khách hàng; tránh ghi log |
+| Email | nvarchar(max) | Có | Index với TenantId | PII tùy chọn; tránh ghi log |
+| PhoneMasked | nvarchar(max) | Có | | Chỉ lưu giá trị đã che trong Seed demo |
 
 ## Employee
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Employee/cashier ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| BranchId | uniqueidentifier | No | FK Branch | Home branch |
-| EmployeeCode | nvarchar(max) | No | UK with TenantId | Stable employee code |
-| DisplayName | nvarchar(max) | No | | Display name |
-| IsActive | bit | No | | Employment/system active flag |
+| Id | uniqueidentifier | Không | PK | ID nhân viên/thu ngân |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| BranchId | uniqueidentifier | Không | FK Branch | Branch làm việc chính |
+| EmployeeCode | nvarchar(max) | Không | UK với TenantId | Mã nhân viên ổn định |
+| DisplayName | nvarchar(max) | Không | | Tên hiển thị |
+| IsActive | bit | Không | | Cờ trạng thái làm việc/hệ thống |
 
 ## Product
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Product ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| Sku | nvarchar(max) | No | UK with TenantId | Stock keeping unit |
-| Name | nvarchar(max) | No | | Product name |
-| CurrentPrice | decimal(18,2) | No | | Current list price; not historical sale price |
-| CurrentCost | decimal(18,2) | No | | Current cost; not used blindly for historical GP |
-| Currency | nvarchar(max) | No | | ISO-style currency code, seed uses VND |
-| IsActive | bit | No | | Catalog active flag |
+| Id | uniqueidentifier | Không | PK | ID sản phẩm |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| Sku | nvarchar(max) | Không | UK với TenantId | Đơn vị lưu kho |
+| Name | nvarchar(max) | Không | | Tên sản phẩm |
+| CurrentPrice | decimal(18,2) | Không | | Giá niêm yết hiện tại; không phải giá bán lịch sử |
+| CurrentCost | decimal(18,2) | Không | | Giá vốn hiện tại; không được dùng tùy ý để tính GP lịch sử |
+| Currency | nvarchar(max) | Không | | Mã tiền tệ kiểu ISO; Seed dùng VND |
+| IsActive | bit | Không | | Cờ hoạt động trong catalog |
 
 ## Inventory
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Inventory row ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| BranchId | uniqueidentifier | No | FK Branch, UK group | Stock location |
-| ProductId | uniqueidentifier | No | FK Product, UK group | Stocked product |
-| QuantityOnHand | int | No | | Current on-hand units |
-| SafetyStock | int | No | | Configured threshold input; BA dangerous-stock rule pending |
+| Id | uniqueidentifier | Không | PK | ID dòng tồn kho |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| BranchId | uniqueidentifier | Không | FK Branch, nhóm UK | Địa điểm lưu kho |
+| ProductId | uniqueidentifier | Không | FK Product, nhóm UK | Sản phẩm được lưu kho |
+| QuantityOnHand | int | Không | | Số lượng tồn hiện tại |
+| SafetyStock | int | Không | | Đầu vào ngưỡng đã cấu hình; quy tắc tồn kho nguy hiểm đang chờ BA |
 
 ## Order
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Order ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Mandatory query predicate |
-| BranchId | uniqueidentifier | No | FK Branch | Mandatory branch predicate |
-| CustomerId | uniqueidentifier | Yes | FK Customer | Optional customer |
-| EmployeeId | uniqueidentifier | No | FK Employee | Processing cashier |
-| OrderNumber | nvarchar(max) | No | UK with TenantId | Human-readable number |
-| Status | int | No | | Pending/Completed/Cancelled/Returned/PartiallyReturned |
-| OrderedAt | datetimeoffset | No | indexed | Business event time |
-| Subtotal | decimal(18,2) | No | | Pre-order-discount amount |
-| DiscountAmount | decimal(18,2) | No | | Order discount |
-| TotalAmount | decimal(18,2) | No | | Stored charged total; KPI interpretation awaits BA |
-| Currency | nvarchar(max) | No | | Currency code |
+| Id | uniqueidentifier | Không | PK | ID đơn hàng |
+| TenantId | uniqueidentifier | Không | FK Tenant | Điều kiện truy vấn bắt buộc |
+| BranchId | uniqueidentifier | Không | FK Branch | Điều kiện Branch bắt buộc |
+| CustomerId | uniqueidentifier | Có | FK Customer | Khách hàng tùy chọn |
+| EmployeeId | uniqueidentifier | Không | FK Employee | Thu ngân xử lý |
+| OrderNumber | nvarchar(max) | Không | UK với TenantId | Mã đơn hàng dễ đọc |
+| Status | int | Không | | Pending/Completed/Cancelled/Returned/PartiallyReturned |
+| OrderedAt | datetimeoffset | Không | Có index | Thời điểm sự kiện nghiệp vụ |
+| Subtotal | decimal(18,2) | Không | | Số tiền trước giảm giá cấp đơn hàng |
+| DiscountAmount | decimal(18,2) | Không | | Số tiền giảm giá đơn hàng |
+| TotalAmount | decimal(18,2) | Không | | Tổng tiền đã thu được lưu; cách diễn giải KPI chờ BA |
+| Currency | nvarchar(max) | Không | | Mã tiền tệ |
 
 ## OrderItem
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Line ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Defense-in-depth partition |
-| OrderId | uniqueidentifier | No | FK Order | Parent order |
-| ProductId | uniqueidentifier | No | FK Product | Sold product |
-| Quantity | int | No | | Sold units |
-| UnitPrice | decimal(18,2) | No | | Price captured at transaction time |
-| UnitCostAtSale | decimal(18,2) | No | | Cost snapshot for historical COGS |
-| DiscountAmount | decimal(18,2) | No | | Line discount |
-| LineTotal | decimal(18,2) | No | | Stored line total |
+| Id | uniqueidentifier | Không | PK | ID dòng hàng |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng phòng vệ nhiều lớp |
+| OrderId | uniqueidentifier | Không | FK Order | Đơn hàng cha |
+| ProductId | uniqueidentifier | Không | FK Product | Sản phẩm đã bán |
+| Quantity | int | Không | | Số lượng đã bán |
+| UnitPrice | decimal(18,2) | Không | | Giá ghi nhận tại thời điểm giao dịch |
+| UnitCostAtSale | decimal(18,2) | Không | | Snapshot giá vốn để tính COGS lịch sử |
+| DiscountAmount | decimal(18,2) | Không | | Giảm giá dòng hàng |
+| LineTotal | decimal(18,2) | Không | | Thành tiền dòng hàng đã lưu |
 
 ## Payment
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Payment ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| OrderId | uniqueidentifier | No | FK Order | Paid order |
-| Method | int | No | | Cash/Card/BankTransfer/EWallet |
-| Status | int | No | | Pending/Paid/Failed/Refunded/PartiallyRefunded |
-| Amount | decimal(18,2) | No | | Payment amount |
-| PaidAt | datetimeoffset | No | | Payment event time |
+| Id | uniqueidentifier | Không | PK | ID thanh toán |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| OrderId | uniqueidentifier | Không | FK Order | Đơn hàng được thanh toán |
+| Method | int | Không | | Cash/Card/BankTransfer/EWallet |
+| Status | int | Không | | Pending/Paid/Failed/Refunded/PartiallyRefunded |
+| Amount | decimal(18,2) | Không | | Số tiền thanh toán |
+| PaidAt | datetimeoffset | Không | | Thời điểm thanh toán |
 
 ## Refund
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Refund/return financial record |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| BranchId | uniqueidentifier | No | indexed | Branch partition |
-| OrderId | uniqueidentifier | No | FK Order | Original order |
-| Status | int | No | | Requested/Approved/Rejected/Completed |
-| Amount | decimal(18,2) | No | | Refund amount |
-| ReasonCode | nvarchar(max) | No | | Non-free-text reason code |
-| RequestedAt | datetimeoffset | No | indexed | Request time |
-| CompletedAt | datetimeoffset | Yes | | Completion time |
+| Id | uniqueidentifier | Không | PK | Bản ghi tài chính hoàn tiền/trả hàng |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| BranchId | uniqueidentifier | Không | Có index | Phân vùng Branch |
+| OrderId | uniqueidentifier | Không | FK Order | Đơn hàng gốc |
+| Status | int | Không | | Requested/Approved/Rejected/Completed |
+| Amount | decimal(18,2) | Không | | Số tiền hoàn |
+| ReasonCode | nvarchar(max) | Không | | Mã lý do, không phải văn bản tự do |
+| RequestedAt | datetimeoffset | Không | Có index | Thời điểm yêu cầu |
+| CompletedAt | datetimeoffset | Có | | Thời điểm hoàn tất |
 
 ## Alert
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Alert ID |
-| TenantId | uniqueidentifier | No | FK Tenant | Tenant partition |
-| BranchId | uniqueidentifier | Yes | logical FK Branch | Optional branch scope |
-| Type | nvarchar(max) | No | | Versionable alert type code |
-| Severity | int | No | | Info/Warning/Critical |
-| Status | int | No | indexed | Open/Acknowledged/Resolved |
-| Title | nvarchar(max) | No | | Display title |
-| PayloadJson | nvarchar(max) | No | | Extensible metadata, no secrets |
-| DetectedAt | datetimeoffset | No | indexed | Detection/event time |
-| AcknowledgedAt | datetimeoffset | Yes | | Future GD3 action time |
-| ResolvedAt | datetimeoffset | Yes | | Future GD3 action time |
+| Id | uniqueidentifier | Không | PK | ID cảnh báo |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| BranchId | uniqueidentifier | Có | FK logic Branch | Phạm vi Branch tùy chọn |
+| Type | nvarchar(max) | Không | | Mã loại cảnh báo có thể version hóa |
+| Severity | int | Không | | Info/Warning/Critical |
+| Status | int | Không | Có index | Open/Acknowledged/Resolved |
+| Title | nvarchar(max) | Không | | Tiêu đề hiển thị |
+| PayloadJson | nvarchar(max) | Không | | Metadata có thể mở rộng, không chứa secret |
+| DetectedAt | datetimeoffset | Không | Có index | Thời điểm phát hiện/sự kiện |
+| AcknowledgedAt | datetimeoffset | Có | | Thời điểm thao tác ở GD3 trong tương lai |
+| ResolvedAt | datetimeoffset | Có | | Thời điểm thao tác ở GD3 trong tương lai |
 
 ## AuditLog
 
-| Column | SQL type | Null | Key | Description / rule |
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
 |---|---|---:|---|---|
-| Id | uniqueidentifier | No | PK | Audit event ID |
-| TenantId | uniqueidentifier | No | indexed | Tenant partition |
-| UserId | uniqueidentifier | Yes | logical FK AppUser | Acting identity |
-| BranchId | uniqueidentifier | Yes | logical FK Branch | Effective/requested branch |
-| Action | nvarchar(max) | No | | e.g. `reporting.query`, future alert actions |
-| ResourceType | nvarchar(max) | No | | Audited resource category |
-| ResourceId | nvarchar(max) | Yes | | Optional resource identifier |
-| QueryId | nvarchar(max) | Yes | | Allow-listed query identifier |
-| CorrelationId | nvarchar(max) | No | | Request trace link |
-| MetadataJson | nvarchar(max) | No | | Sanitized structured metadata |
-| OccurredAt | datetimeoffset | No | indexed | Audit event time |
+| Id | uniqueidentifier | Không | PK | ID sự kiện audit |
+| TenantId | uniqueidentifier | Không | Có index | Phân vùng Tenant |
+| UserId | uniqueidentifier | Có | FK logic AppUser | Danh tính thực hiện |
+| BranchId | uniqueidentifier | Có | FK logic Branch | Branch hiệu lực/được yêu cầu |
+| Action | nvarchar(max) | Không | | Ví dụ `reporting.query`, thao tác cảnh báo tương lai |
+| ResourceType | nvarchar(max) | Không | | Loại tài nguyên được audit |
+| ResourceId | nvarchar(max) | Có | | Định danh tài nguyên tùy chọn |
+| QueryId | nvarchar(max) | Có | | Định danh truy vấn trong allow-list |
+| CorrelationId | nvarchar(max) | Không | | Liên kết truy vết request |
+| MetadataJson | nvarchar(max) | Không | | Metadata có cấu trúc đã làm sạch |
+| OccurredAt | datetimeoffset | Không | Có index | Thời điểm sự kiện audit |

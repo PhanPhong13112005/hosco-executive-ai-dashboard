@@ -1,25 +1,25 @@
-# Build Verification
+# Xác minh Build
 
-## Environment
+## Môi trường
 
-| Item | Actual |
+| Hạng mục | Kết quả thực tế |
 |---|---|
 | SDK | .NET SDK 10.0.400 |
 | MSBuild | 18.9.6 |
-| Host/runtime | 10.0.11, win-x64 |
+| Host/Runtime | 10.0.11, win-x64 |
 | OS | Windows 10.0.26200 |
 | Solution | `Hosco.slnx` |
 | Checkpoint | `f75ac38c323ac2b61dd127081cc742852200f197` |
 
-## Commands and results
+## Lệnh và kết quả
 
-| Command | Actual result |
+| Lệnh | Kết quả thực tế |
 |---|---|
-| `dotnet --info` | Completed; SDK/runtime details above |
-| `dotnet restore` | Exit 0; all projects up-to-date for restore |
-| `dotnet build` | Exit 0; 0 warnings, 0 errors; elapsed 6.07 s |
+| `dotnet --info` | Hoàn tất; chi tiết SDK/Runtime như trên |
+| `dotnet restore` | Exit 0; mọi project đã cập nhật đầy đủ cho Restore |
+| `dotnet build` | Exit 0; 0 warnings, 0 errors; thời gian 6.07 giây |
 
-Build output was produced successfully for:
+Build output được tạo thành công cho:
 
 - `Hosco.Domain`
 - `Hosco.Application`
@@ -28,5 +28,4 @@ Build output was produced successfully for:
 - `Hosco.UnitTests`
 - `Hosco.IntegrationTests`
 
-Verdict: `VERIFIED`.
-
+Kết luận: `VERIFIED` (Đã xác minh).

@@ -1,6 +1,6 @@
-# GD2 Architecture
+# Kiến trúc GD2
 
-## Component view
+## Sơ đồ thành phần
 
 ```mermaid
 flowchart TD
@@ -18,22 +18,22 @@ flowchart TD
     NoDB -.x DB
 ```
 
-## Dependency direction
+## Chiều phụ thuộc
 
-`Hosco.Api -> Hosco.Application -> Hosco.Domain`; `Hosco.Infrastructure` implements Application abstractions and depends on Domain/Application. Domain has no framework dependency.
+`Hosco.Api -> Hosco.Application -> Hosco.Domain`; `Hosco.Infrastructure` hiện thực các abstraction của Application và phụ thuộc vào Domain/Application. Domain không phụ thuộc framework.
 
-## Request flow
+## Luồng xử lý request
 
-1. Correlation middleware validates/reuses `X-Correlation-ID` or generates one.
-2. JWT middleware authenticates and policy authorization validates a reporting role.
-3. `CurrentUser` exposes `UserId`, `TenantId`, roles, and branch claims in one place.
-4. `ReportingScopeFactory` rejects a foreign branch and constrains branch managers even when `branchId` is omitted.
-5. A versioned, allow-listed reporting handler executes an EF Core query with mandatory tenant and branch predicates.
-6. Responses include query/correlation/last-updated metadata; sensitive reporting queries can create an `AuditLog`.
+1. Correlation middleware kiểm tra/tái sử dụng `X-Correlation-ID` hoặc tạo giá trị mới.
+2. JWT middleware xác thực, sau đó policy authorization kiểm tra vai trò được phép đọc báo cáo.
+3. `CurrentUser` cung cấp tập trung `UserId`, `TenantId`, các vai trò và branch claim.
+4. `ReportingScopeFactory` từ chối Branch thuộc Tenant khác và vẫn giới hạn Branch Manager khi không truyền `branchId`.
+5. Reporting handler có version, nằm trong allow-list, thực thi truy vấn EF Core với điều kiện Tenant và Branch bắt buộc.
+6. Response có metadata về query, correlation và thời điểm cập nhật gần nhất; truy vấn báo cáo nhạy cảm có thể tạo `AuditLog`.
 
-## Extension boundaries
+## Ranh giới mở rộng
 
-- Add approved KPI handlers behind `IReportingDataStore` and update the catalogs only after BA approval.
-- GD3 Alert Engine can consume the same catalog and persist `Alert`; acknowledge/resolve can use `IAuditWriter`.
-- GD4 AI Orchestrator receives a token and calls `/api/v1/reporting/...`; it cannot receive a database connection string or arbitrary SQL capability.
-- External services can add retry policies at their typed HTTP client boundary; current SQL retry is capped at three attempts.
+- Chỉ bổ sung KPI handler đã được phê duyệt phía sau `IReportingDataStore` và cập nhật catalog sau khi BA chấp thuận.
+- Alert Engine ở GD3 có thể dùng cùng catalog và lưu `Alert`; thao tác acknowledge/resolve có thể dùng `IAuditWriter`.
+- AI Orchestrator ở GD4 nhận token và gọi `/api/v1/reporting/...`; thành phần này không được nhận connection string cơ sở dữ liệu hoặc khả năng thực thi SQL tùy ý.
+- Dịch vụ bên ngoài có thể bổ sung retry policy tại ranh giới typed HTTP client; retry SQL hiện tại được giới hạn tối đa ba lần.

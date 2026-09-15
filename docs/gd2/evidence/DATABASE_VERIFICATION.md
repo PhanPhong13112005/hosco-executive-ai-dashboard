@@ -1,35 +1,34 @@
-# Database Verification
+# Xác minh cơ sở dữ liệu
 
-## Model and migration
+## Model và Migration
 
-Source inspection found exactly 16 application `DbSet`s/tables:
+Kiểm tra source cho thấy chính xác 16 `DbSet`/bảng ứng dụng:
 
-`Tenant`, `Branch`, `AppUser` (`Users` table), `Role`, `UserRole`, `UserBranch`, `Customer`, `Employee`, `Product`, `Inventory`, `Order`, `OrderItem`, `Payment`, `Refund`, `Alert`, and `AuditLog`.
+`Tenant`, `Branch`, `AppUser` (bảng `Users`), `Role`, `UserRole`, `UserBranch`, `Customer`, `Employee`, `Product`, `Inventory`, `Order`, `OrderItem`, `Payment`, `Refund`, `Alert` và `AuditLog`.
 
-The generated idempotent SQL contains 17 `CREATE TABLE` statements: 16 application tables plus EF Core's `__EFMigrationsHistory` table. It contains 26 foreign-key declarations.
+SQL idempotent đã sinh chứa 17 câu lệnh `CREATE TABLE`: 16 bảng ứng dụng cộng với bảng `__EFMigrationsHistory` của EF Core. File chứa 26 khai báo khóa ngoại.
 
-| Check | Actual result |
+| Nội dung kiểm tra | Kết quả thực tế |
 |---|---|
 | EF CLI | Entity Framework Core tools 10.0.11 |
-| Migration artifact | `20260914161316_InitialCreate` found |
+| Artifact Migration | Tìm thấy `20260914161316_InitialCreate` |
 | Model drift | `No changes have been made to the model since the last migration.` |
-| SQL generation | PASS; `sql/gd2-schema.sql` generated idempotently |
-| SQL Server | LocalDB `MSSQLLocalDB` 17.0.4025.3 was running |
-| Database apply | PASS; initial migration applied to `HoscoDev` |
-| Post-apply list | Migration listed without `(Pending)` |
+| Sinh SQL | PASS; đã sinh `sql/gd2-schema.sql` theo dạng idempotent |
+| SQL Server | LocalDB `MSSQLLocalDB` 17.0.4025.3 đang chạy |
+| Database apply | PASS; Migration đầu tiên đã apply lên `HoscoDev` |
+| Danh sách sau khi apply | Migration được liệt kê mà không có `(Pending)` |
 
-## Mapping evidence
+## Minh chứng mapping
 
-- Every tenant-owned entity derives from `TenantEntity` and receives a restrictive `TenantId -> Tenants.Id` foreign key.
-- Physical branch foreign keys exist for `Employee`, `Inventory`, `Order`, and `UserBranch`.
-- `Order` has physical relations to branch, optional customer, and employee. `OrderItem` has relations to order and product; `Payment` and `Refund` relate to order.
-- `OrderItem.UnitCostAtSale` is present and mapped as `decimal(18,2)` for historical cost snapshots.
-- Money fields use precision 18,2.
-- Verified important indexes include tenant/code, tenant/SKU, tenant/employee-code, tenant/branch/product inventory, tenant/order-number, tenant/branch/order-date, tenant/order-item, tenant/branch/refund-date, tenant/status/alert-date, and tenant/audit-date.
+- Mọi entity thuộc Tenant đều kế thừa `TenantEntity` và nhận khóa ngoại hạn chế xóa `TenantId -> Tenants.Id`.
+- Khóa ngoại Branch vật lý tồn tại cho `Employee`, `Inventory`, `Order` và `UserBranch`.
+- `Order` có quan hệ vật lý với Branch, Customer tùy chọn và Employee. `OrderItem` có quan hệ với Order và Product; `Payment` và `Refund` liên kết với Order.
+- `OrderItem.UnitCostAtSale` tồn tại và được map thành `decimal(18,2)` để lưu snapshot giá vốn lịch sử.
+- Các trường tiền tệ dùng precision 18,2.
+- Các index quan trọng đã xác minh gồm Tenant/Code, Tenant/SKU, Tenant/EmployeeCode, Tenant/Branch/Product của Inventory, Tenant/OrderNumber, Tenant/Branch/OrderDate, Tenant/OrderItem, Tenant/Branch/RefundDate, Tenant/Status/AlertDate và Tenant/AuditDate.
 
-## Integrity limitation
+## Giới hạn về toàn vẹn dữ liệu
 
-`Refund.BranchId`, `Alert.BranchId`, and `AuditLog.BranchId` are columns/index inputs but do not have physical branch foreign keys. Existing separate tenant and branch foreign keys on other tables also do not form a composite constraint proving that both IDs belong to the same tenant. This is recorded in `DEFECTS_FOUND.md`; no model or migration was changed during this audit.
+`Refund.BranchId`, `Alert.BranchId` và `AuditLog.BranchId` là cột/đầu vào index nhưng không có khóa ngoại vật lý tới Branch. Các khóa ngoại Tenant và Branch tách biệt trên những bảng khác cũng không tạo thành ràng buộc tổng hợp để chứng minh cả hai ID thuộc cùng một Tenant. Nội dung này được ghi nhận trong `DEFECTS_FOUND.md`; model và Migration không bị thay đổi trong quá trình audit.
 
-Verdict: `PARTIALLY VERIFIED` because the artifact, generation, and apply are verified, while branch referential integrity is incomplete.
-
+Kết luận: `PARTIALLY VERIFIED` (Xác minh một phần) vì artifact, quá trình sinh và apply đã được xác minh, trong khi toàn vẹn tham chiếu Branch chưa đầy đủ.
