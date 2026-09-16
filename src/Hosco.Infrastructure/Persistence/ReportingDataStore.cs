@@ -54,24 +54,38 @@ public sealed class ReportingDataStore(HoscoDbContext db) : IReportingDataStore
 
     public async Task<IReadOnlyList<ProductRankRow>> GetProductRankingAsync(ReportingScope scope, ReportingFilter filter, bool bottom, CancellationToken ct)
     {
-        if (db.Database.IsSqlite())
-        {
-            var sqliteOrders = await Orders(scope, filter).Where(x => x.Status == OrderStatus.Completed).ToListAsync(ct);
-            var ids = sqliteOrders.Where(x => (!filter.From.HasValue || x.OrderedAt >= filter.From) && (!filter.To.HasValue || x.OrderedAt <= filter.To))
-                .Select(x => x.Id).ToHashSet();
-            var items = await db.OrderItems.AsNoTracking().Include(x => x.Product)
-                .Where(x => x.TenantId == scope.TenantId && ids.Contains(x.OrderId)).ToListAsync(ct);
-            var rows = items.GroupBy(x => new { x.ProductId, x.Product.Sku, x.Product.Name, x.Product.Currency })
-                .Select(x => new ProductRankRow(x.Key.ProductId, x.Key.Sku, x.Key.Name, x.Sum(v => v.Quantity), x.Sum(v => v.LineTotal), x.Key.Currency));
-            rows = bottom ? rows.OrderBy(x => x.Amount) : rows.OrderByDescending(x => x.Amount);
-            return rows.Take(filter.PageSize).ToList();
-        }
-        var orderIds = Orders(scope, filter).Where(x => x.Status == OrderStatus.Completed).Select(x => x.Id);
-        var grouped = db.OrderItems.AsNoTracking().Where(x => x.TenantId == scope.TenantId && orderIds.Contains(x.OrderId))
-            .GroupBy(x => new { x.ProductId, x.Product.Sku, x.Product.Name, x.Product.Currency })
-            .Select(x => new ProductRankRow(x.Key.ProductId, x.Key.Sku, x.Key.Name, x.Sum(v => v.Quantity), x.Sum(v => v.LineTotal), x.Key.Currency));
-        grouped = bottom ? grouped.OrderBy(x => x.Amount) : grouped.OrderByDescending(x => x.Amount);
-        return await grouped.Take(filter.PageSize).ToListAsync(ct);
+        var completedOrderIds = (await MaterializedOrdersAsync(scope, filter, ct))
+            .Where(x => x.Status == OrderStatus.Completed)
+            .Select(x => x.Id)
+            .ToArray();
+        if (completedOrderIds.Length == 0) return [];
+
+        var items = await db.OrderItems.AsNoTracking()
+            .Where(x => x.TenantId == scope.TenantId && completedOrderIds.Contains(x.OrderId))
+            .Select(x => new
+            {
+                x.ProductId,
+                x.Product.Sku,
+                x.Product.Name,
+                x.Product.Currency,
+                x.Quantity,
+                x.LineTotal
+            })
+            .ToListAsync(ct);
+
+        var grouped = items
+            .GroupBy(x => new { x.ProductId, x.Sku, x.Name, x.Currency })
+            .Select(x => new ProductRankRow(
+                x.Key.ProductId,
+                x.Key.Sku,
+                x.Key.Name,
+                x.Sum(v => v.Quantity),
+                x.Sum(v => v.LineTotal),
+                x.Key.Currency));
+        var ranked = bottom
+            ? grouped.OrderBy(x => x.Amount).ThenBy(x => x.Sku).ThenBy(x => x.ProductId)
+            : grouped.OrderByDescending(x => x.Amount).ThenBy(x => x.Sku).ThenBy(x => x.ProductId);
+        return ranked.Take(filter.PageSize).ToList();
     }
 
     public async Task<IReadOnlyList<DangerousInventoryRow>> GetDangerousInventoryAsync(ReportingScope scope, ReportingFilter filter, CancellationToken ct)
