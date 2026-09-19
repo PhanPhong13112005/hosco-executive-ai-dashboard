@@ -35,10 +35,10 @@
 - NuGet package: EF Core SQL Server/SQLite/Design, JWT Bearer, OpenAPI/Swagger, xUnit, ASP.NET Core MVC Testing.
 - SQL Server là dependency Runtime chính; Integration Test dùng SQLite để chạy độc lập nhưng vẫn kiểm tra hành vi quan hệ.
 
-## 5. Rủi ro và blocker
+## 5. Rủi ro và blocker (đã được Final GD1 cập nhật)
 
-- Không có tài liệu BA để xác nhận công thức KPI. Vì vậy, các công thức chưa được chốt chỉ có contract/catalog/trạng thái `BlockedByBusinessDefinition`; không hard-code công thức phỏng đoán như sự thật nghiệp vụ.
-- Reporting handler chỉ triển khai các phép tổng hợp có thể biểu diễn dưới dạng technical preview; endpoint summary chỉ trả metric có trạng thái implemented. Các quyết định về refund/discount/status/ranking/cost/safety-stock cần BA xác nhận trước khi được xem là KPI production.
+- Bối cảnh trên đúng tại GD2 ban đầu. Final GD1 hiện đã chốt cả tám công thức KPI; catalog/handler đã được nâng lên version 2.0 `Implemented` và dùng chung canonical layer.
+- Các giá trị số của Smart Alert vẫn là BA đề xuất/configurable; không được nâng thành business truth bất biến.
 - SQL Server cục bộ có thể chưa được cài đặt/khởi chạy; Migration có thể được tạo và kiểm tra bằng EF tooling, còn việc apply lên SQL Server phụ thuộc connection string và máy chạy.
 - NuGet restore có thể cần kết nối mạng nếu package chưa có trong cache.
 

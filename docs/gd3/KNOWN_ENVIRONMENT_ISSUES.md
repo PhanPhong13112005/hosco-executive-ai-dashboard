@@ -36,6 +36,27 @@ Không thay đổi WDAC, không ký lại DLL và không sửa source để né 
 
 Kết quả sau không biến lần chạy bị Code Integrity chặn thành PASS. Nó cho thấy enforcement trên môi trường local có tính intermittent. Nếu Event 3033/3077 và `0x800711C7` tái diễn trước application startup, lần xác minh đó phải tiếp tục được ghi là `BLOCKED_BY_LOCAL_WDAC`.
 
+### Xác minh Final GD1 Sync ngày 2026-09-18
+
+Không thay đổi WDAC, không reinstall .NET và không sửa source để né policy:
+
+- `dotnet build Hosco.slnx --no-restore`: PASS, 0 errors; có NU1900 do vulnerability feed không truy cập được.
+- `dotnet test Hosco.slnx --no-build`: Unit 53/53 và Integration 36/36 PASS.
+- `npm.cmd run build`: PASS sau khi Vite được phép ghi file tạm ngoài sandbox.
+- Lần chạy này không tái hiện Code Integrity block. Migration mới đã apply trên SQL Server LocalDB và API runtime smoke test PASS cho Dashboard/ranking/inventory/drill-down/Alert/RBAC/workflow. Manual browser UI cũng PASS cho Dashboard/drill-down, Alert acknowledge/required-note/resolve và rule configuration.
+
+### Phân loại popup `Hosco.Api.exe` ngày 2026-09-19
+
+Một lần khởi động API trong sandbox hiển thị lại popup CLR `0xe0434352`, nhưng bằng chứng của chính lần chạy này khác incident WDAC lịch sử:
+
+- command gây lỗi: `dotnet run --no-build --project src\Hosco.Api\Hosco.Api.csproj --urls http://127.0.0.1:58645` khi chạy trong sandbox;
+- console: `Microsoft.Data.SqlClient.SqlException`, SQL Network Interfaces error `50`, `Local Database Runtime error occurred. Cannot create an automatic instance`; inner Win32 `0x89C50118`;
+- `sqllocaldb info MSSQLLocalDB` trong cùng sandbox không đọc được LocalDB instance registry configuration;
+- truy vấn Application Event Log cho `.NET Runtime`/`Application Error` và Code Integrity Operational trong cửa sổ incident không có Event `1026`/`1000` hay `3033`/`3077` mới;
+- chạy lại đúng binary và đúng database ngoài sandbox: LocalDB mở được, EF báo database đã up-to-date, API lắng nghe ở `127.0.0.1:58645`, UI loading/empty/error verification hoàn tất.
+
+Kết luận cho lần này: `0xe0434352` chỉ là mã CLR cho unhandled managed exception, không đủ để quy kết WDAC. Nguyên nhân cụ thể là giới hạn truy cập LocalDB/registry của sandbox, không phải business logic, SDK/runtime bị hỏng hay DLL ứng dụng bị Code Integrity chặn. Không sửa source, không reinstall .NET và không thay đổi WDAC.
+
 ### Kết luận và nguyên tắc xử lý
 
 Đây là hạn chế của môi trường Windows Application Control / WDAC, không phải application defect khi Event Log chứng minh DLL bị Code Integrity chặn trước khi application chạy. GD3 không sửa source để né policy, không disable WDAC/Code Integrity và không reinstall .NET.

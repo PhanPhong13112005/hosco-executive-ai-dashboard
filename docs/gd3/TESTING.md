@@ -1,42 +1,17 @@
-# Kiểm thử GD3
+# Kiểm thử GD3 / Final GD1 Sync
 
-## Baseline
+Các test bao phủ canonical KPI (discount, cancelled, full/partial return, GMV trước discount, AOV/null, COGS/GP/GM, distinct cancel-return denominator), UTC+7 boundary, severity boundary AL-01..05, per-signal severity/baseline, cooldown/dedup, workflow actor/time/note và resolve-note AL-04/05.
 
-Trước khi sửa source GD3, Restore và Build PASS; 11 Unit Test + 17 Integration Test GD2 = 28/28 PASS trong một lần chạy ngoài sandbox. Sau đó Windows Enterprise Code Integrity bắt đầu chặn ngẫu nhiên DLL local; xem `KNOWN_ENVIRONMENT_ISSUES.md`.
+Security test bao phủ Owner/BranchManager/SystemAdmin không truy cập branch chưa gán, ChainManager tenant-wide trong tenant, cross-tenant 403, BranchManager config 403 và IDOR Alert. Persistence test giữ Product Ranking materialize-before-group để không tái tạo lỗi SQL Server navigation GroupBy.
 
-## Unit Test
+Kết quả validation gần nhất trong working tree:
 
-`tests/Hosco.UnitTests` bổ sung test cho:
+- `dotnet build Hosco.slnx --no-restore`: PASS, 0 errors, 1 NU1900 môi trường.
+- `dotnet test Hosco.slnx --no-build`: Unit 53/53, Integration 36/36 PASS.
+- `npm.cmd run build`: PASS, TypeScript + Vite, 24 modules.
+- SQL Server LocalDB: migration từ database trống và API runtime smoke PASS.
+- Manual browser UI: PASS cho login, Dashboard/KPI/stale state/drill-down, Top/Bottom, dangerous inventory, Alert Center acknowledge + required note + resolve, năm rule AL-01..05 và AI Assistant disabled GD4. Các state được quan sát trực tiếp: loading; empty ở kỳ 2028 không có giao dịch (`AOV`/margin `N/A`, trend và ranking báo không có dữ liệu); error khi API dừng (`Không thể kết nối API` + `Thử lại`); permission/403 khi BranchManager lưu alert configuration.
+- NFR smoke trên LocalDB demo: 20 request `dashboard/summary`, P95 `84.71 ms` (min `59.52 ms`, median `66.08 ms`, max `126.69 ms`), dưới target 3 giây; đây là local smoke, không thay thế production load test.
+- Runtime RBAC cuối: unauthenticated 401, BranchManager truy cập branch khác 403, Owner thao tác AL-04 403, ChainManager thấy 10 rule toàn chuỗi và SystemAdmin chỉ thấy 5 rule của branch được gán.
 
-- năm evaluator AL-01..AL-05;
-- threshold boundary (`>=`, `>`, `<=`);
-- disabled rule và thời gian truyền từ `TimeProvider`;
-- dedup/cooldown trước và sau hạn;
-- khác Tenant/Branch không dedup nhầm;
-- một rule lỗi không dừng rule còn lại;
-- acknowledge/resolve lưu actor/time và transition không hợp lệ;
-- quyền update rule và Alert filter validation.
-
-Kết quả gần nhất: 24/24 PASS (11 GD2 + 13 GD3), 0 failed, 0 skipped.
-
-## Integration Test source
-
-`DashboardAndAlertApiTests` kiểm tra authentication Dashboard, Branch filter/403, invalid date, supporting endpoints, Alert 401, list/detail/acknowledge/resolve, Tenant/Branch isolation và role-protected rule config. `AlertEnginePersistenceTests` dùng SQLite quan hệ thật để kiểm tra rule tạo Alert, persist, notification và suppress lần chạy thứ hai.
-
-Targeted persistence result: 1/1 PASS. Lần chạy full gần nhất ngày 2026-09-15: 26/26 Integration Test PASS (17 GD2 + 9 GD3), 0 failed, 0 skipped. Nếu WDAC chặn một lần chạy khác trước startup, lần đó phải ghi `BLOCKED_BY_LOCAL_WDAC`, không suy diễn thành application defect hoặc PASS.
-
-Tổng lần xác minh cuối: 50/50 PASS gồm 24 Unit Test và 26 Integration Test. Restore/Build còn cảnh báo môi trường `NU1900` vì NuGet vulnerability feed không truy cập được; compile có 0 error.
-
-## Lệnh
-
-```powershell
-dotnet build Hosco.slnx --no-restore
-dotnet test tests/Hosco.UnitTests/Hosco.UnitTests.csproj --no-build
-dotnet test tests/Hosco.IntegrationTests/Hosco.IntegrationTests.csproj --no-build
-
-cd src/Hosco.Web
-npm install
-npm run build
-```
-
-Migration SQL được generate, migration GD3 apply LocalDB thành công, EF xác nhận model không có thay đổi chưa được migration. Runtime API đã xác minh login `200`, unauthenticated `401`, dashboard `200`, alert rules/list/workflow thành công và Branch ngoài scope `403`. WDAC vẫn là known intermittent environment issue; chỉ công bố kết quả theo output thực tế.
+LocalDB/SQL Server và manual browser verification chỉ được ghi PASS khi thực sự chạy. Nếu Code Integrity chặn DLL trước startup, dùng `BLOCKED_BY_LOCAL_WDAC`, không ghi application defect/PASS; xem `KNOWN_ENVIRONMENT_ISSUES.md`. Popup CLR `0xe0434352` không tự nó chứng minh WDAC: lần kiểm tra 2026-09-19 cho thấy một popup `Hosco.Api.exe` có nguyên nhân cụ thể là LocalDB không truy cập được instance registry trong sandbox (`SqlException` error 50, inner Win32 `0x89C50118`); cùng binary chạy ngoài sandbox đã startup và phục vụ UI thành công, không có Event 3033/3077 mới.

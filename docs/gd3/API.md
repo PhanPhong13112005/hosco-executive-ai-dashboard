@@ -1,43 +1,21 @@
 # API GD3
 
-Base path: `/api/v1`. Tất cả endpoint bên dưới yêu cầu Bearer JWT và có `CancellationToken` phía server.
+Base path `/api/v1`, Bearer JWT, Tenant/Branch scope server-side.
 
-## Dashboard/Reporting
+## Reporting
 
-| Method | Path | Mô tả |
-|---|---|---|
-| GET | `/reporting/dashboard/summary` | KPI card + Alert count, provisional |
-| GET | `/reporting/revenue/trend` | Alias typed cho Revenue Trend GD2 |
-| GET | `/reporting/orders/trend` | Tổng/hủy/hoàn theo ngày |
-| GET | `/reporting/products/top` | Top SKU preview |
-| GET | `/reporting/products/bottom` | Bottom SKU preview |
-| GET | `/reporting/inventory/dangerous` | Dangerous Stock preview |
-| GET | `/reporting/kpis/{metricId}/drilldown` | KPI hiện tại + trend |
-| GET | `/reporting/branches` | Branch được user hiện tại phép đọc |
+`/reporting/dashboard/summary`, `/revenue/trend`, `/orders/trend`, `/products/top`, `/products/bottom`, `/inventory/dangerous`, `/kpis/{metricId}/drilldown`, `/branches`. Summary trả `revenue`, `gmv`, `totalOrders`, nullable `aov`, `grossProfit`, nullable `grossMarginPercent`, `cancellationReturnRate`, dangerous/Alert counts. Ngày nghiệp vụ là UTC+7.
 
-Các endpoint GD2 `/reporting/kpis/summary`, `/reporting/revenue`, `/reporting/orders`, `/reporting/products/ranking` vẫn giữ nguyên.
+## Alert workflow
 
-## Alert instances
+- `GET /alerts`, `GET /alerts/{id}`: list/detail trong scope.
+- `POST /alerts/{id}/acknowledge`: lưu actor/time.
+- `POST /alerts/{id}/resolve` với `{ "note": "..." }`: note optional trừ AL-04/AL-05 bắt buộc, tối đa 2.000 ký tự.
+- AL-04 chỉ BranchManager trong assigned Branch scope được acknowledge/resolve; vai trò khác nhận 403 dù có quyền Alert nền.
+- Detail trả observed, threshold, baseline, context, scope, timestamps, actor, resolution note và `escalatedAt` để escalation chỉ phát một lần.
 
-| Method | Path | Mô tả |
-|---|---|---|
-| GET | `/alerts` | List + summary; filter Branch/severity/status/date/page |
-| GET | `/alerts/{id}` | Alert detail trong scope |
-| POST | `/alerts/{id}/acknowledge` | Open → Acknowledged; lưu actor/time |
-| POST | `/alerts/{id}/resolve` | Open/Acknowledged → Resolved; lưu actor/time |
+## Rule configuration
 
-Tài nguyên khác Tenant/Branch scope trả 404 để chống IDOR. Request thiếu JWT trả 401.
+`GET /alert-rules`; `PATCH /alert-rules/{id}` hỗ trợ enabled, default severity, threshold, baseline, window, cooldown và typed-config JSON. Owner/ChainManager/SystemAdmin được phép theo scope; BranchManager nhận 403. Giá trị số được gắn nhãn BA đề xuất/configurable.
 
-## Alert rules
-
-| Method | Path | Role |
-|---|---|---|
-| GET | `/alert-rules` | Mọi ReportingReader trong scope |
-| PATCH | `/alert-rules/{id}` | Owner, ChainManager, SystemAdmin |
-
-Payload PATCH hỗ trợ `isEnabled`, `severity`, `threshold`, `baseline`, `windowMinutes`, `cooldownMinutes`, `configJson`. Validation ngăn giá trị âm, window ngoài 1..43,200 phút, cooldown ngoài 0..43,200 phút và config JSON quá 4,000 ký tự.
-
-## Error convention
-
-401/403 do authentication/authorization middleware; 400 validation; 404 không tìm thấy/tránh IDOR; 500 lỗi ngoài dự kiến. Response lỗi có `code`, `message`, `correlationId` theo baseline GD2.
-
+Ngoài scope trả 403 khi chọn Branch, hoặc 404 cho resource-by-ID để chống IDOR. Error trả `code/message/correlationId`.

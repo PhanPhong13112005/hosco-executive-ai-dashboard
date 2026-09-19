@@ -20,6 +20,8 @@ Open ----------------> Resolved
 
 Acknowledge và Resolve lưu `UserId` từ JWT cùng timestamp từ `TimeProvider`. Alert đã Resolved không thể quay về Acknowledged. Mutation được ghi `AuditLog`.
 
+Recipient policy không gửi cho Staff: Branch Manager/Owner nhận theo Branch, Chain Manager theo Tenant và System Admin theo explicit Branch assignment. High AL-01 chưa acknowledge sau 120 phút và High AL-02 sau 60 phút được escalation đúng một lần; `EscalatedAt` là trạng thái bền vững ngăn gửi lặp.
+
 ## Deduplication và cooldown
 
 `DedupKey` không chứa dữ liệu nhạy cảm và phân biệt Tenant/Branch/entity. Repository kiểm tra `DetectedAt >= now - CooldownMinutes`; trong thời gian này không tạo bản ghi mới. Sau cooldown, cùng signal có thể tạo Alert mới. Scheduler single-instance là phạm vi MVP; production multi-instance cần unique lease/distributed lock bổ sung.
@@ -37,4 +39,3 @@ Acknowledge và Resolve lưu `UserId` từ JWT cùng timestamp từ `TimeProvide
 ```
 
 `RunOnStartup=false` tránh tạo Alert ngoài ý muốn khi API khởi động demo; worker vẫn đánh giá ở tick đầu tiên sau interval. Threshold/baseline/window/cooldown của rule nằm trong database và có thể chỉnh qua API/UI theo role.
-

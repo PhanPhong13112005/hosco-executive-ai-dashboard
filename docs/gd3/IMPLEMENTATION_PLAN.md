@@ -49,9 +49,9 @@ Workflow instance: `Open -> Acknowledged -> Resolved`; cho phép `Open -> Resolv
 - Integration Test: dashboard/auth/filter/Tenant/Branch; Alert list/detail/workflow/config/401/403/isolation; scheduler/engine không duplicate.
 - Xác minh Migration SQL/LocalDB, Runtime API và frontend production build.
 
-## 8. BA blockers
+## 8. Final GD1 synchronization
 
-Revenue recognition, GMV statuses, total-order denominator, AOV, COGS/return allocation, cancellation/return denominators, SKU ranking basis và dangerous-stock threshold chưa được BA phê duyệt. Dashboard tiếp tục gắn nhãn `ProvisionalTechnicalPreview`/`PENDING`; Alert thresholds/baselines là cấu hình demo, không phải business truth.
+KPI Dictionary đã chốt Revenue, GMV, Total Orders, AOV, COGS/GP/GM, combined cancellation-return rate, quantity ranking và dangerous stock. Implementation dùng canonical KPI layer, RefundItem, Reserved/IsKeySku/FloorPrice và UTC+7. Alert thresholds/baselines/window/cooldown vẫn là BA đề xuất/configurable; genuine pending items nằm trong `BA_BLOCKERS.md`.
 
 ## 9. Execution order
 

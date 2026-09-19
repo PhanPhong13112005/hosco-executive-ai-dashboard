@@ -17,12 +17,12 @@ JWT dùng trong môi trường phát triển chứa:
 
 | Chủ thể | Phạm vi hiệu lực |
 |---|---|
-| Owner | Tất cả Branch đang hoạt động trong Tenant của mình |
+| Owner | Chỉ Branch/Store được gán rõ ràng |
 | Branch Manager | Chỉ các Branch được phân công; nếu bỏ `branchId` thì vẫn bị giới hạn |
 | Chain Manager | Tất cả Branch đang hoạt động trong Tenant của mình |
-| System Admin | Vai trò kỹ thuật, vẫn bị giới hạn trong Tenant của mình |
+| System Admin | Chỉ Branch báo cáo được gán rõ ràng; không tự động tenant-wide |
 
-Khi có `branchId` cụ thể, `BranchScopeValidator` kiểm tra Branch thuộc Tenant trước, sau đó kiểm tra vai trò/phân công. Request tới Tenant khác hoặc Branch chưa được phân công trả về 403. Mỗi truy vấn báo cáo đều độc lập bổ sung điều kiện `TenantId == currentUser.TenantId` và điều kiện Branch đã được xác định.
+Khi có `branchId` cụ thể, `BranchScopeValidator` kiểm tra Branch thuộc Tenant trước, sau đó kiểm tra vai trò/phân công. Chỉ `ChainManager` có tenant-wide scope. Request tới Tenant khác hoặc Branch chưa được phân công trả về 403. Mỗi truy vấn báo cáo đều độc lập bổ sung điều kiện `TenantId == currentUser.TenantId` và điều kiện Branch đã được xác định. Trong MVP chưa có entity Store riêng: **Store scope = assigned Branch scope**.
 
 ## Minh chứng
 

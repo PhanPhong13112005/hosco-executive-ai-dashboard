@@ -107,7 +107,7 @@ Integration Test khởi chạy HTTP pipeline thực trên cổng local tạm th�
 
 ## Trạng thái định nghĩa nghiệp vụ
 
-Không có SRS/KPI Dictionary đã được BA phê duyệt trong workspace ban đầu. Các contract cho metric và truy vấn đã tồn tại, nhưng công thức KPI được đánh dấu `BlockedByBusinessDefinition` hoặc `ProvisionalTechnicalPreview`. Không được coi các số liệu tổng hợp preview là số liệu nghiệp vụ đã được chốt; xem [báo cáo GD2](docs/gd2/GD2_REPORT.md).
+GD2/GD3 đã được đồng bộ với Final GD1 Business Spec. KPI-01..08 là `Implemented`, dùng canonical KPI layer và business timezone UTC+7. Các threshold/baseline/window/cooldown của Alert vẫn được ghi rõ là **BA đề xuất / configurable**; xem [báo cáo GD2](docs/gd2/GD2_REPORT.md) và [Alert Catalog](docs/gd3/ALERT_RULE_CATALOG.md).
 
 ## Minh chứng xác minh GD2
 
@@ -115,7 +115,7 @@ Bộ audit GD2 có thể tái lập, kết quả Runtime, SQL Migration đã sin
 
 ## GD3 – Dashboard & Smart Alert
 
-Branch `feature/gd3-dashboard-alert` bổ sung Executive Dashboard, năm Smart Alert rule cấu hình được, scheduler 15–30 phút, persistence, deduplication/cooldown, workflow acknowledge/resolve và notification qua structured log. Các KPI/rule chưa được BA phê duyệt luôn mang nhãn provisional/PENDING.
+Branch `feature/gd3-dashboard-alert` bổ sung Executive Dashboard, năm Smart Alert rule cấu hình được, scheduler 15–30 phút, persistence, deduplication/cooldown, workflow acknowledge/resolve có note và notification qua structured log. KPI đã final; các giá trị số Alert mang nhãn BA đề xuất/configurable.
 
 Frontend React + TypeScript + Vite nằm tại `src/Hosco.Web`:
 

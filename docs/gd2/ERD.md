@@ -20,6 +20,8 @@ erDiagram
     PRODUCT ||--o{ ORDER_ITEM : sold_as
     ORDER ||--o{ PAYMENT : paid_by
     ORDER ||--o{ REFUND : refunded_by
+    REFUND ||--|{ REFUND_ITEM : allocates
+    ORDER_ITEM ||--o{ REFUND_ITEM : returned_from
     TENANT ||--o{ ALERT : receives
     BRANCH o|--o{ ALERT : concerns
     TENANT ||--o{ AUDIT_LOG : records
@@ -32,12 +34,13 @@ erDiagram
     USER_BRANCH { uniqueidentifier UserId PK_FK uniqueidentifier BranchId PK_FK }
     CUSTOMER { uniqueidentifier Id PK uniqueidentifier TenantId FK string Name string Email }
     EMPLOYEE { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier BranchId FK string EmployeeCode }
-    PRODUCT { uniqueidentifier Id PK uniqueidentifier TenantId FK string Sku decimal CurrentPrice decimal CurrentCost }
-    INVENTORY { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier BranchId FK uniqueidentifier ProductId FK int QuantityOnHand int SafetyStock }
+    PRODUCT { uniqueidentifier Id PK uniqueidentifier TenantId FK string Sku decimal CurrentPrice decimal CurrentCost decimal FloorPrice bit IsKeySku }
+    INVENTORY { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier BranchId FK uniqueidentifier ProductId FK int QuantityOnHand int ReservedQuantity int SafetyStock }
     ORDER { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier BranchId FK uniqueidentifier CustomerId FK uniqueidentifier EmployeeId FK int Status datetimeoffset OrderedAt decimal TotalAmount }
     ORDER_ITEM { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier OrderId FK uniqueidentifier ProductId FK int Quantity decimal UnitPrice decimal UnitCostAtSale decimal LineTotal }
     PAYMENT { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier OrderId FK int Status decimal Amount }
     REFUND { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier BranchId FK uniqueidentifier OrderId FK int Status decimal Amount }
+    REFUND_ITEM { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier RefundId FK uniqueidentifier OrderItemId FK int Quantity decimal ReturnedValue }
     ALERT { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier BranchId string Type int Status string PayloadJson }
     AUDIT_LOG { uniqueidentifier Id PK uniqueidentifier TenantId FK uniqueidentifier UserId uniqueidentifier BranchId string Action string QueryId string CorrelationId }
 ```
