@@ -28,9 +28,9 @@ public sealed record AlertListItem(
 
 public sealed record AlertDetail(
     Guid Id, Guid? RuleId, string RuleCode, Guid TenantId, Guid? BranchId, string Severity, string Status,
-    string Title, string Message, decimal? DetectedValue, decimal? ThresholdValue, string ContextJson,
+    string Title, string Message, decimal? DetectedValue, decimal? ThresholdValue, decimal? BaselineValue, string ContextJson,
     DateTimeOffset DetectedAt, DateTimeOffset? AcknowledgedAt, Guid? AcknowledgedBy,
-    DateTimeOffset? ResolvedAt, Guid? ResolvedBy, string DedupKey);
+    DateTimeOffset? ResolvedAt, Guid? ResolvedBy, string? ResolutionNote, DateTimeOffset? EscalatedAt, string DedupKey);
 
 public sealed record AlertSummary(int Open, int Urgent, int Handled, int Resolved);
 
@@ -50,14 +50,15 @@ public sealed record UpdateAlertRule(
     int? CooldownMinutes = null,
     string? ConfigJson = null);
 
+public sealed record ResolveAlertRequest(string? Note = null);
+
 public sealed record AlertSignal(
-    Guid? BranchId, string EntityKey, string Title, string Message,
-    decimal DetectedValue, decimal ThresholdValue, string ContextJson);
+    Guid? BranchId, string EntityKey, AlertSeverity Severity, string Title, string Message,
+    decimal DetectedValue, decimal ThresholdValue, decimal? BaselineValue, string ContextJson);
 
 public sealed record AlertCandidate(
     Guid RuleId, string RuleCode, Guid TenantId, Guid? BranchId, AlertSeverity Severity,
-    string Title, string Message, decimal DetectedValue, decimal ThresholdValue,
+    string Title, string Message, decimal DetectedValue, decimal ThresholdValue, decimal? BaselineValue,
     string DedupKey, string ContextJson, DateTimeOffset DetectedAt);
 
 public sealed record AlertEngineResult(int EvaluatedRules, int CreatedAlerts, int SuppressedDuplicates, int FailedRules);
-

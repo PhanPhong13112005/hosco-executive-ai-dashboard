@@ -61,6 +61,14 @@ public sealed class AlertEngine(
             }
         }
 
+        foreach (var alert in await repository.GetUnacknowledgedForEscalationAsync(now, cancellationToken))
+        {
+            alert.EscalatedAt = now;
+            alert.UpdatedAt = now;
+            await repository.SaveChangesAsync(cancellationToken);
+            await notifications.SendEscalationAsync(alert, cancellationToken);
+        }
+
         return new AlertEngineResult(rules.Count, created, suppressed, failed);
     }
 
@@ -78,6 +86,7 @@ public sealed class AlertEngine(
         Message = candidate.Message,
         DetectedValue = candidate.DetectedValue,
         ThresholdValue = candidate.ThresholdValue,
+        BaselineValue = candidate.BaselineValue,
         PayloadJson = candidate.ContextJson,
         DedupKey = candidate.DedupKey,
         DetectedAt = candidate.DetectedAt,

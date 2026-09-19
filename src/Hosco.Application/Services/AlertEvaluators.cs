@@ -16,14 +16,13 @@ public abstract class AlertRuleEvaluatorBase(IAlertSignalDataStore data) : IAler
         if (!rule.IsEnabled) return [];
 
         var signals = await LoadSignalsAsync(rule, now, cancellationToken);
-        return signals.Where(IsTriggered).Select(signal => new AlertCandidate(
-            rule.Id, rule.Code, rule.TenantId, signal.BranchId, rule.Severity,
+        return signals.Select(signal => new AlertCandidate(
+            rule.Id, rule.Code, rule.TenantId, signal.BranchId, signal.Severity,
             signal.Title, signal.Message, signal.DetectedValue, signal.ThresholdValue,
-            BuildDedupKey(rule, signal), signal.ContextJson, now)).ToList();
+            signal.BaselineValue, BuildDedupKey(rule, signal), signal.ContextJson, now)).ToList();
     }
 
     protected abstract Task<IReadOnlyList<AlertSignal>> LoadSignalsAsync(AlertRule rule, DateTimeOffset now, CancellationToken cancellationToken);
-    protected abstract bool IsTriggered(AlertSignal signal);
 
     private static string BuildDedupKey(AlertRule rule, AlertSignal signal) =>
         $"{rule.TenantId:N}:{signal.BranchId?.ToString("N") ?? "all"}:{rule.Code.ToUpperInvariant()}:{signal.EntityKey.ToLowerInvariant()}";
@@ -34,7 +33,6 @@ public sealed class CancellationRateAlertEvaluator(IAlertSignalDataStore data) :
     public override string RuleCode => "AL-01";
     protected override Task<IReadOnlyList<AlertSignal>> LoadSignalsAsync(AlertRule rule, DateTimeOffset now, CancellationToken ct) =>
         Data.GetCancellationRateSignalsAsync(rule, now, ct);
-    protected override bool IsTriggered(AlertSignal signal) => signal.DetectedValue >= signal.ThresholdValue;
 }
 
 public sealed class RevenueDropAlertEvaluator(IAlertSignalDataStore data) : AlertRuleEvaluatorBase(data)
@@ -42,7 +40,6 @@ public sealed class RevenueDropAlertEvaluator(IAlertSignalDataStore data) : Aler
     public override string RuleCode => "AL-02";
     protected override Task<IReadOnlyList<AlertSignal>> LoadSignalsAsync(AlertRule rule, DateTimeOffset now, CancellationToken ct) =>
         Data.GetRevenueDropSignalsAsync(rule, now, ct);
-    protected override bool IsTriggered(AlertSignal signal) => signal.DetectedValue > signal.ThresholdValue;
 }
 
 public sealed class DangerousStockAlertEvaluator(IAlertSignalDataStore data) : AlertRuleEvaluatorBase(data)
@@ -50,7 +47,6 @@ public sealed class DangerousStockAlertEvaluator(IAlertSignalDataStore data) : A
     public override string RuleCode => "AL-03";
     protected override Task<IReadOnlyList<AlertSignal>> LoadSignalsAsync(AlertRule rule, DateTimeOffset now, CancellationToken ct) =>
         Data.GetDangerousStockSignalsAsync(rule, now, ct);
-    protected override bool IsTriggered(AlertSignal signal) => signal.DetectedValue <= signal.ThresholdValue;
 }
 
 public sealed class EmployeeCancellationAlertEvaluator(IAlertSignalDataStore data) : AlertRuleEvaluatorBase(data)
@@ -58,7 +54,6 @@ public sealed class EmployeeCancellationAlertEvaluator(IAlertSignalDataStore dat
     public override string RuleCode => "AL-04";
     protected override Task<IReadOnlyList<AlertSignal>> LoadSignalsAsync(AlertRule rule, DateTimeOffset now, CancellationToken ct) =>
         Data.GetEmployeeCancellationSignalsAsync(rule, now, ct);
-    protected override bool IsTriggered(AlertSignal signal) => signal.DetectedValue >= signal.ThresholdValue;
 }
 
 public sealed class PriceDiscountAlertEvaluator(IAlertSignalDataStore data) : AlertRuleEvaluatorBase(data)
@@ -66,5 +61,4 @@ public sealed class PriceDiscountAlertEvaluator(IAlertSignalDataStore data) : Al
     public override string RuleCode => "AL-05";
     protected override Task<IReadOnlyList<AlertSignal>> LoadSignalsAsync(AlertRule rule, DateTimeOffset now, CancellationToken ct) =>
         Data.GetPriceDiscountSignalsAsync(rule, now, ct);
-    protected override bool IsTriggered(AlertSignal signal) => signal.DetectedValue >= signal.ThresholdValue;
 }

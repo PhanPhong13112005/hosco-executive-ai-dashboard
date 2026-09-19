@@ -1,5 +1,6 @@
 using Hosco.Application.Abstractions;
 using Hosco.Application.Models;
+using Hosco.Application.Services;
 using Hosco.Domain.Entities;
 using Hosco.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ public sealed class AlertRepository(HoscoDbContext db) : IAlertRepository
         if (scope.RestrictedBranchIds is not null)
         {
             var ids = scope.RestrictedBranchIds.ToArray();
-            query = query.Where(x => x.BranchId == null || ids.Contains(x.BranchId.Value));
+            query = query.Where(x => x.BranchId.HasValue && ids.Contains(x.BranchId.Value));
         }
         return await query.OrderBy(x => x.Code).ToListAsync(cancellationToken);
     }
@@ -28,7 +29,7 @@ public sealed class AlertRepository(HoscoDbContext db) : IAlertRepository
         if (scope.RestrictedBranchIds is not null)
         {
             var ids = scope.RestrictedBranchIds.ToArray();
-            query = query.Where(x => x.BranchId == null || ids.Contains(x.BranchId.Value));
+            query = query.Where(x => x.BranchId.HasValue && ids.Contains(x.BranchId.Value));
         }
         return await query.SingleOrDefaultAsync(cancellationToken);
     }
@@ -76,6 +77,22 @@ public sealed class AlertRepository(HoscoDbContext db) : IAlertRepository
         return await query.AnyAsync(x => x.DetectedAt >= since, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Alert>> GetUnacknowledgedForEscalationAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var candidates = await db.Alerts.Include(x => x.Rule).Where(x => x.Status == AlertStatus.Open && x.Severity == AlertSeverity.High &&
+            x.AcknowledgedAt == null && x.EscalatedAt == null && (x.RuleCode == "AL-01" || x.RuleCode == "AL-02"))
+            .ToListAsync(cancellationToken);
+        return candidates.Where(x => now - x.DetectedAt >= TimeSpan.FromMinutes(EscalationDelayMinutes(x)))
+            .ToList();
+    }
+
+    private static int EscalationDelayMinutes(Alert alert) => alert.RuleCode switch
+    {
+        "AL-01" => alert.Rule is null ? 120 : AlertRuleConfiguration.Cancellation(alert.Rule).EscalateUnackedMinutes,
+        "AL-02" => alert.Rule is null ? 60 : AlertRuleConfiguration.RevenueDrop(alert.Rule).EscalateUnackedMinutes,
+        _ => int.MaxValue
+    };
+
     public Task AddAsync(Alert alert, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -91,7 +108,7 @@ public sealed class AlertRepository(HoscoDbContext db) : IAlertRepository
         if (scope.RestrictedBranchIds is not null)
         {
             var ids = scope.RestrictedBranchIds.ToArray();
-            query = query.Where(x => x.BranchId == null || ids.Contains(x.BranchId.Value));
+            query = query.Where(x => x.BranchId.HasValue && ids.Contains(x.BranchId.Value));
         }
         return query;
     }

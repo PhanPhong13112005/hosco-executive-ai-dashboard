@@ -2,6 +2,7 @@ using Hosco.Application.Abstractions;
 using Hosco.Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Hosco.Api.Controllers;
 
@@ -28,7 +29,10 @@ public sealed class AlertsController(IAlertService alerts) : ControllerBase
 
     [HttpPost("{id:guid}/resolve")]
     [ProducesResponseType<AlertDetail>(StatusCodes.Status200OK)]
-    public Task<AlertDetail> Resolve(Guid id, CancellationToken ct) => alerts.ResolveAsync(id, ct);
+    public Task<AlertDetail> Resolve(
+        Guid id,
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] ResolveAlertRequest? request,
+        CancellationToken ct) => alerts.ResolveAsync(id, request ?? new ResolveAlertRequest(), ct);
 }
 
 [ApiController]
@@ -50,4 +54,3 @@ public sealed class AlertRulesController(IAlertService alerts) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<AlertRuleView> Update(Guid id, [FromBody] UpdateAlertRule update, CancellationToken ct) => alerts.UpdateRuleAsync(id, update, ct);
 }
-

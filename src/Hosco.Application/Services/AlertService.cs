@@ -2,6 +2,7 @@ using Hosco.Application.Abstractions;
 using Hosco.Application.Models;
 using Hosco.Domain.Entities;
 using Hosco.Domain.Enums;
+using System.Text.Json;
 
 namespace Hosco.Application.Services;
 
@@ -31,6 +32,7 @@ public sealed class AlertService(
     public async Task<AlertDetail> AcknowledgeAsync(Guid id, CancellationToken cancellationToken)
     {
         var alert = await GetEntityAsync(id, cancellationToken);
+        EnsureCanActOnAlert(alert);
         if (alert.Status == AlertStatus.Resolved)
             throw new ValidationException("A resolved alert cannot be acknowledged.");
         if (alert.Status == AlertStatus.Open)
@@ -46,18 +48,26 @@ public sealed class AlertService(
         return ToDetail(alert);
     }
 
-    public async Task<AlertDetail> ResolveAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<AlertDetail> ResolveAsync(Guid id, ResolveAlertRequest request, CancellationToken cancellationToken)
     {
         var alert = await GetEntityAsync(id, cancellationToken);
+        EnsureCanActOnAlert(alert);
+        var note = request.Note?.Trim();
+        if (alert.RuleCode is "AL-04" or "AL-05" && string.IsNullOrWhiteSpace(note))
+            throw new ValidationException($"resolution note is required for {alert.RuleCode}.");
+        if (note is { Length: > 2000 })
+            throw new ValidationException("resolution note cannot exceed 2000 characters.");
         if (alert.Status != AlertStatus.Resolved)
         {
             var now = timeProvider.GetUtcNow();
             alert.Status = AlertStatus.Resolved;
             alert.ResolvedAt = now;
             alert.ResolvedBy = currentUser.UserId;
+            alert.ResolutionNote = note;
             alert.UpdatedAt = now;
             await repository.SaveChangesAsync(cancellationToken);
-            await audit.WriteAsync("alert.resolve", "Alert", alert.Id.ToString(), null, alert.BranchId, new { alert.RuleCode }, cancellationToken);
+            await audit.WriteAsync("alert.resolve", "Alert", alert.Id.ToString(), null, alert.BranchId,
+                new { alert.RuleCode, resolutionNote = note }, cancellationToken);
         }
         return ToDetail(alert);
     }
@@ -99,6 +109,12 @@ public sealed class AlertService(
             throw new ForbiddenException("The current role cannot change alert configuration.");
     }
 
+    private void EnsureCanActOnAlert(Alert alert)
+    {
+        if (alert.RuleCode == "AL-04" && !currentUser.Roles.Contains(SystemRole.BranchManager))
+            throw new ForbiddenException("AL-04 can only be acknowledged or resolved by a BranchManager in scope.");
+    }
+
     private static void Validate(UpdateAlertRule update)
     {
         if (update.Threshold is < 0 || update.Baseline is < 0)
@@ -109,14 +125,20 @@ public sealed class AlertService(
             throw new ValidationException("cooldownMinutes must be between 0 and 43200.");
         if (update.ConfigJson is { Length: > 4000 })
             throw new ValidationException("configJson cannot exceed 4000 characters.");
+        if (update.ConfigJson is not null)
+        {
+            try { using var _ = JsonDocument.Parse(update.ConfigJson); }
+            catch (JsonException) { throw new ValidationException("configJson must be valid JSON."); }
+        }
     }
 
     private static AlertListItem ToListItem(Alert x) => new(x.Id, x.RuleCode, x.BranchId, x.Severity.ToString(),
         x.Status.ToString(), x.Title, x.DetectedAt, x.DetectedValue, x.ThresholdValue);
 
     private static AlertDetail ToDetail(Alert x) => new(x.Id, x.RuleId, x.RuleCode, x.TenantId, x.BranchId,
-        x.Severity.ToString(), x.Status.ToString(), x.Title, x.Message, x.DetectedValue, x.ThresholdValue,
-        x.PayloadJson, x.DetectedAt, x.AcknowledgedAt, x.AcknowledgedBy, x.ResolvedAt, x.ResolvedBy, x.DedupKey);
+        x.Severity.ToString(), x.Status.ToString(), x.Title, x.Message, x.DetectedValue, x.ThresholdValue, x.BaselineValue,
+        x.PayloadJson, x.DetectedAt, x.AcknowledgedAt, x.AcknowledgedBy, x.ResolvedAt, x.ResolvedBy,
+        x.ResolutionNote, x.EscalatedAt, x.DedupKey);
 
     private static AlertRuleView ToRuleView(AlertRule x) => new(x.Id, x.Code, x.Name, x.Description, x.Severity.ToString(),
         x.IsEnabled, x.Threshold, x.Baseline, x.WindowMinutes, x.CooldownMinutes, x.BranchId, x.ConfigJson, "PENDING");

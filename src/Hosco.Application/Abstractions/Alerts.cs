@@ -20,6 +20,7 @@ public interface IAlertRepository
     Task<PagedResult<Alert>> GetAlertsAsync(ReportingScope scope, AlertFilter filter, CancellationToken cancellationToken);
     Task<Alert?> GetAlertAsync(Guid id, ReportingScope scope, CancellationToken cancellationToken);
     Task<AlertSummary> GetSummaryAsync(ReportingScope scope, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Alert>> GetUnacknowledgedForEscalationAsync(DateTimeOffset now, CancellationToken cancellationToken);
     Task<bool> ExistsWithinCooldownAsync(Guid tenantId, string dedupKey, DateTimeOffset since, CancellationToken cancellationToken);
     Task AddAsync(Alert alert, CancellationToken cancellationToken);
     Task SaveChangesAsync(CancellationToken cancellationToken);
@@ -34,6 +35,7 @@ public interface IAlertRuleEvaluator
 public interface INotificationSender
 {
     Task SendAsync(Alert alert, CancellationToken cancellationToken);
+    Task SendEscalationAsync(Alert alert, CancellationToken cancellationToken);
 }
 
 public interface IAlertEngine
@@ -51,7 +53,7 @@ public interface IAlertService
     Task<AlertPage> ListAsync(AlertFilter filter, CancellationToken cancellationToken);
     Task<AlertDetail> GetAsync(Guid id, CancellationToken cancellationToken);
     Task<AlertDetail> AcknowledgeAsync(Guid id, CancellationToken cancellationToken);
-    Task<AlertDetail> ResolveAsync(Guid id, CancellationToken cancellationToken);
+    Task<AlertDetail> ResolveAsync(Guid id, ResolveAlertRequest request, CancellationToken cancellationToken);
     Task<IReadOnlyList<AlertRuleView>> ListRulesAsync(Guid? branchId, CancellationToken cancellationToken);
     Task<AlertRuleView> UpdateRuleAsync(Guid id, UpdateAlertRule update, CancellationToken cancellationToken);
 }

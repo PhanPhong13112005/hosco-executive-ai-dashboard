@@ -1,5 +1,6 @@
 using Hosco.Application.Abstractions;
 using Hosco.Domain.Entities;
+using Hosco.Application.Services;
 using Microsoft.Extensions.Options;
 
 namespace Hosco.Api.Alerts;
@@ -17,8 +18,18 @@ public sealed class LoggingNotificationSender(ILogger<LoggingNotificationSender>
     public Task SendAsync(Alert alert, CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "Alert notification triggered alertId={AlertId} ruleCode={RuleCode} tenantId={TenantId} branchId={BranchId} severity={Severity}",
-            alert.Id, alert.RuleCode, alert.TenantId, alert.BranchId, alert.Severity);
+            "Alert notification triggered alertId={AlertId} ruleCode={RuleCode} tenantId={TenantId} branchId={BranchId} severity={Severity} recipients={Recipients}",
+            alert.Id, alert.RuleCode, alert.TenantId, alert.BranchId, alert.Severity,
+            string.Join(',', AlertRecipientPolicy.InitialRecipients(alert)));
+        return Task.CompletedTask;
+    }
+
+    public Task SendEscalationAsync(Alert alert, CancellationToken cancellationToken)
+    {
+        logger.LogWarning(
+            "Unacknowledged alert escalated alertId={AlertId} ruleCode={RuleCode} tenantId={TenantId} branchId={BranchId} recipients={Recipients}",
+            alert.Id, alert.RuleCode, alert.TenantId, alert.BranchId,
+            string.Join(',', AlertRecipientPolicy.EscalationRecipients(alert)));
         return Task.CompletedTask;
     }
 }
