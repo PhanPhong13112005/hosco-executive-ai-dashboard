@@ -38,7 +38,7 @@ public sealed class ReportingController(
     public async Task<ActionResult<ApiEnvelope<IReadOnlyList<KpiValue>>>> Summary([FromQuery] ReportingFilter filter, CancellationToken ct)
     {
         filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
-        var values = await data.GetTechnicalPreviewSummaryAsync(scope, filter, ct);
+        var values = await data.GetKpiSummaryAsync(scope, filter, ct);
         var result = metrics.All.Select(m => new KpiValue(m.Code, m.Name, values.GetValueOrDefault(m.Code), m.Unit,
             m.Status.ToString(), m.Blocker)).ToList();
         return Ok(new ApiEnvelope<IReadOnlyList<KpiValue>>(result, await Meta(scope, filter, "kpis.summary.v1", null, ct)));
@@ -124,7 +124,7 @@ public sealed class ReportingController(
             ?? throw new KeyNotFoundException($"Unknown metric '{metricId}'.");
         var scope = await scopes.CreateAsync(filter.BranchId, ct);
         var trend = await data.GetKpiDrilldownAsync(metric.Code, scope, filter, ct);
-        var preview = await data.GetTechnicalPreviewSummaryAsync(scope, filter, ct);
+        var preview = await data.GetKpiSummaryAsync(scope, filter, ct);
         var result = new KpiDrilldown(metric.MetricId, metric.Code, metric.Name, metric.Unit,
             preview.GetValueOrDefault(metric.Code), trend, metric.Status.ToString(), metric.Blocker);
         return Ok(new ApiEnvelope<KpiDrilldown>(result, await Meta(scope, filter, $"{metric.Code}.drilldown.v1", null, ct)));

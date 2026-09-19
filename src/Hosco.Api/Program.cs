@@ -119,6 +119,9 @@ public partial class Program
         builder.Services.AddSingleton<IPasswordVerifier, Pbkdf2PasswordService>();
         builder.Services.AddSingleton<IMetricCatalog, MetricCatalog>();
         builder.Services.AddSingleton<IQueryCatalog, QueryCatalog>();
+        builder.Services.AddSingleton<IBusinessTime, VietnamBusinessTime>();
+        builder.Services.AddSingleton<IKpiCalculator, KpiCalculator>();
+        builder.Services.AddScoped<IKpiSnapshotStore, KpiSnapshotStore>();
         builder.Services.AddScoped<IReportingDataStore, ReportingDataStore>();
         builder.Services.AddScoped<IAuditWriter, AuditWriter>();
         builder.Services.AddScoped<IAlertRepository, AlertRepository>();

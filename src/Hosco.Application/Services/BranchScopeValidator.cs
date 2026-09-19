@@ -16,9 +16,7 @@ public sealed class BranchScopeValidator(ICurrentUser currentUser, IBranchDirect
         if (!await branches.BelongsToTenantAsync(branchId.Value, currentUser.TenantId, cancellationToken))
             throw new ForbiddenException("The requested branch is outside the current tenant.");
 
-        var tenantWide = currentUser.Roles.Contains(SystemRole.Owner) ||
-                         currentUser.Roles.Contains(SystemRole.ChainManager) ||
-                         currentUser.Roles.Contains(SystemRole.SystemAdmin);
+        var tenantWide = currentUser.Roles.Contains(SystemRole.ChainManager);
         if (!tenantWide && !currentUser.BranchIds.Contains(branchId.Value))
             throw new ForbiddenException("The requested branch is outside the current user's branch scope.");
     }

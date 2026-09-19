@@ -49,12 +49,14 @@ public sealed record RevenuePoint(DateOnly Date, decimal Amount, string Currency
 public sealed record OrderTrendPoint(DateOnly Date, int TotalOrders, int CancelledOrders, int ReturnedOrders);
 public sealed record OrderRow(Guid Id, string OrderNumber, Guid BranchId, string Status, DateTimeOffset OrderedAt, decimal TotalAmount, string Currency);
 public sealed record ProductRankRow(Guid ProductId, string Sku, string Name, int Quantity, decimal Amount, string Currency);
-public sealed record DangerousInventoryRow(Guid BranchId, Guid ProductId, string Sku, string ProductName, int QuantityOnHand, int SafetyStock);
+public sealed record DangerousInventoryRow(
+    Guid BranchId, Guid ProductId, string Sku, string ProductName,
+    int QuantityOnHand, int ReservedQuantity, int AvailableQuantity, int SafetyStock, bool IsKeySku);
 public sealed record KpiValue(string Code, string Name, decimal? Value, string Unit, string DefinitionStatus, string? Note);
 public sealed record BranchRow(Guid Id, string Code, string Name);
 public sealed record DashboardSummary(
-    decimal Revenue, int TotalOrders, decimal Aov, decimal GrossProfit, decimal GrossMarginPercent,
-    decimal CancellationRate, decimal ReturnRate, int DangerousStockCount, string Currency,
+    decimal Revenue, decimal Gmv, int TotalOrders, decimal? Aov, decimal GrossProfit, decimal? GrossMarginPercent,
+    decimal CancellationReturnRate, int DangerousStockCount, string Currency,
     int OpenAlerts, int UrgentAlerts, string DefinitionStatus, string Note);
 public sealed record KpiDrilldownPoint(DateOnly Date, decimal Value);
 public sealed record KpiDrilldown(
@@ -71,6 +73,6 @@ public interface IReportingDataStore
     Task<DashboardSummary> GetDashboardSummaryAsync(ReportingScope scope, ReportingFilter filter, AlertSummary alertSummary, CancellationToken cancellationToken);
     Task<IReadOnlyList<KpiDrilldownPoint>> GetKpiDrilldownAsync(string metricCode, ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
     Task<IReadOnlyList<BranchRow>> GetBranchesAsync(ReportingScope scope, CancellationToken cancellationToken);
-    Task<IReadOnlyDictionary<string, decimal>> GetTechnicalPreviewSummaryAsync(ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
+    Task<IReadOnlyDictionary<string, decimal?>> GetKpiSummaryAsync(ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
     Task<DateTimeOffset> GetLastUpdatedAtAsync(ReportingScope scope, CancellationToken cancellationToken);
 }
