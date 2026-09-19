@@ -44,19 +44,24 @@ export const auth = {
 }
 
 export type DashboardFilter = { from: string; to: string; branchId: string }
-const filterQuery = (filter: DashboardFilter) => query(filter)
+const businessRange = (filter: DashboardFilter) => ({
+  ...filter,
+  from: filter.from ? `${filter.from}T00:00:00+07:00` : '',
+  to: filter.to ? `${filter.to}T23:59:59.999+07:00` : '',
+})
+const filterQuery = (filter: DashboardFilter) => query(businessRange(filter))
 
 export const api = {
   dashboard: (filter: DashboardFilter) => request<Envelope<DashboardSummary>>(`/api/v1/reporting/dashboard/summary${filterQuery(filter)}`),
   revenue: (filter: DashboardFilter) => request<Envelope<RevenuePoint[]>>(`/api/v1/reporting/revenue/trend${filterQuery(filter)}`),
-  dangerous: (filter: DashboardFilter) => request<Envelope<DangerousInventory[]>>(`/api/v1/reporting/inventory/dangerous${query({ ...filter, pageSize: 20 })}`),
-  topProducts: (filter: DashboardFilter, bottom = false) => request<Envelope<ProductRank[]>>(`/api/v1/reporting/products/${bottom ? 'bottom' : 'top'}${query({ ...filter, pageSize: 5 })}`),
+  dangerous: (filter: DashboardFilter) => request<Envelope<DangerousInventory[]>>(`/api/v1/reporting/inventory/dangerous${query({ ...businessRange(filter), pageSize: 20 })}`),
+  topProducts: (filter: DashboardFilter, bottom = false) => request<Envelope<ProductRank[]>>(`/api/v1/reporting/products/${bottom ? 'bottom' : 'top'}${query({ ...businessRange(filter), pageSize: 10 })}`),
   branches: () => request<Envelope<Branch[]>>('/api/v1/reporting/branches'),
   drilldown: (metricId: string, filter: DashboardFilter) => request<Envelope<KpiDrilldown>>(`/api/v1/reporting/kpis/${encodeURIComponent(metricId)}/drilldown${filterQuery(filter)}`),
   alerts: (params: { branchId?: string; severity?: string; status?: string }) => request<AlertPage>(`/api/v1/alerts${query(params)}`),
   alert: (id: string) => request<AlertDetail>(`/api/v1/alerts/${id}`),
   acknowledge: (id: string) => request<AlertDetail>(`/api/v1/alerts/${id}/acknowledge`, { method: 'POST' }),
-  resolve: (id: string) => request<AlertDetail>(`/api/v1/alerts/${id}/resolve`, { method: 'POST' }),
+  resolve: (id: string, note?: string) => request<AlertDetail>(`/api/v1/alerts/${id}/resolve`, { method: 'POST', body: JSON.stringify({ note: note || null }) }),
   rules: () => request<AlertRule[]>('/api/v1/alert-rules'),
   updateRule: (id: string, update: Partial<AlertRule>) => request<AlertRule>(`/api/v1/alert-rules/${id}`, { method: 'PATCH', body: JSON.stringify(update) }),
 }

@@ -18,7 +18,7 @@ export function LoginPage({ onSuccess }: { onSuccess: () => void }) {
     <section className="login-story">
       <div className="brand light"><span className="brand-mark">H</span><div><strong>HOSCO</strong><small>EXECUTIVE CONSOLE</small></div></div>
       <div><span className="eyebrow">GD3 · SMART RETAIL OPERATIONS</span><h1>Thấy sớm.<br/>Quyết định nhanh.</h1><p>Một không gian điều hành tập trung cho chủ cửa hàng, quản lý chi nhánh và quản lý chuỗi.</p></div>
-      <small>Dữ liệu demo · KPI provisional, chờ BA phê duyệt</small>
+      <small>Dữ liệu demo · KPI Final GD1 · Alert có thể cấu hình</small>
     </section>
     <section className="login-panel">
       <form onSubmit={submit}>
@@ -32,4 +32,3 @@ export function LoginPage({ onSuccess }: { onSuccess: () => void }) {
     </section>
   </main>
 }
-

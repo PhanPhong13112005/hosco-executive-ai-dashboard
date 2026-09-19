@@ -11,11 +11,11 @@ export function Shell({ page, onNavigate, onLogout, children }: {
       <div className="brand"><span className="brand-mark">H</span><div><strong>HOSCO</strong><small>EXECUTIVE CONSOLE</small></div></div>
       <nav>
         <button className={page === 'dashboard' ? 'active' : ''} onClick={() => onNavigate('dashboard')}><span>⌁</span> Dashboard</button>
-        <button className={page === 'alerts' ? 'active' : ''} onClick={() => onNavigate('alerts')}><span>⚡</span> Smart Alerts</button>
-        <button className={page === 'rules' ? 'active' : ''} onClick={() => onNavigate('rules')}><span>⚙</span> Cấu hình rule</button>
+        <button className={page === 'alerts' ? 'active' : ''} onClick={() => onNavigate('alerts')}><span>⚡</span> Cảnh báo</button>
+        <button disabled title="Sẽ triển khai ở GD4" aria-label="Trợ lý AI, sẽ triển khai ở GD4"><span>✦</span> Trợ lý AI <small>GD4</small></button>
+        <button className={page === 'rules' ? 'active' : ''} onClick={() => onNavigate('rules')}><span>⚙</span> Cấu hình cảnh báo</button>
       </nav>
       <div className="sidebar-bottom">
-        <div className="chatbot-disabled"><span>✦</span><div><strong>AI Chatbot</strong><small>Sẽ triển khai ở GD4</small></div></div>
         <button className="logout" onClick={onLogout}>Đăng xuất</button>
       </div>
     </aside>
