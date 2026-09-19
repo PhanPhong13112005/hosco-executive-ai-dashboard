@@ -16,11 +16,14 @@ public sealed class Alert : TenantEntity
     public required string PayloadJson { get; set; }
     public decimal? DetectedValue { get; set; }
     public decimal? ThresholdValue { get; set; }
+    public decimal? BaselineValue { get; set; }
     public DateTimeOffset DetectedAt { get; set; }
     public DateTimeOffset? AcknowledgedAt { get; set; }
     public Guid? AcknowledgedBy { get; set; }
     public DateTimeOffset? ResolvedAt { get; set; }
     public Guid? ResolvedBy { get; set; }
+    public string? ResolutionNote { get; set; }
+    public DateTimeOffset? EscalatedAt { get; set; }
     public required string DedupKey { get; set; }
     public AlertRule? Rule { get; set; }
 }

@@ -25,8 +25,10 @@ public sealed class Product : TenantEntity
     public required string Name { get; set; }
     public decimal CurrentPrice { get; set; }
     public decimal CurrentCost { get; set; }
+    public decimal? FloorPrice { get; set; }
     public required string Currency { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsKeySku { get; set; }
 }
 
 public sealed class Inventory : TenantEntity
@@ -34,6 +36,7 @@ public sealed class Inventory : TenantEntity
     public Guid BranchId { get; set; }
     public Guid ProductId { get; set; }
     public int QuantityOnHand { get; set; }
+    public int ReservedQuantity { get; set; }
     public int SafetyStock { get; set; }
     public Branch Branch { get; set; } = null!;
     public Product Product { get; set; } = null!;
@@ -91,4 +94,15 @@ public sealed class Refund : TenantEntity
     public DateTimeOffset RequestedAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public Order Order { get; set; } = null!;
+    public ICollection<RefundItem> Items { get; set; } = [];
+}
+
+public sealed class RefundItem : TenantEntity
+{
+    public Guid RefundId { get; set; }
+    public Guid OrderItemId { get; set; }
+    public int Quantity { get; set; }
+    public decimal ReturnedValue { get; set; }
+    public Refund Refund { get; set; } = null!;
+    public OrderItem OrderItem { get; set; } = null!;
 }

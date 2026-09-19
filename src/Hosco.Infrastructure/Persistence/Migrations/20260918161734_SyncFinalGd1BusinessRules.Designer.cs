@@ -4,6 +4,7 @@ using Hosco.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hosco.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(HoscoDbContext))]
-    partial class HoscoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260918161734_SyncFinalGd1BusinessRules")]
+    partial class SyncFinalGd1BusinessRules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

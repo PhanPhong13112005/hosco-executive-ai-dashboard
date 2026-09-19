@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Hosco.Application.Services;
 using Hosco.Domain.Entities;
 using Hosco.Domain.Enums;
 using Hosco.Infrastructure.Security;
@@ -32,7 +33,7 @@ public static class DemoSeed
     {
         if (await db.Tenants.AnyAsync(ct))
         {
-            await EnsureAlertRulesAsync(db, await db.Tenants.AsNoTracking().Select(x => x.Id).ToArrayAsync(ct), ct);
+            await EnsureFinalBusinessFixturesAsync(db, ct);
             return;
         }
         var now = Start;
@@ -53,11 +54,11 @@ public static class DemoSeed
 
         var users = new[]
         {
-            User("owner@hosco.local", "Demo Owner", DemoSeedIds.TenantA, SystemRole.Owner, []),
+            User("owner@hosco.local", "Demo Owner", DemoSeedIds.TenantA, SystemRole.Owner, [DemoSeedIds.BranchA1]),
             User("branch.manager@hosco.local", "Demo Branch Manager", DemoSeedIds.TenantA, SystemRole.BranchManager, [DemoSeedIds.BranchA1]),
             User("chain.manager@hosco.local", "Demo Chain Manager", DemoSeedIds.TenantA, SystemRole.ChainManager, []),
-            User("admin@hosco.local", "Demo System Admin", DemoSeedIds.TenantA, SystemRole.SystemAdmin, []),
-            User("owner@fixture.local", "Other Tenant Owner", DemoSeedIds.TenantB, SystemRole.Owner, [])
+            User("admin@hosco.local", "Demo System Admin", DemoSeedIds.TenantA, SystemRole.SystemAdmin, [DemoSeedIds.BranchA1]),
+            User("owner@fixture.local", "Other Tenant Owner", DemoSeedIds.TenantB, SystemRole.Owner, [DemoSeedIds.BranchB1])
         };
         foreach (var seeded in users)
         {
@@ -77,7 +78,9 @@ public static class DemoSeed
                 Name = $"Demo Product {i}",
                 CurrentPrice = 25_000m + i * 7_500m,
                 CurrentCost = 15_000m + i * 4_000m,
+                FloorPrice = 20_000m + i * 5_000m,
                 Currency = "VND",
+                IsKeySku = i <= 3,
                 CreatedAt = now,
                 UpdatedAt = now
             }).ToArray();
@@ -114,6 +117,7 @@ public static class DemoSeed
                         BranchId = branch.Id,
                         ProductId = product.Id,
                         QuantityOnHand = index < 2 && branch.Id == tenantBranches[0].Id ? 2 + index : 35 + index,
+                        ReservedQuantity = index < 2 && branch.Id == tenantBranches[0].Id ? 1 + index : index % 3,
                         SafetyStock = 8,
                         CreatedAt = now,
                         UpdatedAt = new DateTimeOffset(2026, 6, 30, 18, 0, 0, TimeSpan.Zero)
@@ -130,7 +134,10 @@ public static class DemoSeed
                         sequence++;
                         var employee = employees.Where(x => x.BranchId == branch.Id).ElementAt(sequence % 3);
                         var status = date.Month == 6 && date.Day >= 20 && sequence % 3 == 0 ? OrderStatus.Cancelled
-                            : sequence % 29 == 0 ? OrderStatus.Returned : OrderStatus.Completed;
+                            : sequence % 37 == 0 ? OrderStatus.PartiallyReturned
+                            : sequence % 29 == 0 ? OrderStatus.Returned
+                            : sequence % 5 == 0 ? OrderStatus.Delivered
+                            : OrderStatus.Completed;
                         var orderId = DemoSeedIds.Id($"{tenant.Code}-order-{sequence}");
                         var discount = date.Month == 4 && date.Day is >= 12 and <= 14 ? 40_000m : sequence % 11 == 0 ? 5_000m : 0m;
                         var p1 = products[sequence % products.Length]; var p2 = products[(sequence + 3) % products.Length];
@@ -169,21 +176,42 @@ public static class DemoSeed
                             CreatedAt = orderedAt,
                             UpdatedAt = orderedAt
                         });
-                        if (status == OrderStatus.Returned)
+                        if (status is OrderStatus.Returned or OrderStatus.PartiallyReturned)
+                        {
+                            var refundId = DemoSeedIds.Id($"refund-{orderId}");
+                            var partial = status == OrderStatus.PartiallyReturned;
+                            var returnedValue = partial ? decimal.Round(item1.LineTotal / item1.Quantity, 2) : total;
                             db.Refunds.Add(new Refund
                             {
-                                Id = DemoSeedIds.Id($"refund-{orderId}"),
+                                Id = refundId,
                                 TenantId = tenant.Id,
                                 BranchId = branch.Id,
                                 OrderId = orderId,
                                 Status = RefundStatus.Completed,
-                                Amount = total,
+                                Amount = returnedValue,
                                 ReasonCode = "DEMO_RETURN",
                                 RequestedAt = orderedAt.AddDays(2),
                                 CompletedAt = orderedAt.AddDays(3),
                                 CreatedAt = orderedAt.AddDays(2),
                                 UpdatedAt = orderedAt.AddDays(3)
                             });
+                            db.RefundItems.Add(new RefundItem
+                            {
+                                Id = DemoSeedIds.Id($"refund-item-{refundId}-{item1.Id}"), TenantId = tenant.Id,
+                                RefundId = refundId, OrderItemId = item1.Id,
+                                Quantity = partial ? 1 : item1.Quantity,
+                                ReturnedValue = partial ? returnedValue : item1.LineTotal,
+                                CreatedAt = orderedAt.AddDays(2), UpdatedAt = orderedAt.AddDays(3)
+                            });
+                            if (!partial)
+                                db.RefundItems.Add(new RefundItem
+                                {
+                                    Id = DemoSeedIds.Id($"refund-item-{refundId}-{item2.Id}"), TenantId = tenant.Id,
+                                    RefundId = refundId, OrderItemId = item2.Id, Quantity = item2.Quantity,
+                                    ReturnedValue = item2.LineTotal,
+                                    CreatedAt = orderedAt.AddDays(2), UpdatedAt = orderedAt.AddDays(3)
+                                });
+                        }
                     }
                 }
         }
@@ -193,7 +221,7 @@ public static class DemoSeed
         AddAnomaly(db, DemoSeedIds.TenantA, DemoSeedIds.BranchA1, "low-stock", "Low stock fixture", new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero));
         AddAnomaly(db, DemoSeedIds.TenantA, DemoSeedIds.BranchA1, "employee-cancellation", "Employee cancellation fixture", new DateTimeOffset(2026, 6, 20, 0, 0, 0, TimeSpan.Zero));
         AddAnomaly(db, DemoSeedIds.TenantA, DemoSeedIds.BranchA2, "abnormal-discount", "Abnormal discount fixture", new DateTimeOffset(2026, 4, 12, 0, 0, 0, TimeSpan.Zero));
-        AddAlertRules(db, tenants.Select(x => x.Id));
+        AddAlertRules(db, branches);
         await db.SaveChangesAsync(ct);
     }
 
@@ -224,9 +252,9 @@ public static class DemoSeed
             TenantId = tenantId,
             BranchId = branchId,
             Type = type,
-            RuleId = DemoSeedIds.Id($"alert-rule-{tenantId}-{RuleCode(type)}"),
+            RuleId = DemoSeedIds.Id($"alert-rule-{tenantId}-{branchId}-{RuleCode(type)}"),
             RuleCode = RuleCode(type),
-            Severity = AlertSeverity.Warning,
+            Severity = AlertSeverity.High,
             Status = AlertStatus.Open,
             Title = title,
             Message = $"GD3 deterministic fixture for {type}.",
@@ -247,44 +275,131 @@ public static class DemoSeed
         _ => "LEGACY"
     };
 
-    private static async Task EnsureAlertRulesAsync(HoscoDbContext db, IReadOnlyCollection<Guid> tenantIds, CancellationToken ct)
+    private static async Task EnsureFinalBusinessFixturesAsync(HoscoDbContext db, CancellationToken ct)
     {
-        if (await db.AlertRules.AnyAsync(ct)) return;
-        AddAlertRules(db, tenantIds);
+        var assignments = new[]
+        {
+            ("owner@hosco.local", DemoSeedIds.BranchA1),
+            ("branch.manager@hosco.local", DemoSeedIds.BranchA1),
+            ("admin@hosco.local", DemoSeedIds.BranchA1),
+            ("owner@fixture.local", DemoSeedIds.BranchB1)
+        };
+        foreach (var (email, branchId) in assignments)
+        {
+            var userId = await db.Users.Where(x => x.Email == email).Select(x => (Guid?)x.Id).SingleOrDefaultAsync(ct);
+            if (userId.HasValue && !await db.UserBranches.AnyAsync(x => x.UserId == userId.Value && x.BranchId == branchId, ct))
+                db.UserBranches.Add(new UserBranch { UserId = userId.Value, BranchId = branchId });
+        }
+
+        var products = await db.Products.OrderBy(x => x.Sku).ToListAsync(ct);
+        foreach (var tenantProducts in products.GroupBy(x => x.TenantId))
+        {
+            var index = 0;
+            foreach (var product in tenantProducts)
+            {
+                product.IsKeySku = index++ < 3;
+                product.FloorPrice ??= decimal.Round(product.CurrentPrice * 0.75m, 0);
+            }
+        }
+        var inventories = await db.Inventories.OrderBy(x => x.ProductId).ToListAsync(ct);
+        foreach (var inventory in inventories)
+            if (inventory.ReservedQuantity == 0)
+                inventory.ReservedQuantity = inventory.QuantityOnHand <= inventory.SafetyStock ? Math.Min(1, inventory.QuantityOnHand) : 0;
+
+        var refunds = await db.Refunds.Include(x => x.Items).Include(x => x.Order).ThenInclude(x => x.Items)
+            .Where(x => x.Status == RefundStatus.Completed).ToListAsync(ct);
+        foreach (var refund in refunds.Where(x => x.Items.Count == 0))
+        {
+            var sourceItems = refund.Order.Items.OrderBy(x => x.Id).ToList();
+            if (sourceItems.Count == 0) continue;
+            var partial = refund.Order.Status == OrderStatus.PartiallyReturned;
+            foreach (var item in partial ? sourceItems.Take(1) : sourceItems)
+                db.RefundItems.Add(new RefundItem
+                {
+                    Id = DemoSeedIds.Id($"refund-item-{refund.Id}-{item.Id}"), TenantId = refund.TenantId,
+                    RefundId = refund.Id, OrderItemId = item.Id, Quantity = partial ? 1 : item.Quantity,
+                    ReturnedValue = partial ? decimal.Round(item.LineTotal / item.Quantity, 2) : item.LineTotal,
+                    CreatedAt = refund.CreatedAt, UpdatedAt = refund.UpdatedAt
+                });
+        }
+
+        var branches = await db.Branches.AsNoTracking().OrderBy(x => x.Code).ToListAsync(ct);
+        var existingRules = await db.AlertRules.ToListAsync(ct);
+        foreach (var tenantBranches in branches.GroupBy(x => x.TenantId))
+        {
+            foreach (var code in RuleCodes)
+            {
+                var global = existingRules.FirstOrDefault(x => x.TenantId == tenantBranches.Key && x.Code == code && x.BranchId == null);
+                foreach (var (branch, branchIndex) in tenantBranches.Select((branch, index) => (branch, index)))
+                {
+                    var rule = existingRules.FirstOrDefault(x => x.TenantId == tenantBranches.Key && x.Code == code && x.BranchId == branch.Id);
+                    if (rule is null && branchIndex == 0 && global is not null)
+                    {
+                        rule = global;
+                        rule.BranchId = branch.Id;
+                    }
+                    if (rule is null)
+                    {
+                        rule = CreateRule(tenantBranches.Key, branch.Id, code);
+                        db.AlertRules.Add(rule);
+                        existingRules.Add(rule);
+                    }
+                    ApplyRuleDefaults(rule);
+                }
+            }
+        }
+
+        foreach (var alert in await db.Alerts.Where(x => x.BranchId != null).ToListAsync(ct))
+        {
+            var targetRule = existingRules.FirstOrDefault(x => x.TenantId == alert.TenantId && x.BranchId == alert.BranchId && x.Code == alert.RuleCode);
+            if (targetRule is not null) alert.RuleId = targetRule.Id;
+        }
         await db.SaveChangesAsync(ct);
     }
 
-    private static void AddAlertRules(HoscoDbContext db, IEnumerable<Guid> tenantIds)
+    private static readonly string[] RuleCodes = ["AL-01", "AL-02", "AL-03", "AL-04", "AL-05"];
+
+    private static void AddAlertRules(HoscoDbContext db, IEnumerable<Branch> branches)
     {
-        foreach (var tenantId in tenantIds)
-        {
-            AddRule(db, tenantId, "AL-01", "Tỷ lệ hủy đơn bất thường", "Theo dõi tỷ lệ hủy trong cửa sổ cấu hình.", AlertSeverity.Warning, 20m, null, 10_080, 1_440);
-            AddRule(db, tenantId, "AL-02", "Doanh thu giờ cao điểm giảm", "So sánh doanh thu preview với baseline cấu hình/cửa sổ trước.", AlertSeverity.Critical, 30m, null, 10_080, 1_440);
-            AddRule(db, tenantId, "AL-03", "SKU quan trọng tồn kho thấp", "Theo dõi QuantityOnHand theo ngưỡng cấu hình/safety stock.", AlertSeverity.Critical, 8m, null, 15, 720);
-            AddRule(db, tenantId, "AL-04", "Nhân viên có hủy/hoàn bất thường", "Theo dõi số giao dịch hủy/hoàn theo nhân viên.", AlertSeverity.Warning, 5m, null, 10_080, 1_440);
-            AddRule(db, tenantId, "AL-05", "Giá bán hoặc giảm giá bất thường", "Theo dõi tỷ lệ giảm giá cấp đơn hàng.", AlertSeverity.Warning, 25m, null, 10_080, 1_440);
-        }
+        foreach (var branch in branches)
+            foreach (var code in RuleCodes)
+                db.AlertRules.Add(CreateRule(branch.TenantId, branch.Id, code));
     }
 
-    private static void AddRule(HoscoDbContext db, Guid tenantId, string code, string name, string description,
-        AlertSeverity severity, decimal threshold, decimal? baseline, int windowMinutes, int cooldownMinutes)
+    private static AlertRule CreateRule(Guid tenantId, Guid branchId, string code)
     {
-        db.AlertRules.Add(new AlertRule
+        var rule = new AlertRule
         {
-            Id = DemoSeedIds.Id($"alert-rule-{tenantId}-{code}"),
+            Id = DemoSeedIds.Id($"alert-rule-{tenantId}-{branchId}-{code}"),
             TenantId = tenantId,
-            Code = code,
-            Name = name,
-            Description = description,
-            Severity = severity,
-            IsEnabled = true,
-            Threshold = threshold,
-            Baseline = baseline,
-            WindowMinutes = windowMinutes,
-            CooldownMinutes = cooldownMinutes,
-            ConfigJson = JsonSerializer.Serialize(new { baStatus = "PENDING", source = "GD3_DEMO_CONFIG" }),
+            BranchId = branchId,
+            Code = code, Name = code, Description = code, ConfigJson = "{}",
             CreatedAt = Start,
             UpdatedAt = Start
-        });
+        };
+        ApplyRuleDefaults(rule);
+        return rule;
+    }
+
+    private static void ApplyRuleDefaults(AlertRule rule)
+    {
+        var values = rule.Code switch
+        {
+            "AL-01" => ("Tỷ lệ hủy đơn bất thường", "So sánh tỷ lệ hủy 1 ngày với baseline 7 ngày cùng chi nhánh.", AlertSeverity.High, 30m, (decimal?)50m, 1_440, 240),
+            "AL-02" => ("Doanh thu giờ cao điểm giảm", "So sánh khung 11:00–13:00 và 17:00–20:00 UTC+7 với 7 ngày trước.", AlertSeverity.High, 70m, (decimal?)50m, 180, 120),
+            "AL-03" => ("SKU quan trọng tồn kho thấp", "IsKeySku với Available = OnHand - Reserved so với SafetyStock.", AlertSeverity.Medium, 50m, (decimal?)null, 30, 360),
+            "AL-04" => ("Nhân viên có hủy/hoàn bất thường", "So sánh Rate_NV 1 ngày với baseline chi nhánh 7 ngày hoặc ngưỡng tuyệt đối.", AlertSeverity.Medium, 15m, (decimal?)null, 1_440, 1_440),
+            "AL-05" => ("Giá bán hoặc giảm giá bất thường", "Kiểm tra discount và FloorPrice theo SKU.", AlertSeverity.High, 40m, (decimal?)60m, 1_440, 60),
+            _ => throw new InvalidOperationException($"Unknown alert rule {rule.Code}.")
+        };
+        rule.Name = values.Item1;
+        rule.Description = values.Item2;
+        rule.Severity = values.Item3;
+        rule.Threshold = values.Item4;
+        rule.Baseline = values.Item5;
+        rule.WindowMinutes = values.Item6;
+        rule.CooldownMinutes = values.Item7;
+        rule.IsEnabled = true;
+        rule.ConfigJson = AlertRuleConfiguration.DefaultJson(rule.Code);
     }
 }
