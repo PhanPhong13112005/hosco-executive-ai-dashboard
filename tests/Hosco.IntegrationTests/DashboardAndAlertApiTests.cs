@@ -13,6 +13,8 @@ public sealed class DashboardAndAlertApiTests(ApiFixture fixture)
     private static readonly Guid BranchA2 = TestId("tenant-a-branch-2");
     private static readonly Guid CancellationAlert = TestId($"alert-{TenantA}-cancellation-spike");
     private static readonly Guid DiscountAlert = TestId($"alert-{TenantA}-abnormal-discount");
+    private static readonly Guid EmployeeAlert = TestId($"alert-{TenantA}-employee-cancellation");
+    private static readonly Guid BranchA2Al01Rule = TestId($"alert-rule-{TenantA}-{BranchA2}-AL-01");
 
     [Fact]
     public async Task Dashboard_requires_authentication()
@@ -30,7 +32,9 @@ public sealed class DashboardAndAlertApiTests(ApiFixture fixture)
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal(BranchA1, json.RootElement.GetProperty("meta").GetProperty("branchId").GetGuid());
-        Assert.Equal("ProvisionalTechnicalPreview", json.RootElement.GetProperty("data").GetProperty("definitionStatus").GetString());
+        Assert.Equal("ImplementedFinalGd1", json.RootElement.GetProperty("data").GetProperty("definitionStatus").GetString());
+        Assert.True(json.RootElement.GetProperty("data").TryGetProperty("gmv", out _));
+        Assert.True(json.RootElement.GetProperty("data").TryGetProperty("cancellationReturnRate", out _));
 
         var forbidden = await Send(HttpMethod.Get, $"/api/v1/reporting/dashboard/summary?branchId={BranchA2}", token);
         Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
@@ -101,6 +105,26 @@ public sealed class DashboardAndAlertApiTests(ApiFixture fixture)
     }
 
     [Fact]
+    public async Task Al04_workflow_is_branch_manager_only_and_requires_resolution_note()
+    {
+        var owner = await Login("owner@hosco.local");
+        Assert.Equal(HttpStatusCode.Forbidden,
+            (await Send(HttpMethod.Post, $"/api/v1/alerts/{EmployeeAlert}/acknowledge", owner)).StatusCode);
+
+        var manager = await Login("branch.manager@hosco.local");
+        Assert.Equal(HttpStatusCode.OK,
+            (await Send(HttpMethod.Post, $"/api/v1/alerts/{EmployeeAlert}/acknowledge", manager)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await Send(HttpMethod.Post, $"/api/v1/alerts/{EmployeeAlert}/resolve", manager)).StatusCode);
+        var resolved = await Send(HttpMethod.Post, $"/api/v1/alerts/{EmployeeAlert}/resolve", manager,
+            new { note = "Đã xác minh và xử lý giao dịch bất thường." });
+        Assert.Equal(HttpStatusCode.OK, resolved.StatusCode);
+        using var json = JsonDocument.Parse(await resolved.Content.ReadAsStringAsync());
+        Assert.Equal("Resolved", json.RootElement.GetProperty("status").GetString());
+        Assert.Equal("Đã xác minh và xử lý giao dịch bất thường.", json.RootElement.GetProperty("resolutionNote").GetString());
+    }
+
+    [Fact]
     public async Task Alert_rule_list_and_role_protected_configuration_execute()
     {
         var ownerToken = await Login("owner@hosco.local");
@@ -115,6 +139,30 @@ public sealed class DashboardAndAlertApiTests(ApiFixture fixture)
         Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
         var updated = await Send(HttpMethod.Patch, $"/api/v1/alert-rules/{ruleId}", ownerToken, new { isEnabled = true });
         Assert.Equal(HttpStatusCode.OK, updated.StatusCode);
+
+        var chainToken = await Login("chain.manager@hosco.local");
+        var chainList = await Send(HttpMethod.Get, "/api/v1/alert-rules", chainToken);
+        Assert.Equal(HttpStatusCode.OK, chainList.StatusCode);
+        using (var chainJson = JsonDocument.Parse(await chainList.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal(10, chainJson.RootElement.GetArrayLength());
+            var chainRuleId = chainJson.RootElement[0].GetProperty("id").GetGuid();
+            Assert.Equal(HttpStatusCode.OK,
+                (await Send(HttpMethod.Patch, $"/api/v1/alert-rules/{chainRuleId}", chainToken, new { isEnabled = true })).StatusCode);
+        }
+
+        var adminToken = await Login("admin@hosco.local");
+        var adminList = await Send(HttpMethod.Get, "/api/v1/alert-rules", adminToken);
+        Assert.Equal(HttpStatusCode.OK, adminList.StatusCode);
+        using (var adminJson = JsonDocument.Parse(await adminList.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal(5, adminJson.RootElement.GetArrayLength());
+            var adminRuleId = adminJson.RootElement[0].GetProperty("id").GetGuid();
+            Assert.Equal(HttpStatusCode.OK,
+                (await Send(HttpMethod.Patch, $"/api/v1/alert-rules/{adminRuleId}", adminToken, new { isEnabled = true })).StatusCode);
+        }
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await Send(HttpMethod.Patch, $"/api/v1/alert-rules/{BranchA2Al01Rule}", adminToken, new { isEnabled = true })).StatusCode);
     }
 
     private async Task<string> Login(string email)

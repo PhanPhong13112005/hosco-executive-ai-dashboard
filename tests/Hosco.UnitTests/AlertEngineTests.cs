@@ -9,6 +9,20 @@ namespace Hosco.UnitTests;
 public sealed class AlertEngineTests
 {
     [Fact]
+    public void Al04_recipient_policy_targets_branch_manager_and_never_staff()
+    {
+        var alert = new Alert
+        {
+            Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), BranchId = Guid.NewGuid(), RuleCode = "AL-04", Type = "AL-04",
+            Severity = AlertSeverity.Medium, Status = AlertStatus.Open, Title = "test", Message = "test", PayloadJson = "{}",
+            DedupKey = "test", DetectedAt = DateTimeOffset.UtcNow, CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow
+        };
+        Assert.Equal([SystemRole.BranchManager], AlertRecipientPolicy.InitialRecipients(alert));
+        alert.Severity = AlertSeverity.High;
+        Assert.Equal([SystemRole.BranchManager, SystemRole.ChainManager], AlertRecipientPolicy.InitialRecipients(alert));
+    }
+
+    [Fact]
     public async Task Same_alert_is_suppressed_within_cooldown_and_allowed_afterwards()
     {
         var clock = new FakeClock(new DateTimeOffset(2026, 6, 30, 12, 0, 0, TimeSpan.Zero));
@@ -54,6 +68,27 @@ public sealed class AlertEngineTests
         Assert.Equal(1, result.CreatedAlerts);
     }
 
+    [Fact]
+    public async Task Unacknowledged_high_alert_is_escalated_once_after_rule_delay()
+    {
+        var now = new DateTimeOffset(2026, 7, 1, 12, 0, 0, TimeSpan.Zero);
+        var repository = new MemoryRepository([]);
+        repository.Alerts.Add(new Alert
+        {
+            Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), BranchId = Guid.NewGuid(), RuleCode = "AL-01", Type = "AL-01",
+            Severity = AlertSeverity.High, Status = AlertStatus.Open, Title = "test", Message = "test", PayloadJson = "{}",
+            DedupKey = "test", DetectedAt = now.AddHours(-2), CreatedAt = now.AddHours(-2), UpdatedAt = now.AddHours(-2)
+        });
+        var notifications = new NotificationSpy();
+        var engine = new AlertEngine(repository, [], notifications, new FakeClock(now));
+
+        await engine.EvaluateAllAsync(default);
+        await engine.EvaluateAllAsync(default);
+
+        Assert.Equal(now, repository.Alerts[0].EscalatedAt);
+        Assert.Equal(1, notifications.EscalationCount);
+    }
+
     private static AlertRule Rule(Guid tenantId, Guid branchId, int cooldown) => new()
     {
         Id = Guid.NewGuid(),
@@ -62,7 +97,7 @@ public sealed class AlertEngineTests
         Code = "AL-01",
         Name = "test",
         Description = "test",
-        Severity = AlertSeverity.Warning,
+        Severity = AlertSeverity.High,
         IsEnabled = true,
         Threshold = 10,
         WindowMinutes = 60,
@@ -77,7 +112,7 @@ public sealed class AlertEngineTests
         public string RuleCode => "AL-01";
         public Task<IReadOnlyList<AlertCandidate>> EvaluateAsync(AlertRule rule, DateTimeOffset now, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<AlertCandidate>>([new(rule.Id, rule.Code, rule.TenantId, rule.BranchId,
-                rule.Severity, "title", "message", 20, 10,
+                rule.Severity, "title", "message", 20, 10, 5,
                 $"{rule.TenantId:N}:{rule.BranchId:N}:{rule.Code}:entity", "{}", now)]);
     }
 
@@ -91,7 +126,9 @@ public sealed class AlertEngineTests
     private sealed class NotificationSpy : INotificationSender
     {
         public int Count { get; private set; }
+        public int EscalationCount { get; private set; }
         public Task SendAsync(Alert alert, CancellationToken ct) { Count++; return Task.CompletedTask; }
+        public Task SendEscalationAsync(Alert alert, CancellationToken ct) { EscalationCount++; return Task.CompletedTask; }
     }
 
     private sealed class MemoryRepository(IReadOnlyList<AlertRule> rules) : IAlertRepository
@@ -107,5 +144,9 @@ public sealed class AlertEngineTests
         public Task<PagedResult<Alert>> GetAlertsAsync(ReportingScope scope, AlertFilter filter, CancellationToken ct) => Task.FromResult(new PagedResult<Alert>(Alerts, Alerts.Count));
         public Task<Alert?> GetAlertAsync(Guid id, ReportingScope scope, CancellationToken ct) => Task.FromResult(Alerts.FirstOrDefault(x => x.Id == id));
         public Task<AlertSummary> GetSummaryAsync(ReportingScope scope, CancellationToken ct) => Task.FromResult(new AlertSummary(0, 0, 0, 0));
+        public Task<IReadOnlyList<Alert>> GetUnacknowledgedForEscalationAsync(DateTimeOffset now, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Alert>>(Alerts.Where(x => x.Status == AlertStatus.Open && x.Severity == AlertSeverity.High &&
+                x.AcknowledgedAt == null && x.EscalatedAt == null && (x.RuleCode is "AL-01" or "AL-02") &&
+                now - x.DetectedAt >= (x.RuleCode == "AL-01" ? TimeSpan.FromHours(2) : TimeSpan.FromHours(1))).ToList());
     }
 }

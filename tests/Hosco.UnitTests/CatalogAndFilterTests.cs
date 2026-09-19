@@ -7,11 +7,11 @@ namespace Hosco.UnitTests;
 public sealed class CatalogAndFilterTests
 {
     [Fact]
-    public void Metric_catalog_contains_all_eight_kpis_and_marks_unapproved_definitions()
+    public void Metric_catalog_contains_all_eight_final_kpis_as_implemented()
     {
         var catalog = new MetricCatalog();
         Assert.Equal(8, catalog.All.Count);
-        Assert.All(catalog.All, x => Assert.Equal(DefinitionStatus.BlockedByBusinessDefinition, x.Status));
+        Assert.All(catalog.All, x => Assert.Equal(DefinitionStatus.Implemented, x.Status));
         Assert.Equal("KPI-01", catalog.Get("revenue").MetricId);
     }
 
@@ -20,6 +20,8 @@ public sealed class CatalogAndFilterTests
     {
         var catalog = new QueryCatalog();
         Assert.Equal("orders.list.v1", catalog.Get("orders.list.v1").QueryId);
+        Assert.Equal("1.0", catalog.Get("orders.list.v1").Version);
+        Assert.All(catalog.All.Where(x => x.MetricCode is not null), x => Assert.Equal("2.0", x.Version));
         Assert.Throws<KeyNotFoundException>(() => catalog.Get("raw-sql.user-input"));
     }
 

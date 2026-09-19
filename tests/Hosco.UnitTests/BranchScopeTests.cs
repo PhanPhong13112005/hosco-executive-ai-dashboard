@@ -32,6 +32,16 @@ public sealed class BranchScopeTests
         await validator.EnsureCanAccessAsync(other, default);
     }
 
+    [Theory]
+    [InlineData(SystemRole.Owner)]
+    [InlineData(SystemRole.SystemAdmin)]
+    public async Task Owner_and_system_admin_require_explicit_branch_assignment(SystemRole role)
+    {
+        var other = Guid.NewGuid();
+        var validator = new BranchScopeValidator(User(role, [Allowed]), new Directory(Tenant, new HashSet<Guid> { Allowed, other }));
+        await Assert.ThrowsAsync<ForbiddenException>(() => validator.EnsureCanAccessAsync(other, default));
+    }
+
     [Fact]
     public async Task Cross_tenant_branch_is_always_forbidden()
     {

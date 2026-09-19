@@ -23,7 +23,7 @@ public sealed class AlertServiceTests
         Assert.Equal(clock.GetUtcNow(), acknowledged.AcknowledgedAt);
 
         clock.Advance(TimeSpan.FromMinutes(5));
-        var resolved = await service.ResolveAsync(alert.Id, default);
+        var resolved = await service.ResolveAsync(alert.Id, new ResolveAlertRequest("completed"), default);
         Assert.Equal("Resolved", resolved.Status);
         Assert.Equal(userId, resolved.ResolvedBy);
         Assert.Equal(clock.GetUtcNow(), resolved.ResolvedAt);
@@ -35,6 +35,30 @@ public sealed class AlertServiceTests
         var tenant = Guid.NewGuid(); var alert = NewAlert(tenant); alert.Status = AlertStatus.Resolved;
         var service = Service(new Repository(alert), new User(tenant, Guid.NewGuid(), new HashSet<SystemRole> { SystemRole.Owner }), new Clock(DateTimeOffset.UtcNow));
         await Assert.ThrowsAsync<ValidationException>(() => service.AcknowledgeAsync(alert.Id, default));
+    }
+
+    [Theory]
+    [InlineData("AL-04")]
+    [InlineData("AL-05")]
+    public async Task Resolve_requires_note_for_employee_and_price_rules(string ruleCode)
+    {
+        var tenant = Guid.NewGuid(); var alert = NewAlert(tenant); alert.RuleCode = ruleCode;
+        var role = ruleCode == "AL-04" ? SystemRole.BranchManager : SystemRole.Owner;
+        var service = Service(new Repository(alert), new User(tenant, Guid.NewGuid(), new HashSet<SystemRole> { role }), new Clock(DateTimeOffset.UtcNow));
+        await Assert.ThrowsAsync<ValidationException>(() => service.ResolveAsync(alert.Id, new ResolveAlertRequest(), default));
+        var resolved = await service.ResolveAsync(alert.Id, new ResolveAlertRequest("Đã kiểm tra và xử lý."), default);
+        Assert.Equal("Đã kiểm tra và xử lý.", resolved.ResolutionNote);
+    }
+
+    [Theory]
+    [InlineData(SystemRole.Owner)]
+    [InlineData(SystemRole.ChainManager)]
+    [InlineData(SystemRole.SystemAdmin)]
+    public async Task Al04_actions_are_restricted_to_branch_manager(SystemRole role)
+    {
+        var tenant = Guid.NewGuid(); var alert = NewAlert(tenant); alert.RuleCode = "AL-04";
+        var service = Service(new Repository(alert), new User(tenant, Guid.NewGuid(), new HashSet<SystemRole> { role }), new Clock(DateTimeOffset.UtcNow));
+        await Assert.ThrowsAsync<ForbiddenException>(() => service.AcknowledgeAsync(alert.Id, default));
     }
 
     [Fact]
@@ -61,7 +85,7 @@ public sealed class AlertServiceTests
         TenantId = tenant,
         RuleCode = "AL-01",
         Type = "AL-01",
-        Severity = AlertSeverity.Warning,
+        Severity = AlertSeverity.High,
         Status = AlertStatus.Open,
         Title = "title",
         Message = "message",
@@ -105,6 +129,7 @@ public sealed class AlertServiceTests
         public Task<AlertRule?> GetRuleAsync(Guid id, ReportingScope scope, CancellationToken ct) => Task.FromResult<AlertRule?>(null);
         public Task<PagedResult<Alert>> GetAlertsAsync(ReportingScope scope, AlertFilter filter, CancellationToken ct) => Task.FromResult(new PagedResult<Alert>(_alerts, _alerts.Count));
         public Task<AlertSummary> GetSummaryAsync(ReportingScope scope, CancellationToken ct) => Task.FromResult(new AlertSummary(1, 0, 0, 0));
+        public Task<IReadOnlyList<Alert>> GetUnacknowledgedForEscalationAsync(DateTimeOffset now, CancellationToken ct) => Task.FromResult<IReadOnlyList<Alert>>([]);
         public Task<bool> ExistsWithinCooldownAsync(Guid tenantId, string dedupKey, DateTimeOffset since, CancellationToken ct) => Task.FromResult(false);
         public Task AddAsync(Alert item, CancellationToken ct) { _alerts.Add(item); return Task.CompletedTask; }
     }

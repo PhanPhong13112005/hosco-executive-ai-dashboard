@@ -28,7 +28,8 @@ public sealed class ReportingApiTests(ApiFixture fixture)
     {
         var token = await Login("branch.manager@hosco.local");
         var response = await GetOrders(token, $"branchId={BranchA1}&pageSize=20");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected 200, received {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var rows = json.RootElement.GetProperty("data").EnumerateArray().ToArray();
         Assert.NotEmpty(rows);
@@ -40,6 +41,15 @@ public sealed class ReportingApiTests(ApiFixture fixture)
     {
         var token = await Login("branch.manager@hosco.local");
         var response = await GetOrders(token, $"branchId={BranchA2}");
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("owner@hosco.local")]
+    [InlineData("admin@hosco.local")]
+    public async Task Owner_and_system_admin_cannot_read_unassigned_branch(string email)
+    {
+        var response = await GetOrders(await Login(email), $"branchId={BranchA2}");
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
@@ -65,8 +75,7 @@ public sealed class ReportingApiTests(ApiFixture fixture)
         var token = await Login("owner@hosco.local");
         var response = await GetOrders(token, "pageSize=200");
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var allowed = new HashSet<Guid> { BranchA1, BranchA2 };
-        Assert.All(json.RootElement.GetProperty("data").EnumerateArray(), x => Assert.Contains(x.GetProperty("branchId").GetGuid(), allowed));
+        Assert.All(json.RootElement.GetProperty("data").EnumerateArray(), x => Assert.Equal(BranchA1, x.GetProperty("branchId").GetGuid()));
     }
 
     [Fact]
@@ -116,7 +125,8 @@ public sealed class ReportingApiTests(ApiFixture fixture)
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var response = await fixture.Client.SendAsync(request);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected 200, received {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}\n{fixture.ProcessOutput}");
     }
 
     [Fact]
