@@ -1,0 +1,13 @@
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.11)
+[xUnit.net 00:00:00.09]   Discovering: Hosco.IntegrationTests
+[xUnit.net 00:00:00.14]   Discovered:  Hosco.IntegrationTests
+[xUnit.net 00:00:00.17]   Starting:    Hosco.IntegrationTests
+[xUnit.net 00:00:09.66]   Finished:    Hosco.IntegrationTests
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Dashboard_concurrent_sqlite_load_does_not_lock_database [1 s]
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 10.2181 Seconds

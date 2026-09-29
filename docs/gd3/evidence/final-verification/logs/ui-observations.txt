@@ -1,0 +1,26 @@
+GD3 FINAL UI OBSERVATIONS
+Captured: 2026-09-29, Asia/Saigon
+Commit: 9c7dae510da8e8f102747253fb253425dcbe7df0
+
+Browser: Codex in-app browser
+Frontend: http://127.0.0.1:5176
+API: http://127.0.0.1:5083
+
+1. Owner login succeeded with the Development demo account.
+2. SQLite provider: Dashboard showed "Khong tai duoc dashboard / An unexpected error occurred". API log showed HTTP 500 and SQLite Error 5 "database is locked" while the UI loaded endpoints concurrently.
+3. InMemory provider: Dashboard loaded with the 2026-01-01 to 2026-06-30 range and the permitted HOSCO Ho Chi Minh branch.
+4. Dashboard displayed Revenue 77,710,000 VND; GMV 78,230,000 VND; Orders 510; AOV 152,373 VND; Gross Profit 33,804,000 VND; Gross Margin 43.5%; Cancellation/Return Rate 8.25%; Dangerous Stock 2.
+5. Revenue trend rendered. Top/Bottom rankings and two dangerous-stock SKUs rendered.
+6. KPI-01 drill-down opened with Revenue 77,710,000, selected range, UTC+7, and a trend chart.
+7. Empty-state range 2028-01-01 to 2028-12-31 displayed zero monetary/count KPIs, N/A AOV and margin, zero cancellation/return rate, and no trend/ranking data without crashing. Dangerous stock remained 2 because it is current inventory state.
+8. With the API intentionally stopped, Dashboard displayed "Khong the ket noi API" and a retry button. After API restart, retry restored the dashboard.
+9. Excel and PDF buttons each triggered a real authenticated /dashboard/export request with HTTP 200. The in-app browser did not expose a download-event path, so independently downloaded copies were saved through the same authenticated endpoint and validated under exports/.
+10. Alert Center displayed six open alerts after scheduler execution.
+11. Alert detail displayed rule, status, branch, actual value, threshold, time, and notification delivery.
+12. Runtime AL-03 delivery displayed channel telegram, purpose Initial, status Skipped, attempt count 1, and "Telegram channel is disabled."
+13. Alert configuration displayed AL-01 through AL-05 and their configurable values.
+14. BranchManager attempted to save AL-01 and the UI displayed "Ban khong co quyen cau hinh / The authenticated user is not authorized for this operation." API returned 403.
+15. Swagger UI loaded and listed Auth, Reporting, Alerts, AlertRules, dashboard summary/export, drill-down, and notification-delivery schemas.
+
+Screenshot persistence limitation:
+The browser automation returned genuine live screenshots inline in the verification transcript, but it did not expose a supported filesystem-save path. Repository PNGs are therefore marked SCREENSHOT_UNAVAILABLE. No mock or fabricated screenshots were created.

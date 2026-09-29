@@ -1,0 +1,71 @@
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.11)
+[xUnit.net 00:00:00.27]   Discovering: Hosco.IntegrationTests
+[xUnit.net 00:00:00.32]   Discovered:  Hosco.IntegrationTests
+[xUnit.net 00:00:00.35]   Starting:    Hosco.IntegrationTests
+[xUnit.net 00:00:07.39]     Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted [FAIL]
+[xUnit.net 00:00:07.39]       System.NotSupportedException : SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type, or use LINQ to Objects to order the results on the client side.
+[xUnit.net 00:00:07.40]       Stack Trace:
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Sqlite.Query.Internal.SqliteQueryableMethodTranslatingExpressionVisitor.TranslateOrderBy(ShapedQueryExpression source, LambdaExpression keySelector, Boolean ascending)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutorExpression[TResult](Expression query)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass11_0`1.<ExecuteCore>b__0()
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteCore[TResult](Expression query, Boolean async, CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]            at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+[xUnit.net 00:00:07.40]            at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]         D:\Code\hosco-executive-ai-dashboard\src\Hosco.Infrastructure\Persistence\NotificationDeliveryStore.cs(38,0): at Hosco.Infrastructure.Persistence.NotificationDeliveryStore.GetRetryableAsync(DateTimeOffset now, Int32 limit, CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]         D:\Code\hosco-executive-ai-dashboard\src\Hosco.Application\Services\NotificationDispatcher.cs(26,0): at Hosco.Application.Services.NotificationDispatcher.RetryPendingAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:07.40]         D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs(51,0): at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted()
+[xUnit.net 00:00:07.40]         D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs(56,0): at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted()
+[xUnit.net 00:00:07.40]         D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs(56,0): at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted()
+[xUnit.net 00:00:07.40]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:07.42]   Finished:    Hosco.IntegrationTests
+  Failed Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted [6 s]
+  Error Message:
+   System.NotSupportedException : SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type, or use LINQ to Objects to order the results on the client side.
+  Stack Trace:
+     at Microsoft.EntityFrameworkCore.Sqlite.Query.Internal.SqliteQueryableMethodTranslatingExpressionVisitor.TranslateOrderBy(ShapedQueryExpression source, LambdaExpression keySelector, Boolean ascending)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutorExpression[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass11_0`1.<ExecuteCore>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteCore[TResult](Expression query, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Hosco.Infrastructure.Persistence.NotificationDeliveryStore.GetRetryableAsync(DateTimeOffset now, Int32 limit, CancellationToken cancellationToken) in D:\Code\hosco-executive-ai-dashboard\src\Hosco.Infrastructure\Persistence\NotificationDeliveryStore.cs:line 38
+   at Hosco.Application.Services.NotificationDispatcher.RetryPendingAsync(CancellationToken cancellationToken) in D:\Code\hosco-executive-ai-dashboard\src\Hosco.Application\Services\NotificationDispatcher.cs:line 26
+   at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs:line 51
+   at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs:line 56
+   at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs:line 56
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 9.0660 Seconds

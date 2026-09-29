@@ -1,0 +1,183 @@
+XLSX_STATUS=200 XLSX_BYTES=2838 XLSX_CONTENT_TYPE=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+PDF_STATUS=200 PDF_BYTES=2586 PDF_CONTENT_TYPE=application/pdf PDF_HEADER=%PDF-1.4
+ZIP_OK=True
+ENTRIES=[Content_Types].xml,_rels/.rels,xl/workbook.xml,xl/_rels/workbook.xml.rels,xl/worksheets/sheet1.xml
+HOSCO Dashboard Export=False
+From=True
+To=True
+Branch=True
+Revenue=True
+GMV=True
+Total Orders=False
+AOV=True
+Gross Profit=False
+Gross Margin=False
+Cancellation / Return Rate=False
+Dangerous Stock=False
+Top SKU=False
+Bottom SKU=False
+Dangerous Inventory=False
+TEXT_VALUES:
+HOSCO Executive Dashboard
+From
+2026-01-01T00:00:00.0000000+07:00
+To
+2026-06-30T23:59:59.9990000+07:00
+Branch
+TEXT_VALUES:
+HOSCO Executive Dashboard
+From
+2026-01-01T00:00:00.0000000+07:00
+To
+2026-06-30T23:59:59.9990000+07:00
+Branch
+HOSCO Hồ Chí Minh
+KPI
+Value
+Unit
+Revenue
+VND
+GMV
+VND
+Total orders
+orders
+AOV
+VND
+Gross profit
+VND
+Gross margin
+%
+Cancellation / return rate
+%
+Dangerous stock
+SKU
+Open alerts
+alerts
+Urgent alerts
+alerts
+Top 10 SKU
+SKU
+Product
+Valid quantity
+Amount
+Currency
+HOSCO-A-SKU-002
+Demo Product 2
+VND
+HOSCO-A-SKU-006
+Demo Product 6
+VND
+HOSCO-A-SKU-004
+Demo Product 4
+VND
+HOSCO-A-SKU-008
+Demo Product 8
+VND
+HOSCO-A-SKU-005
+Demo Product 5
+VND
+HOSCO-A-SKU-003
+Demo Product 3
+VND
+HOSCO-A-SKU-007
+Demo Product 7
+VND
+HOSCO-A-SKU-001
+Demo Product 1
+VND
+Bottom 10 SKU
+SKU
+Product
+Valid quantity
+Amount
+Currency
+HOSCO-A-SKU-001
+Demo Product 1
+VND
+HOSCO-A-SKU-003
+Demo Product 3
+VND
+HOSCO-A-SKU-007
+Demo Product 7
+VND
+HOSCO-A-SKU-005
+Demo Product 5
+VND
+HOSCO-A-SKU-004
+Demo Product 4
+VND
+HOSCO-A-SKU-008
+Demo Product 8
+VND
+HOSCO-A-SKU-002
+Demo Product 2
+VND
+HOSCO-A-SKU-006
+Demo Product 6
+VND
+Dangerous inventory
+Branch
+SKU
+Product
+Available
+Safety stock
+fdb80dd6-cf56-9599-86f7-1e2be3386090
+HOSCO-A-SKU-001
+Demo Product 1
+fdb80dd6-cf56-9599-86f7-1e2be3386090
+HOSCO-A-SKU-002
+Demo Product 2
+CELL_COUNT=166
+PDF_READ_OK=True
+PAGES=1
+TEXT_BEGIN
+HOSCO Executive Dashboard
+From | 2026-01-01T00:00:00.0000000+07:00 | To | 2026-06-30T23:59:59.9990000+07:00 | Branch | HOSCO Ho Chi
+KPI | Value | Unit
+Revenue | 77710000 | VND
+GMV | 78230000 | VND
+Total orders | 510 | orders
+AOV | 152372.5 | VND
+Gross profit | 33804000 | VND
+Gross margin | 43.50 | %
+Cancellation / return rate | 8.25 | %
+Dangerous stock | 2 | SKU
+Open alerts | 4 | alerts
+Urgent alerts | 0 | alerts
+Top 10 SKU | SKU | Product | Valid quantity | Amount | Currency
+1 | HOSCO-A-SKU-002 | Demo Product 2 | 206 | 8190000 | VND
+2 | HOSCO-A-SKU-006 | Demo Product 6 | 206 | 14400000 | VND
+3 | HOSCO-A-SKU-004 | Demo Product 4 | 205 | 11220000 | VND
+4 | HOSCO-A-SKU-008 | Demo Product 8 | 205 | 17365000 | VND
+5 | HOSCO-A-SKU-005 | Demo Product 5 | 123 | 7647500 | VND
+6 | HOSCO-A-SKU-003 | Demo Product 3 | 122 | 5680000 | VND
+7 | HOSCO-A-SKU-007 | Demo Product 7 | 122 | 9375000 | VND
+8 | HOSCO-A-SKU-001 | Demo Product 1 | 121 | 3832500 | VND
+Bottom 10 SKU | SKU | Product | Valid quantity | Amount | Currency
+1 | HOSCO-A-SKU-001 | Demo Product 1 | 121 | 3832500 | VND
+2 | HOSCO-A-SKU-003 | Demo Product 3 | 122 | 5680000 | VND
+3 | HOSCO-A-SKU-007 | Demo Product 7 | 122 | 9375000 | VND
+4 | HOSCO-A-SKU-005 | Demo Product 5 | 123 | 7647500 | VND
+5 | HOSCO-A-SKU-004 | Demo Product 4 | 205 | 11220000 | VND
+6 | HOSCO-A-SKU-008 | Demo Product 8 | 205 | 17365000 | VND
+7 | HOSCO-A-SKU-002 | Demo Product 2 | 206 | 8190000 | VND
+8 | HOSCO-A-SKU-006 | Demo Product 6 | 206 | 14400000 | VND
+Dangerous inventory | Branch | SKU | Product | Available | Safety stock
+1 | fdb80dd6-cf56-9599-86f7-1e2be3386090 | HOSCO-A-SKU-001 | Demo Product 1 | 1 | 8
+2 | fdb80dd6-cf56-9599-86f7-1e2be3386090 | HOSCO-A-SKU-002 | Demo Product 2 | 1 | 8
+
+TEXT_END
+HOSCO Executive Dashboard=True
+Revenue=True
+GMV=True
+Total orders=True
+AOV=True
+Gross profit=True
+Gross margin=True
+Cancellation / return rate=True
+Dangerous stock=True
+HOSCO Hồ Chí Minh=False
+{"EventId":0,"LogLevel":"Information","Category":"Hosco.Api.Observability.CorrelationMiddleware","Message":"HTTP /api/v1/reporting/dashboard/export responded 204 in 0ms correlationId=95c3212b7df2420a95650a9815bcfe0f userId=(null) tenantId=(null) branchScope= queryId=(null)","State":{"Path":"/api/v1/reporting/dashboard/export","StatusCode":204,"ElapsedMs":0,"CorrelationId":"95c3212b7df2420a95650a9815bcfe0f","UserId":null,"TenantId":null,"BranchScope":"","QueryId":null,"{OriginalFormat}":"HTTP {Path} responded {StatusCode} in {ElapsedMs}ms correlationId={CorrelationId} userId={UserId} tenantId={TenantId} branchScope={BranchScope} queryId={QueryId}"},"Scopes":[{"Message":"SpanId:db7511d15b2ab4b6, TraceId:9c58273a3dde91a4bef5307ce611e4cc, ParentId:0000000000000000","SpanId":"db7511d15b2ab4b6","TraceId":"9c58273a3dde91a4bef5307ce611e4cc","ParentId":"0000000000000000"},{"Message":"ConnectionId:0HNOU543RRLLT","ConnectionId":"0HNOU543RRLLT"},{"Message":"RequestPath:/api/v1/reporting/dashboard/export RequestId:0HNOU543RRLLT:00000003","RequestId":"0HNOU543RRLLT:00000003","RequestPath":"/api/v1/reporting/dashboard/export"}]}
+{"EventId":0,"LogLevel":"Information","Category":"Hosco.Api.Observability.CorrelationMiddleware","Message":"HTTP /api/v1/reporting/dashboard/export responded 200 in 33ms correlationId=2e1cd3ca105f46609c94588458cf5e62 userId=531405b9-3a40-8f35-a250-1d48474e097f tenantId=af07a780-c77d-e17e-228f-9127180f3964 branchScope=fdb80dd6-cf56-9599-86f7-1e2be3386090 queryId=(null)","State":{"Path":"/api/v1/reporting/dashboard/export","StatusCode":200,"ElapsedMs":33,"CorrelationId":"2e1cd3ca105f46609c94588458cf5e62","UserId":"531405b9-3a40-8f35-a250-1d48474e097f","TenantId":"af07a780-c77d-e17e-228f-9127180f3964","BranchScope":"fdb80dd6-cf56-9599-86f7-1e2be3386090","QueryId":null,"{OriginalFormat}":"HTTP {Path} responded {StatusCode} in {ElapsedMs}ms correlationId={CorrelationId} userId={UserId} tenantId={TenantId} branchScope={BranchScope} queryId={QueryId}"},"Scopes":[{"Message":"SpanId:df43e6bfaf8de72a, TraceId:45372397714985368739277c7ee4e17e, ParentId:0000000000000000","SpanId":"df43e6bfaf8de72a","TraceId":"45372397714985368739277c7ee4e17e","ParentId":"0000000000000000"},{"Message":"ConnectionId:0HNOU543RRLLT","ConnectionId":"0HNOU543RRLLT"},{"Message":"RequestPath:/api/v1/reporting/dashboard/export RequestId:0HNOU543RRLLT:00000004","RequestId":"0HNOU543RRLLT:00000004","RequestPath":"/api/v1/reporting/dashboard/export"}]}
+{"EventId":0,"LogLevel":"Information","Category":"Hosco.Api.Observability.CorrelationMiddleware","Message":"HTTP /api/v1/reporting/dashboard/export responded 204 in 0ms correlationId=c25fbf6d11784a0ab599eb39d9b0e0a1 userId=(null) tenantId=(null) branchScope= queryId=(null)","State":{"Path":"/api/v1/reporting/dashboard/export","StatusCode":204,"ElapsedMs":0,"CorrelationId":"c25fbf6d11784a0ab599eb39d9b0e0a1","UserId":null,"TenantId":null,"BranchScope":"","QueryId":null,"{OriginalFormat}":"HTTP {Path} responded {StatusCode} in {ElapsedMs}ms correlationId={CorrelationId} userId={UserId} tenantId={TenantId} branchScope={BranchScope} queryId={QueryId}"},"Scopes":[{"Message":"SpanId:3df04953beb627fa, TraceId:8db5bdfd697a8d452c95ecf1f24b09a6, ParentId:0000000000000000","SpanId":"3df04953beb627fa","TraceId":"8db5bdfd697a8d452c95ecf1f24b09a6","ParentId":"0000000000000000"},{"Message":"ConnectionId:0HNOU543RRLLT","ConnectionId":"0HNOU543RRLLT"},{"Message":"RequestPath:/api/v1/reporting/dashboard/export RequestId:0HNOU543RRLLT:00000005","RequestId":"0HNOU543RRLLT:00000005","RequestPath":"/api/v1/reporting/dashboard/export"}]}
+{"EventId":0,"LogLevel":"Information","Category":"Hosco.Api.Observability.CorrelationMiddleware","Message":"HTTP /api/v1/reporting/dashboard/export responded 200 in 24ms correlationId=a7fa368552fb4598beef8ddf1aeefaea userId=531405b9-3a40-8f35-a250-1d48474e097f tenantId=af07a780-c77d-e17e-228f-9127180f3964 branchScope=fdb80dd6-cf56-9599-86f7-1e2be3386090 queryId=(null)","State":{"Path":"/api/v1/reporting/dashboard/export","StatusCode":200,"ElapsedMs":24,"CorrelationId":"a7fa368552fb4598beef8ddf1aeefaea","UserId":"531405b9-3a40-8f35-a250-1d48474e097f","TenantId":"af07a780-c77d-e17e-228f-9127180f3964","BranchScope":"fdb80dd6-cf56-9599-86f7-1e2be3386090","QueryId":null,"{OriginalFormat}":"HTTP {Path} responded {StatusCode} in {ElapsedMs}ms correlationId={CorrelationId} userId={UserId} tenantId={TenantId} branchScope={BranchScope} queryId={QueryId}"},"Scopes":[{"Message":"SpanId:0e053c42e515fd89, TraceId:8e82d028bb0b7900db9ffb6ca67d943a, ParentId:0000000000000000","SpanId":"0e053c42e515fd89","TraceId":"8e82d028bb0b7900db9ffb6ca67d943a","ParentId":"0000000000000000"},{"Message":"ConnectionId:0HNOU543RRLLT","ConnectionId":"0HNOU543RRLLT"},{"Message":"RequestPath:/api/v1/reporting/dashboard/export RequestId:0HNOU543RRLLT:00000006","RequestId":"0HNOU543RRLLT:00000006","RequestPath":"/api/v1/reporting/dashboard/export"}]}
