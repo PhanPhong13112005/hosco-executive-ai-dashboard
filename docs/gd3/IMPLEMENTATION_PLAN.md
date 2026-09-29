@@ -2,7 +2,7 @@
 
 ## 1. Phạm vi
 
-GD3 tiếp tục trực tiếp nền tảng GD2 trên `feature/gd3-dashboard-alert`: bổ sung Executive Dashboard MVP, Smart Alert Engine với năm rule cấu hình được, scheduler, persistence, deduplication/cooldown, workflow acknowledge/resolve, notification abstraction, React Web UI, kiểm thử và tài liệu. GD3 không triển khai Chatbot/LLM hoặc kênh Telegram/FCM production.
+GD3 tiếp tục trực tiếp nền tảng GD2 trên `feature/gd3-dashboard-alert`: bổ sung Executive Dashboard MVP, Smart Alert Engine với năm rule cấu hình được, scheduler, persistence, deduplication/cooldown, workflow acknowledge/resolve, Telegram notification MVP, React Web UI, kiểm thử và tài liệu. GD3 không triển khai Chatbot/LLM, Firebase hoặc production recipient directory.
 
 Baseline đã xác minh ngày 2026-09-15: Restore PASS, Build PASS (0 warning/error), 28/28 test GD2 PASS khi Integration Test được cấp quyền loopback/Data Protection ngoài sandbox.
 

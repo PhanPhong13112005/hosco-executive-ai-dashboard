@@ -22,6 +22,7 @@ public sealed class HoscoDbContext(DbContextOptions<HoscoDbContext> options) : D
     public DbSet<RefundItem> RefundItems => Set<RefundItem>();
     public DbSet<AlertRule> AlertRules => Set<AlertRule>();
     public DbSet<Alert> Alerts => Set<Alert>();
+    public DbSet<NotificationDelivery> NotificationDeliveries => Set<NotificationDelivery>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -31,7 +32,8 @@ public sealed class HoscoDbContext(DbContextOptions<HoscoDbContext> options) : D
         b.Entity<Branch>(e => { e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique(); e.HasOne(x => x.Tenant).WithMany(x => x.Branches).HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Restrict); });
         TenantFk<AppUser>(b); TenantFk<Customer>(b); TenantFk<Employee>(b); TenantFk<Product>(b);
         TenantFk<Inventory>(b); TenantFk<Order>(b); TenantFk<OrderItem>(b); TenantFk<Payment>(b);
-        TenantFk<Refund>(b); TenantFk<RefundItem>(b); TenantFk<AlertRule>(b); TenantFk<Alert>(b); TenantFk<AuditLog>(b);
+        TenantFk<Refund>(b); TenantFk<RefundItem>(b); TenantFk<AlertRule>(b); TenantFk<Alert>(b);
+        TenantFk<NotificationDelivery>(b); TenantFk<AuditLog>(b);
         b.Entity<AppUser>(e => { e.HasIndex(x => x.Email).IsUnique(); e.Property(x => x.Email).HasMaxLength(320); e.Property(x => x.PasswordHash).HasMaxLength(500); });
         b.Entity<Role>(e => e.HasIndex(x => x.Name).IsUnique());
         b.Entity<UserRole>(e => { e.HasKey(x => new { x.UserId, x.RoleId }); e.HasOne(x => x.User).WithMany(x => x.UserRoles).HasForeignKey(x => x.UserId); e.HasOne(x => x.Role).WithMany(x => x.UserRoles).HasForeignKey(x => x.RoleId); });
@@ -78,6 +80,17 @@ public sealed class HoscoDbContext(DbContextOptions<HoscoDbContext> options) : D
             Money(e.Property(x => x.ThresholdValue));
             Money(e.Property(x => x.BaselineValue));
             e.HasOne(x => x.Rule).WithMany(x => x.Alerts).HasForeignKey(x => x.RuleId).OnDelete(DeleteBehavior.SetNull);
+        });
+        b.Entity<NotificationDelivery>(e =>
+        {
+            e.HasIndex(x => x.IdempotencyKey).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.Status, x.CreatedAt });
+            e.HasIndex(x => new { x.AlertId, x.Channel, x.Purpose });
+            e.Property(x => x.RecipientKey).HasMaxLength(450);
+            e.Property(x => x.Channel).HasMaxLength(32);
+            e.Property(x => x.IdempotencyKey).HasMaxLength(450);
+            e.Property(x => x.LastError).HasMaxLength(1000);
+            e.HasOne(x => x.Alert).WithMany(x => x.NotificationDeliveries).HasForeignKey(x => x.AlertId).OnDelete(DeleteBehavior.Cascade);
         });
         b.Entity<AuditLog>(e => e.HasIndex(x => new { x.TenantId, x.OccurredAt }));
     }

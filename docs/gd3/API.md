@@ -4,7 +4,7 @@ Base path `/api/v1`, Bearer JWT, Tenant/Branch scope server-side.
 
 ## Reporting
 
-`/reporting/dashboard/summary`, `/revenue/trend`, `/orders/trend`, `/products/top`, `/products/bottom`, `/inventory/dangerous`, `/kpis/{metricId}/drilldown`, `/branches`. Summary trả `revenue`, `gmv`, `totalOrders`, nullable `aov`, `grossProfit`, nullable `grossMarginPercent`, `cancellationReturnRate`, dangerous/Alert counts. Ngày nghiệp vụ là UTC+7.
+`/reporting/dashboard/summary`, `/reporting/dashboard/export?format=xlsx|pdf`, `/revenue/trend`, `/orders/trend`, `/products/top`, `/products/bottom`, `/inventory/dangerous`, `/kpis/{metricId}/drilldown`, `/branches`. Summary trả `revenue`, `gmv`, `totalOrders`, nullable `aov`, `grossProfit`, nullable `grossMarginPercent`, `cancellationReturnRate`, dangerous/Alert counts. Export dùng cùng Reporting scope/filter và canonical KPI. Ngày nghiệp vụ là UTC+7.
 
 ## Alert workflow
 
@@ -12,7 +12,7 @@ Base path `/api/v1`, Bearer JWT, Tenant/Branch scope server-side.
 - `POST /alerts/{id}/acknowledge`: lưu actor/time.
 - `POST /alerts/{id}/resolve` với `{ "note": "..." }`: note optional trừ AL-04/AL-05 bắt buộc, tối đa 2.000 ký tự.
 - AL-04 chỉ BranchManager trong assigned Branch scope được acknowledge/resolve; vai trò khác nhận 403 dù có quyền Alert nền.
-- Detail trả observed, threshold, baseline, context, scope, timestamps, actor, resolution note và `escalatedAt` để escalation chỉ phát một lần.
+- Detail trả observed, threshold, baseline, context, scope, timestamps, actor, resolution note, `escalatedAt` và danh sách notification delivery an toàn (không có secret).
 
 ## Rule configuration
 

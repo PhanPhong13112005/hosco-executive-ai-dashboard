@@ -21,6 +21,7 @@ public sealed class ReportingController(
     IAlertRepository alerts,
     IReportingScopeFactory scopes,
     IMetricCatalog metrics,
+    IDashboardExportService exports,
     IAuditWriter audit,
     ICorrelationContext correlation) : ControllerBase
 {
@@ -31,6 +32,20 @@ public sealed class ReportingController(
         filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
         var result = await data.GetDashboardSummaryAsync(scope, filter, await alerts.GetSummaryAsync(scope, ct), ct);
         return Ok(new ApiEnvelope<DashboardSummary>(result, await Meta(scope, filter, "dashboard.summary.v1", null, ct)));
+    }
+
+    [HttpGet("dashboard/export")]
+    [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/pdf")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ExportDashboard([FromQuery] string format, [FromQuery] ReportingFilter filter, CancellationToken ct)
+    {
+        filter.Validate();
+        var scope = await scopes.CreateAsync(filter.BranchId, ct);
+        var document = await exports.ExportAsync(format, scope, filter, ct);
+        await audit.WriteAsync("reporting.export", "Dashboard", null, "dashboard.export.v1", filter.BranchId,
+            new { format, filter.From, filter.To }, ct);
+        return File(document.Content, document.ContentType, document.FileName);
     }
 
     [HttpGet("kpis/summary")]

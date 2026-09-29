@@ -8,8 +8,9 @@
 4. Evaluator tạo `AlertCandidate` xác định từ giá trị, ngưỡng, entity context và thời điểm do `TimeProvider` cấp.
 5. Engine tạo `DedupKey` theo `Tenant:Branch:Rule:Entity` và tìm Alert trong cooldown.
 6. Candidate không trùng được persist với status `Open`.
-7. `INotificationSender` được gọi; GD3 dùng `LoggingNotificationSender`, không tích hợp Telegram/FCM.
-8. Lỗi từng rule được structured log và không làm worker chết.
+7. `NotificationDispatcher` tạo delivery idempotent và gửi qua Telegram channel nếu được cấu hình.
+8. Lỗi transient được lưu Pending để retry với bounded exponential backoff; disabled/unconfigured provider được Skipped.
+9. Lỗi từng rule/notification được structured log và không làm worker chết.
 
 ## Workflow
 
@@ -21,6 +22,8 @@ Open ----------------> Resolved
 Acknowledge và Resolve lưu `UserId` từ JWT cùng timestamp từ `TimeProvider`. Alert đã Resolved không thể quay về Acknowledged. Mutation được ghi `AuditLog`.
 
 Recipient policy không gửi cho Staff: Branch Manager/Owner nhận theo Branch, Chain Manager theo Tenant và System Admin theo explicit Branch assignment. High AL-01 chưa acknowledge sau 120 phút và High AL-02 sau 60 phút được escalation đúng một lần; `EscalatedAt` là trạng thái bền vững ngăn gửi lặp.
+
+Notification delivery dùng unique deterministic key từ Alert, purpose, channel và recipient key. Delivery `Sent` không gửi lại; `Pending` được retry tối đa theo cấu hình. Telegram default destination bắt buộc gắn `DefaultTenantId`; production recipient directory vẫn là hardening ngoài MVP.
 
 ## Deduplication và cooldown
 

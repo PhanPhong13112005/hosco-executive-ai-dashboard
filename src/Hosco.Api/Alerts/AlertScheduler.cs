@@ -13,32 +13,14 @@ public sealed class AlertSchedulerOptions
     public bool RunOnStartup { get; set; }
 }
 
-public sealed class LoggingNotificationSender(ILogger<LoggingNotificationSender> logger) : INotificationSender
-{
-    public Task SendAsync(Alert alert, CancellationToken cancellationToken)
-    {
-        logger.LogInformation(
-            "Alert notification triggered alertId={AlertId} ruleCode={RuleCode} tenantId={TenantId} branchId={BranchId} severity={Severity} recipients={Recipients}",
-            alert.Id, alert.RuleCode, alert.TenantId, alert.BranchId, alert.Severity,
-            string.Join(',', AlertRecipientPolicy.InitialRecipients(alert)));
-        return Task.CompletedTask;
-    }
-
-    public Task SendEscalationAsync(Alert alert, CancellationToken cancellationToken)
-    {
-        logger.LogWarning(
-            "Unacknowledged alert escalated alertId={AlertId} ruleCode={RuleCode} tenantId={TenantId} branchId={BranchId} recipients={Recipients}",
-            alert.Id, alert.RuleCode, alert.TenantId, alert.BranchId,
-            string.Join(',', AlertRecipientPolicy.EscalationRecipients(alert)));
-        return Task.CompletedTask;
-    }
-}
-
 public sealed class LoggingAlertEngineDiagnostics(ILogger<LoggingAlertEngineDiagnostics> logger) : IAlertEngineDiagnostics
 {
     public void RuleFailed(AlertRule rule, Exception exception) => logger.LogError(exception,
         "Alert rule evaluation failed ruleId={RuleId} ruleCode={RuleCode} tenantId={TenantId} branchId={BranchId}; remaining rules will continue",
         rule.Id, rule.Code, rule.TenantId, rule.BranchId);
+
+    public void NotificationRetryFailed(Exception exception) => logger.LogError(exception,
+        "Notification dispatch failed; the scheduler will continue and retry pending deliveries on a later cycle.");
 }
 
 public sealed class AlertSchedulerBackgroundService(
@@ -70,20 +52,22 @@ public sealed class AlertSchedulerBackgroundService(
 
     private async Task EvaluateAsync(CancellationToken cancellationToken)
     {
+        var correlationId = $"scheduler-{Guid.NewGuid():N}";
+        using var logScope = logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId });
         try
         {
             await using var scope = scopeFactory.CreateAsyncScope();
             var result = await scope.ServiceProvider.GetRequiredService<IAlertEngine>().EvaluateAllAsync(cancellationToken);
             logger.LogInformation(
-                "Alert evaluation completed evaluatedRules={EvaluatedRules} createdAlerts={CreatedAlerts} suppressedDuplicates={SuppressedDuplicates} failedRules={FailedRules}",
-                result.EvaluatedRules, result.CreatedAlerts, result.SuppressedDuplicates, result.FailedRules);
+                "Alert evaluation completed correlationId={CorrelationId} evaluatedRules={EvaluatedRules} createdAlerts={CreatedAlerts} suppressedDuplicates={SuppressedDuplicates} failedRules={FailedRules}",
+                correlationId, result.EvaluatedRules, result.CreatedAlerts, result.SuppressedDuplicates, result.FailedRules);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Alert scheduler cycle failed; the worker will continue on the next configured interval.");
+            logger.LogError(exception, "Alert scheduler cycle failed correlationId={CorrelationId}; the worker will continue on the next configured interval.", correlationId);
         }
     }
 }

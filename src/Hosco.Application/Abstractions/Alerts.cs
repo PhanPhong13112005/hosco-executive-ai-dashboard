@@ -1,5 +1,6 @@
 using Hosco.Application.Models;
 using Hosco.Domain.Entities;
+using Hosco.Domain.Enums;
 
 namespace Hosco.Application.Abstractions;
 
@@ -36,7 +37,29 @@ public interface INotificationSender
 {
     Task SendAsync(Alert alert, CancellationToken cancellationToken);
     Task SendEscalationAsync(Alert alert, CancellationToken cancellationToken);
+    Task RetryPendingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
+
+public interface INotificationChannel
+{
+    string Name { get; }
+    int MaxAttempts { get; }
+    TimeSpan RetryDelay(int completedAttempts);
+    NotificationTarget? ResolveTarget(Alert alert, NotificationPurpose purpose);
+    Task<NotificationAttemptResult> SendAsync(Alert alert, NotificationPurpose purpose, NotificationTarget target, CancellationToken cancellationToken);
+}
+
+public interface INotificationDeliveryStore
+{
+    Task<NotificationDelivery> GetOrCreateAsync(Alert alert, string channel, NotificationPurpose purpose,
+        NotificationTarget target, string idempotencyKey, CancellationToken cancellationToken);
+    Task<IReadOnlyList<NotificationDelivery>> GetRetryableAsync(DateTimeOffset now, int limit, CancellationToken cancellationToken);
+    Task<Alert?> GetAlertAsync(Guid alertId, CancellationToken cancellationToken);
+    Task SaveChangesAsync(CancellationToken cancellationToken);
+}
+
+public sealed record NotificationTarget(string RecipientKey, string Address);
+public sealed record NotificationAttemptResult(bool Sent, bool Retryable, bool Skipped = false, string? Error = null);
 
 public interface IAlertEngine
 {
@@ -46,6 +69,7 @@ public interface IAlertEngine
 public interface IAlertEngineDiagnostics
 {
     void RuleFailed(AlertRule rule, Exception exception);
+    void NotificationRetryFailed(Exception exception) { }
 }
 
 public interface IAlertService

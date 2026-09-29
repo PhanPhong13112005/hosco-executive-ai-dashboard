@@ -40,6 +40,8 @@ input:focus, select:focus { border-color: #5b9c82; box-shadow: 0 0 0 3px #dcece5
 .button.secondary { color: var(--green); background: #e3eee8; }
 .button.dark { color: white; background: var(--forest); }
 .button.wide { width: 100%; }
+.delivery-row { display: contents; }
+.delivery-row small { display: block; color: #8a514b; margin-top: 4px; }
 .provisional-note { display: flex; gap: 12px; align-items: center; background: #fff7de; border: 1px solid #ecdda6; color: #6c5c25; border-radius: 11px; padding: 11px 14px; font-size: .78rem; margin-bottom: 18px; }
 .provisional-note strong { white-space: nowrap; }
 .provisional-note.stale { background: #fff0e7; border-color: #efc1aa; color: #8a452d; }

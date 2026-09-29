@@ -1,5 +1,18 @@
 # Known Environment Issues – GD3
 
+## Tái hiện ngày 2026-09-29 trong final GD3 validation
+
+Sau khi build PASS, cả Unit và Integration test final bị Windows Application Control chặn trước khi test/application logic chạy:
+
+- command: `dotnet test tests/Hosco.UnitTests/Hosco.UnitTests.csproj --no-build` và `dotnet test tests/Hosco.IntegrationTests/Hosco.IntegrationTests.csproj --no-build`;
+- exception: `System.IO.FileLoadException`, HRESULT `0x800711C7`;
+- blocked module: local unsigned `Hosco.Application.dll` under Unit output and API output;
+- Code Integrity Operational Events `3033`/`3077` at 2026-09-29 13:35 local time;
+- policy ID: `{0283ac0f-fff1-49ae-ada1-8a933130cad6}` and reason: DLL did not meet Enterprise signing level requirements;
+- Application Event query showed no new Event 1000/1026 in the same 30-minute window.
+
+Retry outside the managed sandbox was also blocked by the same Enterprise policy. No source workaround was made, WDAC was not disabled, and .NET was not reinstalled. Build, EF model comparison, fresh LocalDB migration and frontend build still PASS; final Unit/Integration/runtime validation remains `BLOCKED_BY_LOCAL_WDAC`, not PASS.
+
 ## BLOCKED_BY_LOCAL_WDAC: local API runtime và Integration Test (intermittent)
 
 ### Hiện tượng

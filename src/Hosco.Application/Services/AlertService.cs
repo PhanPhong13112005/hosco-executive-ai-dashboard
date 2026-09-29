@@ -138,7 +138,10 @@ public sealed class AlertService(
     private static AlertDetail ToDetail(Alert x) => new(x.Id, x.RuleId, x.RuleCode, x.TenantId, x.BranchId,
         x.Severity.ToString(), x.Status.ToString(), x.Title, x.Message, x.DetectedValue, x.ThresholdValue, x.BaselineValue,
         x.PayloadJson, x.DetectedAt, x.AcknowledgedAt, x.AcknowledgedBy, x.ResolvedAt, x.ResolvedBy,
-        x.ResolutionNote, x.EscalatedAt, x.DedupKey);
+        x.ResolutionNote, x.EscalatedAt, x.DedupKey,
+        x.NotificationDeliveries.OrderByDescending(d => d.CreatedAt).Select(d => new NotificationDeliveryView(
+            d.Id, d.Channel, d.RecipientKey, d.Purpose.ToString(), d.Status.ToString(), d.AttemptCount,
+            d.LastAttemptAt, d.SentAt, d.LastError)).ToList());
 
     private static AlertRuleView ToRuleView(AlertRule x) => new(x.Id, x.Code, x.Name, x.Description, x.Severity.ToString(),
         x.IsEnabled, x.Threshold, x.Baseline, x.WindowMinutes, x.CooldownMinutes, x.BranchId, x.ConfigJson, "PENDING");

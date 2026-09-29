@@ -57,7 +57,7 @@ public sealed class AlertRepository(HoscoDbContext db) : IAlertRepository
     }
 
     public Task<Alert?> GetAlertAsync(Guid id, ReportingScope scope, CancellationToken cancellationToken) =>
-        ScopedAlerts(scope).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        ScopedAlerts(scope).Include(x => x.NotificationDeliveries).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<AlertSummary> GetSummaryAsync(ReportingScope scope, CancellationToken cancellationToken)
     {

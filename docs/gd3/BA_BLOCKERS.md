@@ -11,7 +11,9 @@ Các giá trị số của Alert Catalog vẫn là **BA đề xuất / configura
 | AL-03 key SKU | `IsKeySku`, Available/SafetyStock; configurable | nguồn master-data và warehouse/store mapping dài hạn |
 | AL-04 employee anomaly | absolute 15%, baseline 7 ngày, min sample 10 | privacy/retention và quy trình điều tra |
 | AL-05 price/discount | High 40%, Critical 60%, nullable FloorPrice | promotion whitelist/approval workflow |
-| Notification/escalation | logging abstraction trong MVP | recipient directory và kênh production |
+| Notification/escalation | Telegram MVP + tenant-scoped default destination + persistent delivery | production recipient directory, per-user routing và operational monitoring |
 | Multi-instance scheduler | single-process MVP | distributed lock/exactly-once delivery |
+| Trend comparison | revenue trend hiện có | previous-period comparison definition |
+| Branch/cashier performance | chưa có metric được chốt | numerator/denominator, period and ranking rule |
 
 Ngoài phạm vi: lead-time forecast/auto-PO, fraud scoring, promotion whitelist, batch/shift analysis nâng cao và GD4 chatbot.
