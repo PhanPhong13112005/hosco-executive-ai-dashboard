@@ -10,6 +10,7 @@ using Hosco.Application.Semantics;
 using Hosco.Application.Services;
 using Hosco.Domain.Enums;
 using Hosco.Infrastructure.Persistence;
+using Hosco.Infrastructure.Notifications;
 using Hosco.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -34,7 +35,7 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
-        builder.Logging.AddJsonConsole();
+        builder.Logging.AddJsonConsole(options => options.IncludeScopes = true);
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers().AddApplicationPart(typeof(Hosco.Api.Controllers.AuthController).Assembly);
         builder.Services.Configure<ApiBehaviorOptions>(options => options.InvalidModelStateResponseFactory = context =>
@@ -125,6 +126,7 @@ public partial class Program
         builder.Services.AddScoped<IReportingDataStore, ReportingDataStore>();
         builder.Services.AddScoped<IAuditWriter, AuditWriter>();
         builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+        builder.Services.AddScoped<INotificationDeliveryStore, NotificationDeliveryStore>();
         builder.Services.AddScoped<IAlertSignalDataStore, AlertSignalDataStore>();
         builder.Services.AddScoped<IAlertRuleEvaluator, CancellationRateAlertEvaluator>();
         builder.Services.AddScoped<IAlertRuleEvaluator, RevenueDropAlertEvaluator>();
@@ -133,9 +135,11 @@ public partial class Program
         builder.Services.AddScoped<IAlertRuleEvaluator, PriceDiscountAlertEvaluator>();
         builder.Services.AddScoped<IAlertEngine, AlertEngine>();
         builder.Services.AddScoped<IAlertService, AlertService>();
+        builder.Services.AddScoped<INotificationSender, NotificationDispatcher>();
         builder.Services.AddSingleton(TimeProvider.System);
-        builder.Services.AddSingleton<INotificationSender, LoggingNotificationSender>();
         builder.Services.AddSingleton<IAlertEngineDiagnostics, LoggingAlertEngineDiagnostics>();
+        builder.Services.Configure<TelegramNotificationOptions>(builder.Configuration.GetSection(TelegramNotificationOptions.Section));
+        builder.Services.AddHttpClient<INotificationChannel, TelegramNotificationChannel>().RemoveAllLoggers();
         builder.Services.Configure<AlertSchedulerOptions>(builder.Configuration.GetSection(AlertSchedulerOptions.Section));
         builder.Services.AddHostedService<AlertSchedulerBackgroundService>();
         builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);

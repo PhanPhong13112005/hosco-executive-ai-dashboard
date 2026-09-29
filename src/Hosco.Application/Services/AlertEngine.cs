@@ -47,7 +47,18 @@ public sealed class AlertEngine(
                     await repository.AddAsync(alert, cancellationToken);
                     await repository.SaveChangesAsync(cancellationToken);
                     created++;
-                    await notifications.SendAsync(alert, cancellationToken);
+                    try
+                    {
+                        await notifications.SendAsync(alert, cancellationToken);
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        diagnostics?.NotificationRetryFailed(exception);
+                    }
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -66,7 +77,31 @@ public sealed class AlertEngine(
             alert.EscalatedAt = now;
             alert.UpdatedAt = now;
             await repository.SaveChangesAsync(cancellationToken);
-            await notifications.SendEscalationAsync(alert, cancellationToken);
+            try
+            {
+                await notifications.SendEscalationAsync(alert, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                diagnostics?.NotificationRetryFailed(exception);
+            }
+        }
+
+        try
+        {
+            await notifications.RetryPendingAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            diagnostics?.NotificationRetryFailed(exception);
         }
 
         return new AlertEngineResult(rules.Count, created, suppressed, failed);
