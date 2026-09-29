@@ -124,6 +124,7 @@ public partial class Program
         builder.Services.AddSingleton<IKpiCalculator, KpiCalculator>();
         builder.Services.AddScoped<IKpiSnapshotStore, KpiSnapshotStore>();
         builder.Services.AddScoped<IReportingDataStore, ReportingDataStore>();
+        builder.Services.AddScoped<IDashboardExportService, DashboardExportService>();
         builder.Services.AddScoped<IAuditWriter, AuditWriter>();
         builder.Services.AddScoped<IAlertRepository, AlertRepository>();
         builder.Services.AddScoped<INotificationDeliveryStore, NotificationDeliveryStore>();

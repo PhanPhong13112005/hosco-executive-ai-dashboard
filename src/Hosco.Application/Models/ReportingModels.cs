@@ -62,6 +62,12 @@ public sealed record KpiDrilldownPoint(DateOnly Date, decimal Value);
 public sealed record KpiDrilldown(
     string MetricId, string Code, string Name, string Unit, decimal? CurrentValue,
     IReadOnlyList<KpiDrilldownPoint> Trend, string DefinitionStatus, string? Note);
+public sealed record ExportDocument(byte[] Content, string ContentType, string FileName);
+
+public interface IDashboardExportService
+{
+    Task<ExportDocument> ExportAsync(string format, ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
+}
 
 public interface IReportingDataStore
 {
