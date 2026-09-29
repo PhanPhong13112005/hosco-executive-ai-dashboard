@@ -16,3 +16,5 @@ public enum AlertStatus { Open, Acknowledged, Resolved }
 // Numeric values are persisted. Medium replaces legacy Info (0), High replaces legacy Warning (1).
 public enum AlertSeverity { Medium = 0, High = 1, Critical = 2 }
 public enum RefundStatus { Requested, Approved, Rejected, Completed }
+public enum NotificationDeliveryStatus { Pending = 0, Sent = 1, Failed = 2, Skipped = 3 }
+public enum NotificationPurpose { Initial = 0, Escalation = 1 }

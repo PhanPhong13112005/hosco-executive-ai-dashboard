@@ -26,6 +26,7 @@ public sealed class Alert : TenantEntity
     public DateTimeOffset? EscalatedAt { get; set; }
     public required string DedupKey { get; set; }
     public AlertRule? Rule { get; set; }
+    public ICollection<NotificationDelivery> NotificationDeliveries { get; set; } = [];
 }
 
 public sealed class AlertRule : TenantEntity
@@ -55,4 +56,19 @@ public sealed class AuditLog : TenantEntity
     public required string CorrelationId { get; set; }
     public required string MetadataJson { get; set; }
     public DateTimeOffset OccurredAt { get; set; }
+}
+
+public sealed class NotificationDelivery : TenantEntity
+{
+    public Guid AlertId { get; set; }
+    public required string RecipientKey { get; set; }
+    public required string Channel { get; set; }
+    public NotificationPurpose Purpose { get; set; }
+    public NotificationDeliveryStatus Status { get; set; }
+    public int AttemptCount { get; set; }
+    public DateTimeOffset? LastAttemptAt { get; set; }
+    public DateTimeOffset? SentAt { get; set; }
+    public string? LastError { get; set; }
+    public required string IdempotencyKey { get; set; }
+    public Alert Alert { get; set; } = null!;
 }

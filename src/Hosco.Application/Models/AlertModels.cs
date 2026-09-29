@@ -30,7 +30,12 @@ public sealed record AlertDetail(
     Guid Id, Guid? RuleId, string RuleCode, Guid TenantId, Guid? BranchId, string Severity, string Status,
     string Title, string Message, decimal? DetectedValue, decimal? ThresholdValue, decimal? BaselineValue, string ContextJson,
     DateTimeOffset DetectedAt, DateTimeOffset? AcknowledgedAt, Guid? AcknowledgedBy,
-    DateTimeOffset? ResolvedAt, Guid? ResolvedBy, string? ResolutionNote, DateTimeOffset? EscalatedAt, string DedupKey);
+    DateTimeOffset? ResolvedAt, Guid? ResolvedBy, string? ResolutionNote, DateTimeOffset? EscalatedAt, string DedupKey,
+    IReadOnlyList<NotificationDeliveryView> NotificationDeliveries);
+
+public sealed record NotificationDeliveryView(
+    Guid Id, string Channel, string RecipientKey, string Purpose, string Status, int AttemptCount,
+    DateTimeOffset? LastAttemptAt, DateTimeOffset? SentAt, string? LastError);
 
 public sealed record AlertSummary(int Open, int Urgent, int Handled, int Resolved);
 
