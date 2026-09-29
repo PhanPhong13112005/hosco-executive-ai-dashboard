@@ -69,6 +69,18 @@ public sealed class AlertEngineTests
     }
 
     [Fact]
+    public async Task Notification_failure_does_not_stop_remaining_rules_or_mark_rule_failed()
+    {
+        var tenant = Guid.NewGuid();
+        var repository = new MemoryRepository([Rule(tenant, Guid.NewGuid(), 10), Rule(tenant, Guid.NewGuid(), 10)]);
+        var result = await new AlertEngine(repository, [new CandidateEvaluator()], new ThrowingNotification(),
+            new FakeClock(DateTimeOffset.UtcNow)).EvaluateAllAsync(default);
+
+        Assert.Equal(2, result.CreatedAlerts);
+        Assert.Equal(0, result.FailedRules);
+    }
+
+    [Fact]
     public async Task Unacknowledged_high_alert_is_escalated_once_after_rule_delay()
     {
         var now = new DateTimeOffset(2026, 7, 1, 12, 0, 0, TimeSpan.Zero);
@@ -129,6 +141,12 @@ public sealed class AlertEngineTests
         public int EscalationCount { get; private set; }
         public Task SendAsync(Alert alert, CancellationToken ct) { Count++; return Task.CompletedTask; }
         public Task SendEscalationAsync(Alert alert, CancellationToken ct) { EscalationCount++; return Task.CompletedTask; }
+    }
+
+    private sealed class ThrowingNotification : INotificationSender
+    {
+        public Task SendAsync(Alert alert, CancellationToken ct) => throw new HttpRequestException("notification unavailable");
+        public Task SendEscalationAsync(Alert alert, CancellationToken ct) => throw new HttpRequestException("notification unavailable");
     }
 
     private sealed class MemoryRepository(IReadOnlyList<AlertRule> rules) : IAlertRepository

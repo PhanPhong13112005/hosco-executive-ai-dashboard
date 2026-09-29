@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Globalization;
+using System.IO.Compression;
 
 namespace Hosco.IntegrationTests;
 
@@ -62,6 +64,46 @@ public sealed class DashboardAndAlertApiTests(ApiFixture fixture)
             "/api/v1/reporting/branches"
         })
             Assert.Equal(HttpStatusCode.OK, (await Send(HttpMethod.Get, path, token)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Dashboard_export_requires_authentication_and_honors_branch_scope()
+    {
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await fixture.Client.GetAsync("/api/v1/reporting/dashboard/export?format=xlsx")).StatusCode);
+        var manager = await Login("branch.manager@hosco.local");
+        Assert.Equal(HttpStatusCode.Forbidden,
+            (await Send(HttpMethod.Get, $"/api/v1/reporting/dashboard/export?format=pdf&branchId={BranchA2}", manager)).StatusCode);
+
+        var xlsx = await Send(HttpMethod.Get,
+            $"/api/v1/reporting/dashboard/export?format=xlsx&branchId={BranchA1}&from=2026-06-01&to=2026-06-30T23:59:59Z", manager);
+        Assert.Equal(HttpStatusCode.OK, xlsx.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx.Content.Headers.ContentType?.MediaType);
+        var xlsxBytes = await xlsx.Content.ReadAsByteArrayAsync();
+        Assert.Equal(new byte[] { 0x50, 0x4B }, xlsxBytes[..2]);
+        var dashboard = await Send(HttpMethod.Get,
+            $"/api/v1/reporting/dashboard/summary?branchId={BranchA1}&from=2026-06-01&to=2026-06-30T23:59:59Z", manager);
+        using var dashboardJson = JsonDocument.Parse(await dashboard.Content.ReadAsStringAsync());
+        var revenue = dashboardJson.RootElement.GetProperty("data").GetProperty("revenue").GetDecimal();
+        using var archive = new ZipArchive(new MemoryStream(xlsxBytes), ZipArchiveMode.Read);
+        using var sheetReader = new StreamReader(archive.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        Assert.Contains($"<v>{revenue.ToString(CultureInfo.InvariantCulture)}</v>", await sheetReader.ReadToEndAsync());
+
+        var pdf = await Send(HttpMethod.Get, "/api/v1/reporting/dashboard/export?format=pdf", await Login("owner@hosco.local"));
+        Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
+        Assert.Equal("application/pdf", pdf.Content.Headers.ContentType?.MediaType);
+        Assert.StartsWith("%PDF-", System.Text.Encoding.ASCII.GetString((await pdf.Content.ReadAsByteArrayAsync())[..5]));
+
+        var empty = await Send(HttpMethod.Get,
+            "/api/v1/reporting/dashboard/export?format=xlsx&from=2035-01-01&to=2035-01-02", await Login("owner@hosco.local"));
+        Assert.Equal(HttpStatusCode.OK, empty.StatusCode);
+    }
+
+    [Fact]
+    public async Task Dashboard_export_rejects_unknown_format()
+    {
+        var response = await Send(HttpMethod.Get, "/api/v1/reporting/dashboard/export?format=csv", await Login("owner@hosco.local"));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
