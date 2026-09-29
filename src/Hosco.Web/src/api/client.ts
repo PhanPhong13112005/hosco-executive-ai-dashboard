@@ -27,6 +27,21 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>
 }
 
+async function download(path: string) {
+  const token = localStorage.getItem(tokenKey)
+  const response = await fetch(`${baseUrl}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null) as { message?: string; code?: string } | null
+    throw new ApiError(response.status, payload?.message ?? `HTTP ${response.status}`, payload?.code)
+  }
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const fileName = disposition.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i)?.[1] ?? 'hosco-dashboard-export'
+  const url = URL.createObjectURL(await response.blob())
+  const anchor = document.createElement('a')
+  anchor.href = url; anchor.download = decodeURIComponent(fileName); anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 const query = (params: Record<string, string | number | undefined | null>) => {
   const values = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== '') values.set(key, String(value)) })
@@ -53,6 +68,8 @@ const filterQuery = (filter: DashboardFilter) => query(businessRange(filter))
 
 export const api = {
   dashboard: (filter: DashboardFilter) => request<Envelope<DashboardSummary>>(`/api/v1/reporting/dashboard/summary${filterQuery(filter)}`),
+  exportDashboard: (filter: DashboardFilter, format: 'xlsx' | 'pdf') =>
+    download(`/api/v1/reporting/dashboard/export${query({ ...businessRange(filter), format })}`),
   revenue: (filter: DashboardFilter) => request<Envelope<RevenuePoint[]>>(`/api/v1/reporting/revenue/trend${filterQuery(filter)}`),
   dangerous: (filter: DashboardFilter) => request<Envelope<DangerousInventory[]>>(`/api/v1/reporting/inventory/dangerous${query({ ...businessRange(filter), pageSize: 20 })}`),
   topProducts: (filter: DashboardFilter, bottom = false) => request<Envelope<ProductRank[]>>(`/api/v1/reporting/products/${bottom ? 'bottom' : 'top'}${query({ ...businessRange(filter), pageSize: 10 })}`),

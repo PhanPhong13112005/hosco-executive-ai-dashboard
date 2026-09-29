@@ -69,6 +69,19 @@ export type AlertDetail = AlertItem & {
   resolutionNote: string | null
   escalatedAt: string | null
   dedupKey: string
+  notificationDeliveries: NotificationDelivery[]
+}
+
+export type NotificationDelivery = {
+  id: string
+  channel: string
+  recipientKey: string
+  purpose: string
+  status: 'Pending' | 'Sent' | 'Failed' | 'Skipped'
+  attemptCount: number
+  lastAttemptAt: string | null
+  sentAt: string | null
+  lastError: string | null
 }
 
 export type AlertPage = {

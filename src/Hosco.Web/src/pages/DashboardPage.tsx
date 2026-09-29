@@ -25,6 +25,7 @@ export function DashboardPage({ openAlerts }: { openAlerts: () => void }) {
   const [error, setError] = useState<ApiError | null>(null)
   const [drilldown, setDrilldown] = useState<KpiDrilldown | null>(null)
   const [drillLoading, setDrillLoading] = useState(false)
+  const [exporting, setExporting] = useState<'xlsx' | 'pdf' | null>(null)
 
   const load = async () => {
     setLoading(true); setError(null)
@@ -46,6 +47,13 @@ export function DashboardPage({ openAlerts }: { openAlerts: () => void }) {
     finally { setDrillLoading(false) }
   }
 
+  const exportDashboard = async (format: 'xlsx' | 'pdf') => {
+    setExporting(format); setError(null)
+    try { await api.exportDashboard(applied, format) }
+    catch (reason) { setError(reason instanceof ApiError ? reason : new ApiError(0, 'Không xuất được dashboard.')) }
+    finally { setExporting(null) }
+  }
+
   const cards = useMemo(() => summary ? [
     ['KPI-01', 'Doanh thu', money(summary.revenue, summary.currency), 'revenue'],
     ['KPI-02', 'GMV', money(summary.gmv, summary.currency), 'gmv'],
@@ -64,6 +72,8 @@ export function DashboardPage({ openAlerts }: { openAlerts: () => void }) {
       <label>Đến ngày<input type="date" value={filter.to} onChange={e => setFilter({ ...filter, to: e.target.value })}/></label>
       <label>Chi nhánh<select value={filter.branchId} onChange={e => setFilter({ ...filter, branchId: e.target.value })}><option value="">Tất cả được phép</option>{branches.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
       <button className="button primary" onClick={() => setApplied(filter)}>Áp dụng</button>
+      <button disabled={exporting !== null} className="button secondary" onClick={() => void exportDashboard('xlsx')}>{exporting === 'xlsx' ? 'Đang xuất…' : 'Xuất Excel'}</button>
+      <button disabled={exporting !== null} className="button secondary" onClick={() => void exportDashboard('pdf')}>{exporting === 'pdf' ? 'Đang xuất…' : 'Xuất PDF'}</button>
     </section>
     {loading && <StatePanel kind="loading" title="Đang tổng hợp dashboard" message="Hệ thống đang áp dụng Tenant/Branch scope và tải dữ liệu."/>}
     {!loading && error && <StatePanel kind={error.status === 403 ? 'permission' : 'error'} title={error.status === 403 ? 'Không có quyền truy cập' : 'Không tải được dashboard'} message={error.message} onRetry={load}/>} 
