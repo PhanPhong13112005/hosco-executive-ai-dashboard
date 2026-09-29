@@ -67,6 +67,38 @@ public sealed class DashboardAndAlertApiTests(ApiFixture fixture)
     }
 
     [Fact]
+    public async Task Dashboard_concurrent_sqlite_load_does_not_lock_database()
+    {
+        var token = await Login("owner@hosco.local");
+        string[] paths =
+        [
+            "/health/ready",
+            "/api/v1/reporting/dashboard/summary?from=2026-06-01&to=2026-06-30T23:59:59Z",
+            "/api/v1/reporting/revenue/trend?from=2026-06-01&to=2026-06-30T23:59:59Z",
+            "/api/v1/reporting/orders/trend?from=2026-06-01&to=2026-06-30T23:59:59Z",
+            "/api/v1/reporting/products/top?pageSize=5",
+            "/api/v1/reporting/products/bottom?pageSize=5",
+            "/api/v1/reporting/inventory/dangerous?pageSize=20",
+            "/api/v1/reporting/branches",
+            "/api/v1/alerts"
+        ];
+        var requests = Enumerable.Range(0, 8)
+            .SelectMany(_ => paths)
+            .Select(path => Send(HttpMethod.Get, path, token))
+            .ToArray();
+
+        var responses = await Task.WhenAll(requests);
+        try
+        {
+            Assert.All(responses, response => Assert.Equal(HttpStatusCode.OK, response.StatusCode));
+        }
+        finally
+        {
+            foreach (var response in responses) response.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task Dashboard_export_requires_authentication_and_honors_branch_scope()
     {
         Assert.Equal(HttpStatusCode.Unauthorized,
