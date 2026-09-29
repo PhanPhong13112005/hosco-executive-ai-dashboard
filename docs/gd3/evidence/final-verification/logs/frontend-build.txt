@@ -1,0 +1,18 @@
+COMMAND: npm.cmd --prefix src/Hosco.Web run build
+START: 2026-09-29T20:07:05.4849825+07:00
+
+> hosco-web@0.3.0 build
+> tsc --noEmit -p tsconfig.app.json && vite build
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 24 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.45 kB │ gzip:  0.29 kB
+dist/assets/index-ByeBjdP6.css   13.95 kB │ gzip:  4.15 kB
+dist/assets/index-Se_06Csu.js   247.42 kB │ gzip: 76.42 kB
+
+✓ built in 312ms
+END: 2026-09-29T20:07:07.9062581+07:00
+EXIT_CODE: 0

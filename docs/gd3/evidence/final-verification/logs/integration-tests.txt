@@ -1,0 +1,119 @@
+COMMAND: dotnet test tests/Hosco.IntegrationTests/Hosco.IntegrationTests.csproj --no-build --logger console;verbosity=normal
+START: 2026-09-29T19:45:16.4057690+07:00
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.11)
+[xUnit.net 00:00:01.05]   Discovering: Hosco.IntegrationTests
+[xUnit.net 00:00:01.10]   Discovered:  Hosco.IntegrationTests
+[xUnit.net 00:00:01.13]   Starting:    Hosco.IntegrationTests
+  Passed Hosco.IntegrationTests.TelegramNotificationChannelTests.Disabled_provider_is_skipped_and_tenant_mismatch_has_no_target [1 s]
+  Passed Hosco.IntegrationTests.TelegramNotificationChannelTests.Timeout_and_server_error_are_retryable [1 s]
+  Passed Hosco.IntegrationTests.TelegramNotificationChannelTests.Enabled_provider_sends_successfully_without_logging_secrets [1 ms]
+  Passed Hosco.IntegrationTests.TelegramNotificationChannelTests.Recipient_key_uses_existing_role_policy_and_contains_no_destination [1 ms]
+  Passed Hosco.IntegrationTests.AlertSignalDataStoreTests.Al03_requires_key_sku_and_uses_on_hand_minus_reserved_boundaries [3 s]
+  Passed Hosco.IntegrationTests.AlertSignalDataStoreTests.Al04_uses_branch_baseline_absolute_threshold_and_minimum_sample [262 ms]
+  Passed Hosco.IntegrationTests.AlertSignalDataStoreTests.Al02_uses_only_same_elapsed_peak_window_in_utc_plus_seven [78 ms]
+  Passed Hosco.IntegrationTests.AlertSignalDataStoreTests.Al01_compares_observed_window_with_seven_business_day_baseline [60 ms]
+  Passed Hosco.IntegrationTests.AlertSignalDataStoreTests.Al05_evaluates_discount_and_floor_price_per_order_item [67 ms]
+  Passed Hosco.IntegrationTests.ProductRankingPersistenceTests.Sqlite_product_ranking_applies_direction_scope_date_completed_status_and_page_size [5 s]
+  Passed Hosco.IntegrationTests.AlertEnginePersistenceTests.Dangerous_stock_rule_persists_alert_and_deduplicates_second_cycle [6 s]
+[xUnit.net 00:00:09.35]     Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted [FAIL]
+[xUnit.net 00:00:09.35]       System.NotSupportedException : SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type, or use LINQ to Objects to order the results on the client side.
+[xUnit.net 00:00:09.35]       Stack Trace:
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Sqlite.Query.Internal.SqliteQueryableMethodTranslatingExpressionVisitor.TranslateOrderBy(ShapedQueryExpression source, LambdaExpression keySelector, Boolean ascending)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutorExpression[TResult](Expression query)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass11_0`1.<ExecuteCore>b__0()
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteCore[TResult](Expression query, Boolean async, CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]            at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+[xUnit.net 00:00:09.35]            at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]         D:\Code\hosco-executive-ai-dashboard\src\Hosco.Infrastructure\Persistence\NotificationDeliveryStore.cs(38,0): at Hosco.Infrastructure.Persistence.NotificationDeliveryStore.GetRetryableAsync(DateTimeOffset now, Int32 limit, CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]         D:\Code\hosco-executive-ai-dashboard\src\Hosco.Application\Services\NotificationDispatcher.cs(26,0): at Hosco.Application.Services.NotificationDispatcher.RetryPendingAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:09.35]         D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs(51,0): at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted()
+[xUnit.net 00:00:09.35]         D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs(56,0): at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted()
+[xUnit.net 00:00:09.35]         D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs(56,0): at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted()
+[xUnit.net 00:00:09.35]         --- End of stack trace from previous location ---
+  Failed Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted [2 s]
+  Error Message:
+   System.NotSupportedException : SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type, or use LINQ to Objects to order the results on the client side.
+  Stack Trace:
+     at Microsoft.EntityFrameworkCore.Sqlite.Query.Internal.SqliteQueryableMethodTranslatingExpressionVisitor.TranslateOrderBy(ShapedQueryExpression source, LambdaExpression keySelector, Boolean ascending)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutorExpression[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass11_0`1.<ExecuteCore>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteCore[TResult](Expression query, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Hosco.Infrastructure.Persistence.NotificationDeliveryStore.GetRetryableAsync(DateTimeOffset now, Int32 limit, CancellationToken cancellationToken) in D:\Code\hosco-executive-ai-dashboard\src\Hosco.Infrastructure\Persistence\NotificationDeliveryStore.cs:line 38
+   at Hosco.Application.Services.NotificationDispatcher.RetryPendingAsync(CancellationToken cancellationToken) in D:\Code\hosco-executive-ai-dashboard\src\Hosco.Application\Services\NotificationDispatcher.cs:line 26
+   at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs:line 51
+   at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs:line 56
+   at Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\AlertEnginePersistenceTests.cs:line 56
+--- End of stack trace from previous location ---
+  Passed Hosco.IntegrationTests.AlertEnginePersistenceTests.Escalation_delay_comes_from_typed_rule_configuration [1 s]
+  Passed Hosco.IntegrationTests.SeedDatasetTests.Seed_exposes_six_month_deterministic_tenant_dataset [487 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Reporting_without_login_returns_401 [19 ms]
+  Passed Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_delivery_is_persisted_once_for_repeated_dispatch [871 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Reporting_contract_endpoints_execute(path: "/api/v1/reporting/revenue?pageSize=5") [115 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Reporting_contract_endpoints_execute(path: "/api/v1/reporting/kpis/summary?pageSize=5") [75 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Reporting_contract_endpoints_execute(path: "/api/v1/reporting/products/ranking?pageSize=5") [56 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Reporting_contract_endpoints_execute(path: "/api/v1/reporting/inventory/dangerous?pageSize=5") [23 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Invalid_filter_returns_400 [21 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Health_endpoint_is_healthy(path: "/health/live") [2 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Health_endpoint_is_healthy(path: "/health/ready") [11 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Branch_manager_can_read_assigned_branch_only [33 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.OpenApi_document_is_available_when_enabled [136 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Client_tenantId_query_parameter_cannot_override_claim [22 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Branch_manager_is_forbidden_from_other_assigned_tenant_branch [15 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Owner_and_system_admin_cannot_read_unassigned_branch(email: "owner@hosco.local") [17 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Owner_and_system_admin_cannot_read_unassigned_branch(email: "admin@hosco.local") [15 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Chain_manager_can_read_branch_in_own_tenant [28 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Reporting_never_leaks_other_tenant_data [24 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Cross_tenant_branch_is_forbidden [18 ms]
+  Passed Hosco.IntegrationTests.ReportingApiTests.Valid_correlation_id_is_reused [24 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Dashboard_export_rejects_unknown_format [146 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Al04_workflow_is_branch_manager_only_and_requires_resolution_note [93 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Dashboard_rejects_invalid_date_filter [21 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Alert_detail_enforces_tenant_and_branch_isolation [35 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Authenticated_dashboard_supports_branch_filter_and_tenant_scope [30 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Dashboard_supporting_endpoints_execute [161 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Dashboard_export_requires_authentication_and_honors_branch_scope [223 ms]
+[xUnit.net 00:00:12.98]   Finished:    Hosco.IntegrationTests
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Dashboard_requires_authentication [1 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Alert_rule_list_and_role_protected_configuration_execute [120 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Alert_list_detail_acknowledge_and_resolve_workflow_executes [45 ms]
+  Passed Hosco.IntegrationTests.DashboardAndAlertApiTests.Alerts_require_authentication [1 ms]
+
+Test Run Failed.
+Total tests: 44
+     Passed: 43
+     Failed: 1
+ Total time: 14.3585 Seconds
+END: 2026-09-29T19:45:31.6174947+07:00
+EXIT_CODE: 1

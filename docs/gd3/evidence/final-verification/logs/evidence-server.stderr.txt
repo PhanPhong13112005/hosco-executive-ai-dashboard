@@ -1,0 +1,4 @@
+127.0.0.1 - - [29/Sep/2026 19:58:55] "GET /dashboard-2026-hcm.pdf HTTP/1.1" 200 -
+127.0.0.1 - - [29/Sep/2026 19:59:10] "GET /dashboard-2026-hcm.pdf HTTP/1.1" 200 -
+127.0.0.1 - - [29/Sep/2026 19:59:10] code 404, message File not found
+127.0.0.1 - - [29/Sep/2026 19:59:10] "GET /favicon.ico HTTP/1.1" 404 -

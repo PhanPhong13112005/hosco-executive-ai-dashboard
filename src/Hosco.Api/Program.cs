@@ -52,10 +52,18 @@ public partial class Program
             builder.Services.AddDbContext<HoscoDbContext>(o => o.UseInMemoryDatabase(builder.Configuration["Database:Name"] ?? $"hosco-{Guid.NewGuid()}"));
         else if (provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
         {
-            var connection = new SqliteConnection("Data Source=:memory:");
-            connection.Open();
-            builder.Services.AddSingleton(connection);
-            builder.Services.AddDbContext<HoscoDbContext>(o => o.UseSqlite(connection));
+            var databaseName = builder.Configuration["Database:Name"] ?? $"hosco-{Guid.NewGuid():N}";
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = databaseName,
+                Mode = SqliteOpenMode.Memory,
+                Cache = SqliteCacheMode.Shared,
+                DefaultTimeout = 30
+            }.ToString();
+            var keepAliveConnection = new SqliteConnection(connectionString);
+            keepAliveConnection.Open();
+            builder.Services.AddSingleton(keepAliveConnection);
+            builder.Services.AddDbContext<HoscoDbContext>(o => o.UseSqlite(connectionString));
         }
         else
             builder.Services.AddDbContext<HoscoDbContext>(o => o.UseSqlServer(

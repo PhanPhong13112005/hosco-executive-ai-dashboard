@@ -1,0 +1,31 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 2040 >>
+stream
+BT /F1 9 Tf 40 800 Td 12 TL (HOSCO Executive Dashboard) Tj T* (From | 2026-01-01T00:00:00.0000000+07:00 | To | 2026-06-30T23:59:59.9990000+07:00 | Branch | HOSCO Ho Chi) Tj T* (KPI | Value | Unit) Tj T* (Revenue | 77710000 | VND) Tj T* (GMV | 78230000 | VND) Tj T* (Total orders | 510 | orders) Tj T* (AOV | 152372.5 | VND) Tj T* (Gross profit | 33804000 | VND) Tj T* (Gross margin | 43.50 | %) Tj T* (Cancellation / return rate | 8.25 | %) Tj T* (Dangerous stock | 2 | SKU) Tj T* (Open alerts | 4 | alerts) Tj T* (Urgent alerts | 0 | alerts) Tj T* (Top 10 SKU | SKU | Product | Valid quantity | Amount | Currency) Tj T* (1 | HOSCO-A-SKU-002 | Demo Product 2 | 206 | 8190000 | VND) Tj T* (2 | HOSCO-A-SKU-006 | Demo Product 6 | 206 | 14400000 | VND) Tj T* (3 | HOSCO-A-SKU-004 | Demo Product 4 | 205 | 11220000 | VND) Tj T* (4 | HOSCO-A-SKU-008 | Demo Product 8 | 205 | 17365000 | VND) Tj T* (5 | HOSCO-A-SKU-005 | Demo Product 5 | 123 | 7647500 | VND) Tj T* (6 | HOSCO-A-SKU-003 | Demo Product 3 | 122 | 5680000 | VND) Tj T* (7 | HOSCO-A-SKU-007 | Demo Product 7 | 122 | 9375000 | VND) Tj T* (8 | HOSCO-A-SKU-001 | Demo Product 1 | 121 | 3832500 | VND) Tj T* (Bottom 10 SKU | SKU | Product | Valid quantity | Amount | Currency) Tj T* (1 | HOSCO-A-SKU-001 | Demo Product 1 | 121 | 3832500 | VND) Tj T* (2 | HOSCO-A-SKU-003 | Demo Product 3 | 122 | 5680000 | VND) Tj T* (3 | HOSCO-A-SKU-007 | Demo Product 7 | 122 | 9375000 | VND) Tj T* (4 | HOSCO-A-SKU-005 | Demo Product 5 | 123 | 7647500 | VND) Tj T* (5 | HOSCO-A-SKU-004 | Demo Product 4 | 205 | 11220000 | VND) Tj T* (6 | HOSCO-A-SKU-008 | Demo Product 8 | 205 | 17365000 | VND) Tj T* (7 | HOSCO-A-SKU-002 | Demo Product 2 | 206 | 8190000 | VND) Tj T* (8 | HOSCO-A-SKU-006 | Demo Product 6 | 206 | 14400000 | VND) Tj T* (Dangerous inventory | Branch | SKU | Product | Available | Safety stock) Tj T* (1 | fdb80dd6-cf56-9599-86f7-1e2be3386090 | HOSCO-A-SKU-001 | Demo Product 1 | 1 | 8) Tj T* (2 | fdb80dd6-cf56-9599-86f7-1e2be3386090 | HOSCO-A-SKU-002 | Demo Product 2 | 1 | 8) Tj T* ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002333 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+2403
+%%EOF

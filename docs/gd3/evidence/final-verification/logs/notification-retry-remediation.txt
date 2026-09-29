@@ -1,0 +1,14 @@
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.11)
+[xUnit.net 00:00:01.07]   Discovering: Hosco.IntegrationTests
+[xUnit.net 00:00:01.13]   Discovered:  Hosco.IntegrationTests
+[xUnit.net 00:00:01.15]   Starting:    Hosco.IntegrationTests
+  Passed Hosco.IntegrationTests.AlertEnginePersistenceTests.Notification_failure_and_retry_count_are_persisted [7 s]
+[xUnit.net 00:00:10.94]   Finished:    Hosco.IntegrationTests
+  Passed Hosco.IntegrationTests.AlertEnginePersistenceTests.Retryable_delivery_query_filters_terminal_status_and_orders_deterministically_on_sqlite [2 s]
+
+Test Run Successful.
+Total tests: 2
+     Passed: 2
+ Total time: 11.5024 Seconds

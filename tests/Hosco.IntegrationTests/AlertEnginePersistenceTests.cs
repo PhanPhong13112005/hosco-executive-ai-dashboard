@@ -57,6 +57,52 @@ public sealed class AlertEnginePersistenceTests
     }
 
     [Fact]
+    public async Task Retryable_delivery_query_filters_terminal_status_and_orders_deterministically_on_sqlite()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new HoscoDbContext(new DbContextOptionsBuilder<HoscoDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        await DemoSeed.SeedAsync(db);
+        await db.NotificationDeliveries.ExecuteDeleteAsync();
+        var alert = await db.Alerts.FirstAsync();
+        var createdAt = new DateTimeOffset(2026, 7, 1, 12, 0, 0, TimeSpan.Zero);
+        var firstId = new Guid("00000000-0000-0000-0000-000000000001");
+        var secondId = new Guid("00000000-0000-0000-0000-000000000002");
+        var nullAttemptId = new Guid("00000000-0000-0000-0000-000000000003");
+        db.NotificationDeliveries.AddRange(
+            Delivery(nullAttemptId, NotificationDeliveryStatus.Pending, null, "pending-null"),
+            Delivery(secondId, NotificationDeliveryStatus.Pending, createdAt.AddMinutes(1), "pending-second"),
+            Delivery(firstId, NotificationDeliveryStatus.Pending, createdAt.AddMinutes(1), "pending-first"),
+            Delivery(Guid.NewGuid(), NotificationDeliveryStatus.Failed, createdAt.AddMinutes(-1), "failed"),
+            Delivery(Guid.NewGuid(), NotificationDeliveryStatus.Sent, createdAt.AddMinutes(-2), "sent"),
+            Delivery(Guid.NewGuid(), NotificationDeliveryStatus.Skipped, createdAt.AddMinutes(-3), "skipped"));
+        await db.SaveChangesAsync();
+        var store = new NotificationDeliveryStore(db, TimeProvider.System);
+
+        var retryable = await store.GetRetryableAsync(createdAt.AddHours(1), 10, default);
+
+        Assert.Equal([nullAttemptId, firstId, secondId], retryable.Select(x => x.Id));
+        Assert.All(retryable, x => Assert.Equal(NotificationDeliveryStatus.Pending, x.Status));
+
+        NotificationDelivery Delivery(Guid id, NotificationDeliveryStatus status, DateTimeOffset? lastAttemptAt,
+            string idempotencyKey) => new()
+        {
+            Id = id,
+            TenantId = alert.TenantId,
+            AlertId = alert.Id,
+            RecipientKey = "fixture",
+            Channel = "fixture",
+            Purpose = NotificationPurpose.Initial,
+            Status = status,
+            LastAttemptAt = lastAttemptAt,
+            IdempotencyKey = idempotencyKey,
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt
+        };
+    }
+
+    [Fact]
     public async Task Escalation_delay_comes_from_typed_rule_configuration()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
