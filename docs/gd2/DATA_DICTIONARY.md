@@ -1,6 +1,6 @@
 # Từ điển dữ liệu kỹ thuật GD2
 
-Không có Business Data Dictionary của BA tại thời điểm triển khai. Từ điển kỹ thuật này phải được đối chiếu với bản mới nhất của BA và không được ghi đè tài liệu đó khi được cung cấp. Trừ khi có ghi chú khác, mọi entity có `Id` đều có thêm `CreatedAt` và `UpdatedAt` không null (`datetimeoffset`) để phục vụ truy vết.
+Tài liệu này đã được đồng bộ với Final GD1 Business Spec. KPI Dictionary là nguồn sự thật cho công thức KPI; phần dưới mô tả model kỹ thuật hỗ trợ các công thức đó. Trừ khi có ghi chú khác, mọi entity có `Id` đều có thêm `CreatedAt` và `UpdatedAt` không null (`datetimeoffset`) để phục vụ truy vết.
 
 ## Tenant
 
@@ -75,8 +75,10 @@ Không có Business Data Dictionary của BA tại thời điểm triển khai. 
 | Name | nvarchar(max) | Không | | Tên sản phẩm |
 | CurrentPrice | decimal(18,2) | Không | | Giá niêm yết hiện tại; không phải giá bán lịch sử |
 | CurrentCost | decimal(18,2) | Không | | Giá vốn hiện tại; không được dùng tùy ý để tính GP lịch sử |
+| FloorPrice | decimal(18,2) | Có | | Giá sàn SKU dùng cho AL-05; nullable/configurable |
 | Currency | nvarchar(max) | Không | | Mã tiền tệ kiểu ISO; Seed dùng VND |
 | IsActive | bit | Không | | Cờ hoạt động trong catalog |
+| IsKeySku | bit | Không | | SKU quan trọng đủ điều kiện đánh giá AL-03 |
 
 ## Inventory
 
@@ -87,7 +89,8 @@ Không có Business Data Dictionary của BA tại thời điểm triển khai. 
 | BranchId | uniqueidentifier | Không | FK Branch, nhóm UK | Địa điểm lưu kho |
 | ProductId | uniqueidentifier | Không | FK Product, nhóm UK | Sản phẩm được lưu kho |
 | QuantityOnHand | int | Không | | Số lượng tồn hiện tại |
-| SafetyStock | int | Không | | Đầu vào ngưỡng đã cấu hình; quy tắc tồn kho nguy hiểm đang chờ BA |
+| ReservedQuantity | int | Không | | Số lượng đã giữ chỗ; `Available = QuantityOnHand - ReservedQuantity` |
+| SafetyStock | int | Không | | Ngưỡng an toàn; nguy hiểm khi Available `<= SafetyStock` |
 
 ## Order
 
@@ -99,7 +102,7 @@ Không có Business Data Dictionary của BA tại thời điểm triển khai. 
 | CustomerId | uniqueidentifier | Có | FK Customer | Khách hàng tùy chọn |
 | EmployeeId | uniqueidentifier | Không | FK Employee | Thu ngân xử lý |
 | OrderNumber | nvarchar(max) | Không | UK với TenantId | Mã đơn hàng dễ đọc |
-| Status | int | Không | | Pending/Completed/Cancelled/Returned/PartiallyReturned |
+| Status | int | Không | | Pending=0, Completed=1, Cancelled=2, Returned=3, PartiallyReturned=4, Delivered=5; giá trị cũ không bị dịch chuyển |
 | OrderedAt | datetimeoffset | Không | Có index | Thời điểm sự kiện nghiệp vụ |
 | Subtotal | decimal(18,2) | Không | | Số tiền trước giảm giá cấp đơn hàng |
 | DiscountAmount | decimal(18,2) | Không | | Số tiền giảm giá đơn hàng |
@@ -146,6 +149,17 @@ Không có Business Data Dictionary của BA tại thời điểm triển khai. 
 | RequestedAt | datetimeoffset | Không | Có index | Thời điểm yêu cầu |
 | CompletedAt | datetimeoffset | Có | | Thời điểm hoàn tất |
 
+## RefundItem
+
+| Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
+|---|---|---:|---|---|
+| Id | uniqueidentifier | Không | PK | Phân bổ return/refund ở cấp dòng hàng |
+| TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
+| RefundId | uniqueidentifier | Không | FK Refund | Refund cha |
+| OrderItemId | uniqueidentifier | Không | FK OrderItem | Dòng bán được trả |
+| Quantity | int | Không | | Số lượng trả; không được vượt số lượng bán |
+| ReturnedValue | decimal(18,2) | Không | | Giá trị trả được khấu trừ Revenue; không giả lập partial return |
+
 ## Alert
 
 | Cột | Kiểu SQL | Null | Khóa | Mô tả/quy tắc |
@@ -154,13 +168,16 @@ Không có Business Data Dictionary của BA tại thời điểm triển khai. 
 | TenantId | uniqueidentifier | Không | FK Tenant | Phân vùng Tenant |
 | BranchId | uniqueidentifier | Có | FK logic Branch | Phạm vi Branch tùy chọn |
 | Type | nvarchar(max) | Không | | Mã loại cảnh báo có thể version hóa |
-| Severity | int | Không | | Info/Warning/Critical |
+| Severity | int | Không | | Medium=0, High=1, Critical=2; tương thích số với Info/Warning lịch sử |
 | Status | int | Không | Có index | Open/Acknowledged/Resolved |
 | Title | nvarchar(max) | Không | | Tiêu đề hiển thị |
 | PayloadJson | nvarchar(max) | Không | | Metadata có thể mở rộng, không chứa secret |
 | DetectedAt | datetimeoffset | Không | Có index | Thời điểm phát hiện/sự kiện |
 | AcknowledgedAt | datetimeoffset | Có | | Thời điểm thao tác ở GD3 trong tương lai |
 | ResolvedAt | datetimeoffset | Có | | Thời điểm thao tác ở GD3 trong tương lai |
+| BaselineValue | decimal(18,2) | Có | | Baseline dùng làm bằng chứng tại thời điểm phát hiện |
+| ResolutionNote | nvarchar(2000) | Có | | Ghi chú xử lý; bắt buộc với AL-04/AL-05 |
+| EscalatedAt | datetimeoffset | Có | | Thời điểm đã phát escalation; ngăn gửi lặp cho cùng Alert |
 
 ## AuditLog
 

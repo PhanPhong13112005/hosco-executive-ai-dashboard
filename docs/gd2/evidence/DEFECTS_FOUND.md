@@ -1,4 +1,6 @@
-# Các defect đã phát hiện
+# Các defect đã phát hiện (audit trail lịch sử)
+
+> Các blocker KPI preview bên dưới đã được Final GD1 giải quyết và không mô tả trạng thái hiện tại.
 
 Không có business code nào bị thay đổi. Các finding sau được giữ lại để chủ sở hữu phân loại xử lý.
 

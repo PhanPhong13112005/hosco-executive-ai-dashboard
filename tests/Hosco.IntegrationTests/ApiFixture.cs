@@ -9,6 +9,7 @@ public sealed class ApiFixture : IAsyncLifetime
     private Process? _process;
     private readonly StringBuilder _output = new();
     public HttpClient Client { get; private set; } = null!;
+    public string ProcessOutput => _output.ToString();
 
     public async Task InitializeAsync()
     {

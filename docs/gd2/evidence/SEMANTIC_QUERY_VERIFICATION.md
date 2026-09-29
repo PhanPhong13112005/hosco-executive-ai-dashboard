@@ -1,4 +1,6 @@
-# Xác minh Semantic Layer và Query Catalog
+# Xác minh Semantic Layer và Query Catalog (bằng chứng GD2 lịch sử)
+
+> Snapshot này có trước Final GD1 và đã bị thay thế bởi catalog version 2.0 Implemented trong docs/gd2/QUERY_CATALOG.md.
 
 ## Metric catalog
 

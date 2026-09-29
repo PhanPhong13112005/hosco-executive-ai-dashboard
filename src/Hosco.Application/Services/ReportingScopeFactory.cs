@@ -17,9 +17,7 @@ public sealed class ReportingScopeFactory(ICurrentUser currentUser, IBranchScope
         if (requestedBranchId.HasValue)
             return new ReportingScope(currentUser.TenantId, new HashSet<Guid> { requestedBranchId.Value });
 
-        var tenantWide = currentUser.Roles.Contains(SystemRole.Owner) ||
-                         currentUser.Roles.Contains(SystemRole.ChainManager) ||
-                         currentUser.Roles.Contains(SystemRole.SystemAdmin);
+        var tenantWide = currentUser.Roles.Contains(SystemRole.ChainManager);
         return new ReportingScope(currentUser.TenantId, tenantWide ? null : currentUser.BranchIds);
     }
 }

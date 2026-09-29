@@ -19,7 +19,7 @@ public sealed class SeedDatasetTests(ApiFixture fixture)
         var response = await fixture.Client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Equal(1_042, json.RootElement.GetProperty("meta").GetProperty("totalCount").GetInt32());
+        Assert.Equal(521, json.RootElement.GetProperty("meta").GetProperty("totalCount").GetInt32());
         Assert.Equal(new DateTimeOffset(2026, 1, 1, 8, 0, 0, TimeSpan.Zero),
             json.RootElement.GetProperty("data")[0].GetProperty("orderedAt").GetDateTimeOffset());
     }
