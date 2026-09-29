@@ -23,15 +23,16 @@ flowchart LR
     Engine --> Dedup[Dedup + Cooldown]
     Dedup --> Repo[AlertRepository]
     Repo --> DB[(SQL Server / EF Core)]
-    Engine --> Notify[INotificationSender]
-    Notify --> Log[LoggingNotificationSender]
+    Engine --> Notify[NotificationDispatcher]
+    Notify --> Delivery[(NotificationDeliveries)]
+    Notify --> Telegram[Telegram Bot API]
 ```
 
 ## Ranh giới layer
 
-- `Hosco.Domain`: `AlertRule`, `Alert`, enum status/severity và entity thương mại GD2.
+- `Hosco.Domain`: `AlertRule`, `Alert`, `NotificationDelivery`, enum status/severity/delivery và entity thương mại GD2.
 - `Hosco.Application`: canonical KPI semantics, UTC+7 `IBusinessTime`, typed Alert config, evaluator Strategy, engine orchestration, workflow service, `TimeProvider` và abstraction persistence/notification.
-- `Hosco.Infrastructure`: EF mapping/repository, signal query, seed và Migration.
+- `Hosco.Infrastructure`: EF mapping/repository, signal query, notification store/Telegram channel, Dashboard export, seed và Migration.
 - `Hosco.Api`: controller, authorization policy, scheduler hosted service, structured logging và composition root.
 - `Hosco.Web`: API client tập trung, page/component/type; không tham chiếu database.
 
@@ -41,6 +42,6 @@ Tenant không xuất hiện trong request filter. `ReportingScopeFactory` suy ra
 
 ## Thời gian và khả năng kiểm thử
 
-Evaluator nhận `now` do `AlertEngine` lấy từ `TimeProvider`, không gọi `DateTime.Now`. Business date/clock và peak windows đi qua `IBusinessTime` UTC+7. Scheduler tạo DI scope riêng cho mỗi chu kỳ. Lỗi một rule được ghi log qua `IAlertEngineDiagnostics`; các rule còn lại tiếp tục.
+Evaluator nhận `now` do `AlertEngine` lấy từ `TimeProvider`, không gọi `DateTime.Now`. Business date/clock và peak windows đi qua `IBusinessTime` UTC+7. Scheduler tạo DI scope và correlation ID riêng cho mỗi chu kỳ. Lỗi một rule hoặc notification được cô lập; các rule còn lại tiếp tục. Pending delivery được retry ở chu kỳ sau với backoff giới hạn.
 
 Return allocation dùng bảng chuẩn hóa `RefundItem(RefundId, OrderItemId, Quantity, ReturnedValue)`. `Returned`/`PartiallyReturned` được xem là post-completion lifecycle: sale vẫn được nhận diện nhưng valid quantity/value/COGS bị khấu trừ theo allocation. Partial return không có allocation không bị giả lập.

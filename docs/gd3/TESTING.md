@@ -1,5 +1,7 @@
 # Kiểm thử GD3 / Final GD1 Sync
 
+> Addendum 2026-09-29: the older results below are historical. Current final validation is recorded at the end.
+
 Các test bao phủ canonical KPI (discount, cancelled, full/partial return, GMV trước discount, AOV/null, COGS/GP/GM, distinct cancel-return denominator), UTC+7 boundary, severity boundary AL-01..05, per-signal severity/baseline, cooldown/dedup, workflow actor/time/note và resolve-note AL-04/05.
 
 Security test bao phủ Owner/BranchManager/SystemAdmin không truy cập branch chưa gán, ChainManager tenant-wide trong tenant, cross-tenant 403, BranchManager config 403 và IDOR Alert. Persistence test giữ Product Ranking materialize-before-group để không tái tạo lỗi SQL Server navigation GroupBy.
@@ -15,3 +17,18 @@ Kết quả validation gần nhất trong working tree:
 - Runtime RBAC cuối: unauthenticated 401, BranchManager truy cập branch khác 403, Owner thao tác AL-04 403, ChainManager thấy 10 rule toàn chuỗi và SystemAdmin chỉ thấy 5 rule của branch được gán.
 
 LocalDB/SQL Server và manual browser verification chỉ được ghi PASS khi thực sự chạy. Nếu Code Integrity chặn DLL trước startup, dùng `BLOCKED_BY_LOCAL_WDAC`, không ghi application defect/PASS; xem `KNOWN_ENVIRONMENT_ISSUES.md`. Popup CLR `0xe0434352` không tự nó chứng minh WDAC: lần kiểm tra 2026-09-19 cho thấy một popup `Hosco.Api.exe` có nguyên nhân cụ thể là LocalDB không truy cập được instance registry trong sandbox (`SqlException` error 50, inner Win32 `0x89C50118`); cùng binary chạy ngoài sandbox đã startup và phục vụ UI thành công, không có Event 3033/3077 mới.
+
+## Final GD3 coverage addendum
+
+New tests cover notification success, transient/terminal failure, bounded retry/backoff, idempotency, duplicate-Sent protection, Telegram timeout/5xx/disabled mode/tenant mismatch/recipient policy, scheduler isolation, persisted delivery status/attempt count, and export authentication/scope/canonical Revenue/XLSX/PDF/invalid format/empty dataset.
+
+| Command | Current result |
+|---|---|
+| `dotnet build Hosco.slnx --no-restore` | PASS, 0 errors; NU1900 environment warning only |
+| Unit suite | `BLOCKED_BY_LOCAL_WDAC`; 58 tests discovered, DLL blocked before test logic |
+| Integration suite | `BLOCKED_BY_LOCAL_WDAC`; 44 tests discovered, API DLL blocked before runtime logic |
+| `npm.cmd run build` | PASS, 24 modules |
+| EF pending model changes | PASS: none |
+| Fresh LocalDB migration | PASS through `CompleteGd3NotificationDelivery` |
+
+An earlier intermediate run in the same working session passed 56 Unit and 39 Integration tests before the policy began blocking newly built DLLs. This is supporting evidence only and is not substituted for a PASS of the final 58/44 suites.
