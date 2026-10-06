@@ -1,0 +1,14 @@
+
+> hosco-web@0.3.0 build
+> tsc --noEmit -p tsconfig.app.json && vite build
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 25 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.45 kB │ gzip:  0.29 kB
+dist/assets/index-Cd1w91ED.css   16.12 kB │ gzip:  4.67 kB
+dist/assets/index-CqvSi0GT.js   251.08 kB │ gzip: 77.47 kB
+
+✓ built in 445ms

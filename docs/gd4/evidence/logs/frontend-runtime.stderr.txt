@@ -1,0 +1,48 @@
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/dashboard/summary?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/revenue/trend?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/inventory/dangerous?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00&pageSize=20
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/products/top?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00&pageSize=10
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/products/bottom?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00&pageSize=10
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/branches
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/dashboard/summary?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/revenue/trend?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/inventory/dangerous?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00&pageSize=20
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/products/top?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00&pageSize=10
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/products/bottom?from=2026-01-01T00%3A00%3A00%2B07%3A00&to=2026-06-30T23%3A59%3A59.999%2B07%3A00&pageSize=10
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
+11:57:03 AM [vite] http proxy error: /api/v1/reporting/branches
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7)
