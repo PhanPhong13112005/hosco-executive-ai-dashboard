@@ -39,3 +39,6 @@ public interface ILlmProvider
     Task<ChatIntentResult?> TryResolveAsync(string message, ChatConversationContext? context,
         CancellationToken cancellationToken);
 }
+
+public sealed class ReportingApiUnavailableException(string message, Exception? innerException = null)
+    : Exception(message, innerException);

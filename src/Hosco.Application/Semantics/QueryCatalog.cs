@@ -28,6 +28,7 @@ public sealed class QueryCatalog : IQueryCatalog
         Q("aov.summary.v1", "aov", Range, "KpiValue", DefinitionStatus.Implemented),
         Q("products.ranking.v1", "sku-ranking", [.. Range, "bottom", "pageSize"], "ProductRankRow[]", DefinitionStatus.Implemented),
         Q("inventory.dangerous.v1", "dangerous-stock", ["branchId"], "DangerousInventoryRow[]", DefinitionStatus.Implemented),
+        Q("alerts.list.v1", null, ["branchId", "severity", "status", "page", "pageSize"], "AlertPage", DefinitionStatus.Implemented, "1.0"),
         Q("gross-profit.summary.v1", "gross-profit", Range, "KpiValue", DefinitionStatus.Implemented),
         Q("cancel-return-rate.summary.v1", "cancel-return-rate", Range, "KpiValue", DefinitionStatus.Implemented),
         Q("kpis.summary.v1", null, Range, "KpiValue[]", DefinitionStatus.Implemented)
