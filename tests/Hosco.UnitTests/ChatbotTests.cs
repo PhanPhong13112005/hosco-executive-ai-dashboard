@@ -90,6 +90,20 @@ public sealed class ChatbotTests
         Assert.Contains("Không có dữ liệu", products);
     }
 
+    [Fact]
+    public async Task Chat_service_returns_safe_fallback_when_reporting_api_is_unavailable()
+    {
+        var service = new ChatService(new ChatSafetyGuard(), Resolver(),
+            new ChatAuthorizationGuard(new QueryCatalog()), new UnavailableReportingClient(),
+            new ChatResponseComposer(), new AuditSpy());
+
+        var result = await service.SendAsync(new ChatMessageRequest("Doanh thu hôm nay?"), default);
+
+        Assert.Equal("Unavailable", result.Status);
+        Assert.Equal("Hiện chưa thể lấy dữ liệu báo cáo. Vui lòng thử lại sau.", result.Message);
+        Assert.Null(result.Data);
+    }
+
     private static ChatIntentResolver Resolver(ILlmProvider? provider = null) =>
         new(new VietnamBusinessTime(), new Clock(Now), provider ?? new DisabledLlmProvider());
 
@@ -102,5 +116,19 @@ public sealed class ChatbotTests
     {
         public Task<ChatIntentResult?> TryResolveAsync(string message, ChatConversationContext? context,
             CancellationToken cancellationToken) => Task.FromResult(result);
+    }
+
+    private sealed class UnavailableReportingClient : IReportingApiClient
+    {
+        public Task<IReadOnlyList<ChatBranch>> GetBranchesAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<ChatBranch>>([]);
+        public Task<ReportingApiResult> ExecuteAsync(ChatOperationRequest request, CancellationToken cancellationToken) =>
+            throw new ReportingApiUnavailableException("fixture");
+    }
+
+    private sealed class AuditSpy : IAuditWriter
+    {
+        public Task WriteAsync(string action, string resourceType, string? resourceId, string? queryId,
+            Guid? branchId, object? metadata, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
