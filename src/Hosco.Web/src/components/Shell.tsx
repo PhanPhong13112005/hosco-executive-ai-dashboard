@@ -1,4 +1,4 @@
-export type Page = 'dashboard' | 'alerts' | 'rules'
+export type Page = 'dashboard' | 'alerts' | 'chat' | 'rules'
 
 export function Shell({ page, onNavigate, onLogout, children }: {
   page: Page
@@ -12,7 +12,7 @@ export function Shell({ page, onNavigate, onLogout, children }: {
       <nav>
         <button className={page === 'dashboard' ? 'active' : ''} onClick={() => onNavigate('dashboard')}><span>⌁</span> Dashboard</button>
         <button className={page === 'alerts' ? 'active' : ''} onClick={() => onNavigate('alerts')}><span>⚡</span> Cảnh báo</button>
-        <button disabled title="Sẽ triển khai ở GD4" aria-label="Trợ lý AI, sẽ triển khai ở GD4"><span>✦</span> Trợ lý AI <small>GD4</small></button>
+        <button className={page === 'chat' ? 'active' : ''} onClick={() => onNavigate('chat')}><span>✦</span> Trợ lý AI <small>GD4</small></button>
         <button className={page === 'rules' ? 'active' : ''} onClick={() => onNavigate('rules')}><span>⚙</span> Cấu hình cảnh báo</button>
       </nav>
       <div className="sidebar-bottom">

@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AlertsPage } from './pages/AlertsPage'
 import { RulesPage } from './pages/RulesPage'
+import { ChatPage } from './pages/ChatPage'
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(auth.hasToken())
@@ -14,6 +15,7 @@ export default function App() {
   return <Shell page={page} onNavigate={setPage} onLogout={logout}>
     {page === 'dashboard' && <DashboardPage openAlerts={() => setPage('alerts')}/>} 
     {page === 'alerts' && <AlertsPage/>}
+    {page === 'chat' && <ChatPage/>}
     {page === 'rules' && <RulesPage/>}
   </Shell>
 }

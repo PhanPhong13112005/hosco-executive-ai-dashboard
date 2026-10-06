@@ -1,6 +1,7 @@
 import type {
   AlertDetail, AlertPage, AlertRule, Branch, DashboardSummary, DangerousInventory,
   Envelope, KpiDrilldown, ProductRank, RevenuePoint,
+  ChatContext, ChatResponse,
 } from '../types/api'
 
 const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
@@ -81,4 +82,7 @@ export const api = {
   resolve: (id: string, note?: string) => request<AlertDetail>(`/api/v1/alerts/${id}/resolve`, { method: 'POST', body: JSON.stringify({ note: note || null }) }),
   rules: () => request<AlertRule[]>('/api/v1/alert-rules'),
   updateRule: (id: string, update: Partial<AlertRule>) => request<AlertRule>(`/api/v1/alert-rules/${id}`, { method: 'PATCH', body: JSON.stringify(update) }),
+  chat: (message: string, context?: ChatContext) => request<ChatResponse>('/api/v1/chat/messages', {
+    method: 'POST', body: JSON.stringify({ message, context: context ?? null }),
+  }),
 }

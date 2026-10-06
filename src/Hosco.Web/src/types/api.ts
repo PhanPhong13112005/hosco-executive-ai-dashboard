@@ -105,3 +105,15 @@ export type AlertRule = {
   configJson: string
   baStatus: string
 }
+export type ChatContext = { previousIntent?: string | null; previousMetric?: string | null }
+export type ChatResponse = {
+  message: string
+  intent: string
+  status: string
+  confidence: number
+  data?: unknown
+  suggestions: string[]
+  context: ChatContext
+  reportingOperation?: string | null
+  correlationId: string
+}
