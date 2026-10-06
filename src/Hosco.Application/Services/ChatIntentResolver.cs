@@ -17,8 +17,8 @@ public sealed partial class ChatIntentResolver(
         var text = Normalize(message);
         var dateRange = ResolveDateRange(text);
         var intent = ResolveIntent(text);
-        if (intent == ChatIntent.Unknown && dateRange is not null && context?.PreviousIntent is { Length: > 0 } previous &&
-            Enum.TryParse<ChatIntent>(previous, true, out var contextualIntent) && contextualIntent != ChatIntent.Unknown)
+        if (intent == ChatIntent.Unknown && dateRange is not null && IsPeriodFollowUp(text) && context?.PreviousIntent is { Length: > 0 } previous &&
+            Enum.TryParse<ChatIntent>(previous, true, out var contextualIntent) && Enum.IsDefined(contextualIntent) && contextualIntent != ChatIntent.Unknown)
             intent = contextualIntent;
 
         if (intent == ChatIntent.Unknown)
@@ -84,7 +84,7 @@ public sealed partial class ChatIntentResolver(
 
     private static ChatIntent ResolveIntent(string text)
     {
-        if (ContainsAny(text, "ton kho nguy hiem", "hang ton nguy hiem", "dangerous stock")) return ChatIntent.DangerousInventory;
+        if ((text.Contains("ton kho") && text.Contains("nguy hiem")) || ContainsAny(text, "hang ton nguy hiem", "dangerous stock")) return ChatIntent.DangerousInventory;
         if (ContainsAny(text, "canh bao", "alert")) return ChatIntent.CurrentAlerts;
         if (ContainsAny(text, "top ", "ban chay", "san pham top")) return ChatIntent.TopProducts;
         if (ContainsAny(text, "bottom", "ban cham", "xep cuoi")) return ChatIntent.BottomProducts;
@@ -147,6 +147,11 @@ public sealed partial class ChatIntentResolver(
     }
 
     private static bool ContainsAny(string text, params string[] values) => values.Any(text.Contains);
+
+    private static bool IsPeriodFollowUp(string text) => PeriodFollowUpRegex().IsMatch(text);
+
+    [GeneratedRegex(@"^(?:con\s+)?(?:hom nay|hom qua|tuan nay|tuan truoc|thang nay|thang truoc|\d{1,3}\s+ngay\s+gan\s+nhat)\s*[?.!]*$")]
+    private static partial Regex PeriodFollowUpRegex();
 
     [GeneratedRegex(@"\b(\d{1,3})\s+ngay\s+gan\s+nhat\b")]
     private static partial Regex RecentDaysRegex();

@@ -9,8 +9,8 @@ public sealed class ChatSafetyGuard : IChatSafetyGuard
     private const int MaxMessageLength = 1000;
     private static readonly string[] BlockedPatterns =
     [
-        "ignore previous", "bo qua chi thi", "bo qua quyen", "vuot quyen", "all tenants", "tenant khac",
-        "branchid", "branch id", "viet sql", "select *", "drop table", "insert into", "update orders",
+        "ignore previous", "bo qua chi thi", "bo qua quyen", "vuot quyen", "tenant", "branchid", "sql",
+        "branch id", "select *", "drop table", "insert into", "update orders",
         "connection string", "api key", "system prompt", "doc secret", "lay secret", "shell command",
         "thuc thi lenh", "command he thong", "goi url", "http://", "https://"
     ];
@@ -32,6 +32,12 @@ public sealed class ChatAuthorizationGuard(IQueryCatalog queryCatalog) : IChatAu
     {
         if (intent.Status != ChatResolutionStatus.Resolved)
             throw new ValidationException("Only a resolved intent can execute a reporting operation.");
+        if (intent.Limit is < 1 or > 20)
+            throw new ValidationException("Chat result limit must be between 1 and 20.");
+        if (intent.Intent is ChatIntent.KpiOverview or ChatIntent.Revenue or ChatIntent.Gmv or ChatIntent.TotalOrders or
+            ChatIntent.Aov or ChatIntent.GrossProfit or ChatIntent.GrossMargin or ChatIntent.CancellationReturnRate or
+            ChatIntent.RevenueTrend && intent.DateRange is null)
+            throw new ValidationException("This intent requires a business date range.");
 
         var (operation, queryId) = intent.Intent switch
         {
@@ -48,6 +54,9 @@ public sealed class ChatAuthorizationGuard(IQueryCatalog queryCatalog) : IChatAu
         var definition = queryCatalog.Get(queryId);
         if (definition.Status != DefinitionStatus.Implemented)
             throw new BusinessDefinitionPendingException(definition.MetricCode ?? definition.QueryId);
+        new ReportingFilter(intent.DateRange?.From, intent.DateRange?.To, PageSize: intent.Limit ?? 5).Validate();
+        if (intent.Severity is not null && intent.Severity is not ("Critical" or "High" or "Medium"))
+            throw new ValidationException("Unsupported alert severity.");
 
         Guid? branchId = null;
         if (!string.IsNullOrWhiteSpace(intent.BranchReference))

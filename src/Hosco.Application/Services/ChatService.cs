@@ -19,7 +19,13 @@ public sealed class ChatService(
 
     public async Task<ChatServiceResult> SendAsync(ChatMessageRequest request, CancellationToken cancellationToken)
     {
-        safety.EnsureSafe(request.Message);
+        try { safety.EnsureSafe(request.Message); }
+        catch (ForbiddenException)
+        {
+            await audit.WriteAsync("chat.reject", "Chat", null, null, null,
+                new { outcome = "forbidden" }, cancellationToken);
+            throw;
+        }
         var intent = await resolver.ResolveAsync(request.Message, request.Context, cancellationToken);
         var context = new ChatConversationContext(intent.Intent.ToString(), intent.Metric);
         if (intent.Status != ChatResolutionStatus.Resolved)
@@ -30,12 +36,13 @@ public sealed class ChatService(
                 intent.Status.ToString(), intent.Confidence, null, DefaultSuggestions, context);
         }
 
-        var branches = string.IsNullOrWhiteSpace(intent.BranchReference)
-            ? Array.Empty<ChatBranch>()
-            : await reporting.GetBranchesAsync(cancellationToken);
-        var operation = authorization.Authorize(intent, branches);
+        ChatOperationRequest? operation = null;
         try
         {
+            var branches = string.IsNullOrWhiteSpace(intent.BranchReference)
+                ? Array.Empty<ChatBranch>()
+                : await reporting.GetBranchesAsync(cancellationToken);
+            operation = authorization.Authorize(intent, branches);
             var result = await reporting.ExecuteAsync(operation, cancellationToken);
             var message = composer.Compose(intent, result);
             await audit.WriteAsync("chat.query", "Reporting", null, result.QueryId, operation.BranchId,
@@ -45,11 +52,17 @@ public sealed class ChatService(
         }
         catch (ReportingApiUnavailableException)
         {
-            await audit.WriteAsync("chat.query", "Reporting", null, null, operation.BranchId,
-                new { intent = intent.Intent.ToString(), operation = operation.Operation.ToString(), outcome = "unavailable" }, cancellationToken);
+            await audit.WriteAsync("chat.query", "Reporting", null, null, operation?.BranchId,
+                new { intent = intent.Intent.ToString(), operation = operation?.Operation.ToString(), outcome = "unavailable" }, cancellationToken);
             return new ChatServiceResult("Hiện chưa thể lấy dữ liệu báo cáo. Vui lòng thử lại sau.",
                 intent.Intent.ToString(), "Unavailable", intent.Confidence, null, DefaultSuggestions, context,
-                operation.Operation.ToString());
+                operation?.Operation.ToString());
+        }
+        catch (ForbiddenException)
+        {
+            await audit.WriteAsync("chat.query", "Reporting", null, null, null,
+                new { intent = intent.Intent.ToString(), outcome = "forbidden" }, cancellationToken);
+            throw;
         }
     }
 }

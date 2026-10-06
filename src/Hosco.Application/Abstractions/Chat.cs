@@ -42,3 +42,5 @@ public interface ILlmProvider
 
 public sealed class ReportingApiUnavailableException(string message, Exception? innerException = null)
     : Exception(message, innerException);
+
+public sealed class ChatAuthenticationException : Exception;

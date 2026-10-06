@@ -138,7 +138,9 @@ public partial class Program
         builder.Services.AddSingleton<IResponseComposer, ChatResponseComposer>();
         builder.Services.AddScoped<IChatService, ChatService>();
         builder.Services.AddHttpClient<IReportingApiClient, ReportingApiClient>(client =>
-            client.Timeout = TimeSpan.FromSeconds(10)).RemoveAllLoggers();
+            client.Timeout = TimeSpan.FromSeconds(8))
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RemoveAllLoggers();
         builder.Services.AddScoped<IKpiSnapshotStore, KpiSnapshotStore>();
         builder.Services.AddScoped<IReportingDataStore, ReportingDataStore>();
         builder.Services.AddScoped<IDashboardExportService, DashboardExportService>();

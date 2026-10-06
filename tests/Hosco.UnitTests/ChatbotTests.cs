@@ -45,6 +45,36 @@ public sealed class ChatbotTests
     }
 
     [Fact]
+    public async Task Context_does_not_turn_unrelated_questions_or_invalid_enum_into_reporting()
+    {
+        var unrelated = await Resolver().ResolveAsync("Thời tiết hôm nay?",
+            new ChatConversationContext("Revenue", "revenue"), default);
+        var invalid = await Resolver().ResolveAsync("Còn tuần trước?",
+            new ChatConversationContext("999", "revenue"), default);
+        Assert.Equal(ChatResolutionStatus.Unknown, unrelated.Status);
+        Assert.Equal(ChatResolutionStatus.Unknown, invalid.Status);
+    }
+
+    [Fact]
+    public async Task Every_ui_suggestion_resolves()
+    {
+        foreach (var message in new[] { "Doanh thu hôm nay?", "Top 5 sản phẩm bán chạy?",
+            "Tồn kho nào đang nguy hiểm?", "Có cảnh báo Critical nào không?", "Doanh thu 7 ngày gần nhất?" })
+            Assert.Equal(ChatResolutionStatus.Resolved, (await Resolver().ResolveAsync(message, null, default)).Status);
+    }
+
+    [Fact]
+    public async Task Business_dates_use_utc_plus_seven_and_inclusive_end()
+    {
+        var today = await Resolver().ResolveAsync("Doanh thu hôm nay?", null, default);
+        var week = await Resolver().ResolveAsync("Doanh thu tuần trước?", null, default);
+        Assert.Equal(new DateTimeOffset(2026, 10, 5, 17, 0, 0, TimeSpan.Zero), today.DateRange!.From);
+        Assert.Equal(new DateTimeOffset(2026, 10, 6, 17, 0, 0, TimeSpan.Zero).AddTicks(-1), today.DateRange.To);
+        Assert.Equal(new DateTimeOffset(2026, 9, 27, 17, 0, 0, TimeSpan.Zero), week.DateRange!.From);
+        Assert.Equal(new DateTimeOffset(2026, 10, 4, 17, 0, 0, TimeSpan.Zero).AddTicks(-1), week.DateRange.To);
+    }
+
+    [Fact]
     public async Task Resolver_uses_optional_provider_then_falls_back_to_unknown()
     {
         var provider = new Provider(new ChatIntentResult(ChatIntent.CurrentAlerts, ChatResolutionStatus.Resolved, .8m));
@@ -74,6 +104,18 @@ public sealed class ChatbotTests
         Assert.Equal(ReportingOperation.TopProducts, operation.Operation);
         Assert.Equal(allowed.Id, operation.BranchId);
         Assert.Throws<ForbiddenException>(() => guard.Authorize(intent, []));
+    }
+
+    [Fact]
+    public void Authorization_guard_validates_provider_parameters()
+    {
+        var guard = new ChatAuthorizationGuard(new QueryCatalog());
+        Assert.Throws<ValidationException>(() => guard.Authorize(
+            new ChatIntentResult(ChatIntent.Revenue, ChatResolutionStatus.Resolved, 1m), []));
+        Assert.Throws<ValidationException>(() => guard.Authorize(
+            new ChatIntentResult(ChatIntent.TopProducts, ChatResolutionStatus.Resolved, 1m, Limit: 21), []));
+        Assert.Throws<ValidationException>(() => guard.Authorize(
+            new ChatIntentResult(ChatIntent.CurrentAlerts, ChatResolutionStatus.Resolved, 1m, Severity: "arbitrary"), []));
     }
 
     [Fact]

@@ -9,7 +9,13 @@ public sealed class ChatResponseComposer : IResponseComposer
 {
     private static readonly CultureInfo Vietnamese = CultureInfo.GetCultureInfo("vi-VN");
 
-    public string Compose(ChatIntentResult intent, ReportingApiResult result) => intent.Intent switch
+    public string Compose(ChatIntentResult intent, ReportingApiResult result)
+    {
+        if (result.Data.ValueKind == JsonValueKind.Object &&
+            result.Data.TryGetProperty("totalOrders", out var orders) && orders.GetInt32() == 0 &&
+            intent.Intent is not ChatIntent.CurrentAlerts)
+            return "Không có dữ liệu phù hợp trong khoảng thời gian này.";
+        return intent.Intent switch
     {
         ChatIntent.KpiOverview => Overview(result.Data, intent.DateRange?.Label),
         ChatIntent.Revenue => Scalar(result.Data, "revenue", "Doanh thu", intent.DateRange?.Label, "currency"),
@@ -25,7 +31,8 @@ public sealed class ChatResponseComposer : IResponseComposer
         ChatIntent.DangerousInventory => Inventory(result.Data),
         ChatIntent.CurrentAlerts => Alerts(result.Data, intent.Severity),
         _ => "Hiện tại tôi chưa hỗ trợ loại câu hỏi này."
-    };
+        };
+    }
 
     private static string Overview(JsonElement data, string? period) =>
         $"Tổng quan {period}: doanh thu {Money(data.GetProperty("revenue").GetDecimal(), Currency(data))}, " +

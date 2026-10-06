@@ -14,11 +14,13 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
             var (status, code, message) = exception switch
             {
                 ValidationException => (400, "validation_error", exception.Message),
+                ChatAuthenticationException => (401, "unauthorized", "Authentication is required."),
                 ForbiddenException => (403, "forbidden", exception.Message),
                 KeyNotFoundException => (404, "not_found", exception.Message),
                 BusinessDefinitionPendingException => (409, "business_definition_pending", exception.Message),
                 OperationCanceledException when context.RequestAborted.IsCancellationRequested => (499, "request_cancelled", "The request was cancelled."),
-                _ => (500, "internal_error", environment.IsDevelopment() ? exception.Message : "An unexpected error occurred.")
+                _ => (500, "internal_error", environment.IsDevelopment() && !context.Request.Path.StartsWithSegments("/api/v1/chat")
+                    ? exception.Message : "An unexpected error occurred.")
             };
             var correlationId = context.Items[CorrelationMiddleware.ItemKey]?.ToString() ?? "unavailable";
             logger.LogError(exception, "Request failed code={ErrorCode} correlationId={CorrelationId}", code, correlationId);
