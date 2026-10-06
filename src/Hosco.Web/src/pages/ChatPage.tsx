@@ -25,14 +25,15 @@ export function ChatPage() {
   const [error, setError] = useState<string>()
   const [lastMessage, setLastMessage] = useState('')
 
-  const send = async (value = input) => {
+  const send = async (value = input, retry = false) => {
     const text = value.trim()
     if (!text || loading) return
     setInput(''); setError(undefined); setLastMessage(text); setLoading(true)
-    setMessages(current => [...current, { id: crypto.randomUUID(), role: 'user', text, time: new Date() }])
+    if (!retry) setMessages(current => [...current, { id: crypto.randomUUID(), role: 'user', text, time: new Date() }])
     try {
       const response = await api.chat(text, context)
       setContext(response.context)
+      if (response.status === 'Unavailable') { setError(response.message); return }
       setSuggestions(response.suggestions)
       setMessages(current => [...current, {
         id: crypto.randomUUID(), role: 'assistant', text: response.message, time: new Date(),
@@ -60,13 +61,13 @@ export function ChatPage() {
           <div><p>{message.text}</p><small>{message.time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}{message.meta ? ` · ${message.meta}` : ''}</small></div>
         </article>)}
         {loading && <article className="chat-message assistant"><div className="chat-avatar">✦</div><div><p className="chat-typing">Đang lấy dữ liệu báo cáo…</p></div></article>}
-        {error && <div className="chat-error"><span>{error}</span><button onClick={() => send(lastMessage)}>Thử lại</button></div>}
+        {error && <div className="chat-error"><span>{error}</span><button onClick={() => send(lastMessage, true)}>Thử lại</button></div>}
       </div>
       <div className="chat-suggestions">
         {suggestions.map(suggestion => <button key={suggestion} onClick={() => send(suggestion)} disabled={loading}>{suggestion}</button>)}
       </div>
       <form className="chat-composer" onSubmit={event => { event.preventDefault(); send() }}>
-        <textarea value={input} onChange={event => setInput(event.target.value)} maxLength={1000} rows={2}
+        <textarea aria-label="Câu hỏi báo cáo" value={input} onChange={event => setInput(event.target.value)} maxLength={1000} rows={2}
           placeholder="Ví dụ: Doanh thu tuần này?" onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send() } }}/>
         <button className="button" disabled={loading || !input.trim()}>Gửi</button>
       </form>

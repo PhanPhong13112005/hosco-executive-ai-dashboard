@@ -22,6 +22,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     },
   })
   if (!response.ok) {
+    if (response.status === 401 && path !== '/api/v1/auth/login') {
+      localStorage.removeItem(tokenKey)
+      window.dispatchEvent(new Event('hosco:unauthorized'))
+    }
     const payload = await response.json().catch(() => null) as { message?: string; code?: string } | null
     throw new ApiError(response.status, payload?.message ?? `HTTP ${response.status}`, payload?.code)
   }
