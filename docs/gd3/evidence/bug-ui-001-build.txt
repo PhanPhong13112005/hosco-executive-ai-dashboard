@@ -1,0 +1,18 @@
+Executed 2026-10-07
+Command: dotnet build Hosco.slnx --no-restore
+
+D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\Hosco.IntegrationTests.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Hosco.Domain -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Domain\bin\Debug\net10.0\Hosco.Domain.dll
+  Hosco.Application -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Application\bin\Debug\net10.0\Hosco.Application.dll
+  Hosco.Infrastructure -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Infrastructure\bin\Debug\net10.0\Hosco.Infrastructure.dll
+  Hosco.UnitTests -> D:\Code\hosco-executive-ai-dashboard\tests\Hosco.UnitTests\bin\Debug\net10.0\Hosco.UnitTests.dll
+  Hosco.Api -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Api\bin\Debug\net10.0\Hosco.Api.dll
+  Hosco.IntegrationTests -> D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll
+
+Build succeeded.
+
+D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\Hosco.IntegrationTests.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.81

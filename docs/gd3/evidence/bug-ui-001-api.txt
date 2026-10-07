@@ -1,0 +1,32 @@
+Executed 2026-10-07
+Authenticated GET /api/v1/alert-rules; isolated SQLite demo. Token not recorded.
+
+Content-Type: application/json; charset=utf-8
+Status: 200
+[
+  {
+    "code": "AL-01",
+    "name": "Tỷ lệ hủy đơn bất thường",
+    "description": "So sánh tỷ lệ hủy 1 ngày với baseline 7 ngày cùng chi nhánh."
+  },
+  {
+    "code": "AL-02",
+    "name": "Doanh thu giờ cao điểm giảm",
+    "description": "So sánh khung 11:00–13:00 và 17:00–20:00 UTC+7 với 7 ngày trước."
+  },
+  {
+    "code": "AL-03",
+    "name": "SKU quan trọng tồn kho thấp",
+    "description": "IsKeySku với Available = OnHand - Reserved so với SafetyStock."
+  },
+  {
+    "code": "AL-04",
+    "name": "Nhân viên có hủy/hoàn bất thường",
+    "description": "So sánh Rate_NV 1 ngày với baseline chi nhánh 7 ngày hoặc ngưỡng tuyệt đối."
+  },
+  {
+    "code": "AL-05",
+    "name": "Giá bán hoặc giảm giá bất thường",
+    "description": "Kiểm tra discount và FloorPrice theo SKU."
+  }
+]

@@ -25,6 +25,9 @@ public sealed class ApiFixture : IAsyncLifetime
         start.ArgumentList.Add("--Logging:LogLevel:Default=Warning");
         start.ArgumentList.Add($"--urls=http://127.0.0.1:{port}");
         start.Environment["ASPNETCORE_ENVIRONMENT"] = "Testing";
+        start.ArgumentList.Add("--AI_PROVIDER=Mock"); // Never inherit a paid provider from the developer shell.
+        start.Environment.Remove("OPENAI_API_KEY");
+        start.Environment.Remove("GEMINI_API_KEY");
         _process = Process.Start(start) ?? throw new InvalidOperationException("Could not start HOSCO API process.");
         _process.OutputDataReceived += (_, e) => { if (e.Data is not null) _output.AppendLine(e.Data); };
         _process.ErrorDataReceived += (_, e) => { if (e.Data is not null) _output.AppendLine(e.Data); };

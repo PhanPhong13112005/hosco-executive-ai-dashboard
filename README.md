@@ -1,5 +1,11 @@
 # HOSCO – Executive AI Dashboard & Smart Alert Chatbot
 
+## Bàn giao Tester GD3/GD4
+
+Windows PowerShell quick-start (Mock AI, không cần API key): xem [TESTER_SETUP](docs/testing/TESTER_SETUP.md), [TESTER_CHECKLIST](docs/testing/TESTER_CHECKLIST.md) và [LIVE_AI_SMOKE_TEST](docs/testing/LIVE_AI_SMOKE_TEST.md).
+Script setup: `./scripts/setup-tester.ps1`. Chạy backend và frontend trong hai terminal riêng bằng `./scripts/run-tester.ps1 -Service Backend -AiProvider Mock` và `./scripts/run-tester.ps1 -Service Frontend`.
+SQLite mặc định là in-memory; luồng SQL Server persistence/migration và trạng thái validation được ghi trong tài liệu bàn giao. Khi nhận bản bàn giao, kiểm tra revision và trạng thái branch theo TESTER_SETUP.
+
 Nền tảng backend GD2 cung cấp Reporting API an toàn theo Tenant, dùng chung cho Dashboard và Chatbot trong tương lai. Ranh giới truy cập của Chatbot là Reporting API/Danh mục truy vấn (Query Catalog); Chatbot không bao giờ được truy cập trực tiếp cơ sở dữ liệu.
 
 ## Công nghệ và cấu trúc

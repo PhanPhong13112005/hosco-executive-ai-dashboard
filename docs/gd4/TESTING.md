@@ -1,6 +1,31 @@
-# GD4 Validation — 2026-10-06
+# GD4 Validation
 
 CHATBOT DOES NOT ACCESS DATABASE DIRECTLY.
+
+## LLM extension validation — 2026-10-07
+
+Current implementation extends checkpoint `eab5850`; the October 6 evidence below is preserved as **pre-LLM baseline**, not live provider validation.
+
+| Command / gate | Final result | Evidence |
+|---|---|---|
+| `dotnet build Hosco.slnx --no-restore` | PASS, 0 errors, 1 NU1900 advisory-feed warning | `evidence/logs/llm-final-build.txt` |
+| `dotnet test Hosco.slnx --no-build` | Unit **131/131**, Integration **128/128**, total **259/259**, no failures/skips | `evidence/logs/llm-full-regression.txt` |
+| `npm.cmd run build` from `src/Hosco.Web` | PASS TypeScript + Vite; no frontend source/dependency change | `evidence/logs/llm-frontend-build.txt` |
+| External live OpenAI/Gemini | **NOT_CONFIGURED**, no paid calls | `evidence/logs/llm-validation-status.txt` |
+
+Individual suites also passed 131 Unit / 126 Integration before two final DI cases were added. Final solution run above is authoritative. An intermediate follow-up assertion incorrectly expected a date label in a no-data answer: final test observes actual HTTP Reporting `from/to` instead, without changing composer/business logic. Failed intermediate output is retained in `llm-intermediate-assertion.txt` and is **not** a final failure.
+
+Added **51 unit cases**: configuration/default/missing credentials/unsafe identifiers/bounds, exact schema/types/duplicates/extra fields, intent/metric/date/branch/limit/severity validation, UTC+7, low-confidence/ambiguity/comparison clarification, canonical context, unsafe prompts before provider, deterministic fallback, caller cancellation.
+
+Added **48 integration cases**: real OpenAI/Gemini adapter wire contracts with fake HTTP handlers; DI selects configured adapters/scoped resolver; completed/refusal/incomplete/malformed/oversized JSON, network/429/5xx/retry recovery, no retry for 401/403/redirect, timeout vs caller cancellation, missing key => no network. In-process Kestrel + isolated seed SQLite executes Mock LLM HTTP → parser → Chat API/JWT → guard → actual authenticated Reporting HTTP → composer/audit. Revenue data equals direct Reporting API values; branch/date/follow-up extraction, assigned scope/unauthorized/cross-tenant 403, 401 before provider, six requested injection/SQL/key/prompt refusals, malformed/unavailable fallback, low confidence with zero Reporting calls are verified.
+
+All baseline KPI, dashboard/export, alerts, notification/Telegram mock, retry/concurrency and original chat tests remain included. Process API fixture explicitly forces `AI_PROVIDER=Mock` and removes inherited provider keys; the LLM fixture uses only fake headers/handler, never an external network call. No API key provisioning, WDAC change, .NET reinstall, SQL/business rewrite or dependency upgrade occurred.
+
+Initial restricted build exited 1 with no compiler diagnostic; the same solution compiled/tested successfully in the approved outside-sandbox environment. That initial output alone does not establish a new WDAC event. No WDAC bypass or source workaround was used. Frontend build passed in the normal workspace. Existing NuGet/npm/environment notes below remain historical/known limitations; no npm audit/upgrade or new browser UI smoke was performed in this extension.
+
+`LIVE_LLM_PROVIDER=NOT_CONFIGURED`: boolean-only checks found OpenAI/Gemini keys, AI_PROVIDER and AI_MODEL absent in Process/User/Machine environments. Live five-question smoke is pending credentials, not represented as PASS by mock tests. [Configuration, live checklist and privacy boundary](LLM_PROVIDER.md).
+
+## Pre-LLM baseline — 2026-10-06
 
 ## Final executed results
 

@@ -32,7 +32,7 @@ public partial class Program
         await app.RunAsync();
     }
 
-    public static WebApplication BuildApp(string[] args)
+    public static WebApplication BuildApp(string[] args, Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
@@ -46,7 +46,11 @@ public partial class Program
             return new BadRequestObjectResult(new ApiError("validation_error", message, correlationId));
         });
         builder.Services.AddProblemDetails();
-        builder.Services.AddRequestTimeouts(options => options.AddPolicy("reporting", TimeSpan.FromSeconds(10)));
+        builder.Services.AddRequestTimeouts(options =>
+        {
+            options.DefaultPolicy = new Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy { Timeout = TimeSpan.FromSeconds(10) };
+            options.AddPolicy("chat", TimeSpan.FromSeconds(30));
+        });
 
         var provider = builder.Configuration["Database:Provider"] ?? "SqlServer";
         if (provider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
@@ -131,8 +135,7 @@ public partial class Program
         builder.Services.AddSingleton<IQueryCatalog, QueryCatalog>();
         builder.Services.AddSingleton<IBusinessTime, VietnamBusinessTime>();
         builder.Services.AddSingleton<IKpiCalculator, KpiCalculator>();
-        builder.Services.AddSingleton<ILlmProvider, DisabledLlmProvider>();
-        builder.Services.AddSingleton<IIntentResolver, ChatIntentResolver>();
+        builder.Services.AddChatLlm(builder.Configuration);
         builder.Services.AddSingleton<IChatSafetyGuard, ChatSafetyGuard>();
         builder.Services.AddSingleton<IChatAuthorizationGuard, ChatAuthorizationGuard>();
         builder.Services.AddSingleton<IResponseComposer, ChatResponseComposer>();
@@ -185,6 +188,7 @@ public partial class Program
         // JWT-only API: no cookie payload requires persistent Data Protection keys.
         builder.Services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
 
+        configureServices?.Invoke(builder.Services);
         var app = builder.Build();
         app.UseMiddleware<CorrelationMiddleware>();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -197,7 +201,7 @@ public partial class Program
         app.UseAuthentication();
         app.UseCors("WebClient");
         app.UseAuthorization();
-        app.MapControllers().WithRequestTimeout("reporting");
+        app.MapControllers();
         app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false, ResponseWriter = WriteHealthResponse }).AllowAnonymous();
         app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready"), ResponseWriter = WriteHealthResponse }).AllowAnonymous();
         return app;
