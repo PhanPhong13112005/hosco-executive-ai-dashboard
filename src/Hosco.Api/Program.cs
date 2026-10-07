@@ -4,6 +4,7 @@ using Hosco.Api.Health;
 using Hosco.Api.Alerts;
 using Hosco.Api.Observability;
 using Hosco.Api.Security;
+using Hosco.Api.Chat;
 using Hosco.Application.Abstractions;
 using Hosco.Application.Models;
 using Hosco.Application.Semantics;
@@ -130,6 +131,16 @@ public partial class Program
         builder.Services.AddSingleton<IQueryCatalog, QueryCatalog>();
         builder.Services.AddSingleton<IBusinessTime, VietnamBusinessTime>();
         builder.Services.AddSingleton<IKpiCalculator, KpiCalculator>();
+        builder.Services.AddSingleton<ILlmProvider, DisabledLlmProvider>();
+        builder.Services.AddSingleton<IIntentResolver, ChatIntentResolver>();
+        builder.Services.AddSingleton<IChatSafetyGuard, ChatSafetyGuard>();
+        builder.Services.AddSingleton<IChatAuthorizationGuard, ChatAuthorizationGuard>();
+        builder.Services.AddSingleton<IResponseComposer, ChatResponseComposer>();
+        builder.Services.AddScoped<IChatService, ChatService>();
+        builder.Services.AddHttpClient<IReportingApiClient, ReportingApiClient>(client =>
+            client.Timeout = TimeSpan.FromSeconds(8))
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RemoveAllLoggers();
         builder.Services.AddScoped<IKpiSnapshotStore, KpiSnapshotStore>();
         builder.Services.AddScoped<IReportingDataStore, ReportingDataStore>();
         builder.Services.AddScoped<IDashboardExportService, DashboardExportService>();
