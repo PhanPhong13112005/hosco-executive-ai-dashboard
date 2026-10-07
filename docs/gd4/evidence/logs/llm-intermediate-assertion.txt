@@ -1,0 +1,20 @@
+Executed 2026-10-07
+Command: dotnet test Hosco.slnx --no-build (INTERMEDIATE FAIL; superseded by llm-full-regression.txt)
+
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.UnitTests\bin\Debug\net10.0\Hosco.UnitTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   131, Skipped:     0, Total:   131, Duration: 123 ms - Hosco.UnitTests.dll (net10.0)
+[xUnit.net 00:00:19.01]     Hosco.IntegrationTests.LlmChatApiTests.Follow_up_passes_only_allowlisted_intent_and_canonical_metric_not_scope [FAIL]
+  Failed Hosco.IntegrationTests.LlmChatApiTests.Follow_up_passes_only_allowlisted_intent_and_canonical_metric_not_scope [82 ms]
+  Error Message:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Không có dữ liệu phù hợp trong khoảng thờ"···
+Not found: "2026-09-28 → 2026-10-04"
+  Stack Trace:
+     at Hosco.IntegrationTests.LlmChatApiTests.Follow_up_passes_only_allowlisted_intent_and_canonical_metric_not_scope() in D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\LlmChatApiTests.cs:line 133
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:   127, Skipped:     0, Total:   128, Duration: 18 s - Hosco.IntegrationTests.dll (net10.0)

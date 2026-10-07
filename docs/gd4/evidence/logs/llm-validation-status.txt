@@ -1,0 +1,33 @@
+Validation date: 2026-10-07
+Baseline branch: feature/gd4-ai-chatbot
+Baseline HEAD: eab58502e4437e33eda64d238d4731fe87425700
+Main before extension: ed930682ac7b56f919fc0971535c19565bcd7a30
+
+Read-only configuration checks: Environment.GetEnvironmentVariable(name, Process/User/Machine).
+Only configuration presence was printed; no secret value was read into output.
+Process OPENAI_API_KEY configured=False
+Process GEMINI_API_KEY configured=False
+Process AI_PROVIDER configured=False
+Process AI_MODEL configured=False
+User OPENAI_API_KEY configured=False
+User GEMINI_API_KEY configured=False
+User AI_PROVIDER configured=False
+User AI_MODEL configured=False
+Machine OPENAI_API_KEY configured=False
+Machine GEMINI_API_KEY configured=False
+Machine AI_PROVIDER configured=False
+Machine AI_MODEL configured=False
+
+LIVE_LLM_PROVIDER=NOT_CONFIGURED
+No paid OpenAI/Gemini call was made. No live five-question smoke claimed PASS.
+Provider wire/DI/error tests: fake HTTP handlers, fixture keys/models only.
+Chat/Reporting runtime: real local Kestrel + isolated in-memory SQLite + JWT/scope guards;
+only the external LLM HTTP transport was mocked.
+
+Build: PASS, 0 errors, 1 NU1900 advisory-feed warning (outside-sandbox environment).
+Unit: 131/131 PASS; Integration: 128/128 PASS; skipped: 0.
+Full solution regression: 259/259 PASS.
+Frontend: npm.cmd run build PASS in normal workspace, no install/dependency upgrade.
+No WDAC/Code Integrity policy disabled, .NET reinstall or source workaround.
+Restricted initial build exited 1 with 0 warnings/0 errors; no new WDAC cause asserted from that alone.
+Intermediate assertion failure preserved separately; corrected test observes actual Reporting dates.

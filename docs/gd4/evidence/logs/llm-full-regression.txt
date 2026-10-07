@@ -1,0 +1,11 @@
+Executed 2026-10-07
+Command: dotnet test Hosco.slnx --no-build
+
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.UnitTests\bin\Debug\net10.0\Hosco.UnitTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   131, Skipped:     0, Total:   131, Duration: 111 ms - Hosco.UnitTests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:   128, Skipped:     0, Total:   128, Duration: 16 s - Hosco.IntegrationTests.dll (net10.0)

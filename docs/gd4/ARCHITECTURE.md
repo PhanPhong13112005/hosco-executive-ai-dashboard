@@ -8,7 +8,10 @@ CHATBOT DOES NOT ACCESS DATABASE DIRECTLY.
 Hosco.Web ChatPage -> POST /api/v1/chat/messages [ReportingReader/JWT]
   -> ChatService
      -> ChatSafetyGuard
-     -> ChatIntentResolver [IBusinessTime + TimeProvider; disabled LLM fallback]
+     -> LlmIntentResolver
+        -> ILlmProvider [OpenAI Responses / Gemini GenerateContent / Mock]
+        -> LlmIntentContract [strict JSON, enums/parameters/confidence/date validation]
+        -> original ChatIntentResolver [deterministic fallback; IBusinessTime + TimeProvider]
      -> ChatAuthorizationGuard [enum -> implemented QueryCatalog operation]
      -> ReportingApiClient [real HTTP; JWT + correlation ID]
         -> existing ReportingController / AlertsController
@@ -26,6 +29,9 @@ Application chat services depend on abstractions, not EF Core, DbContext, SQL or
 |---|---|
 | ChatModels / Chat abstractions | Typed request, intent, date, operation, response and interfaces |
 | ChatIntentResolver | Vietnamese normalization, proposed phrase matching, inclusive business date ranges, bounded result limit, exact branch reference, simple period follow-up |
+| LlmIntentResolver / ILlmProvider | Optional configured LLM first; offline/error/invalid candidate uses unchanged deterministic resolver |
+| LlmIntentContract | Shared provider schema, local strict validation, sanitized intent-only context, business calendar conversion; low-confidence clarification |
+| OpenAiLlmProvider / GeminiLlmProvider | Fixed HTTPS endpoints, server-only credentials, strict structured intent, total timeout/bounded retry/cancellation, limited response reads, no redirects/logging |
 | ChatSafetyGuard | Required input / 1000-character cap; rejects unsafe requests |
 | ChatAuthorizationGuard | Validates dates/limit/severity, implemented query allowlist, exact branch name/code from scoped API list |
 | ReportingApiClient | Fixed paths, server-controlled loopback destination, forwarded JWT/correlation, no redirects, 8-second timeout, cancellation and safe failure mapping |
@@ -43,7 +49,11 @@ Local Kestrel HTTP was verified. HTTPS-only deployments require a trusted loopba
 
 Structured data is returned alongside the answer; the composer does not calculate revenue, GMV, AOV, margin, cancellation rate, ranking or available stock. Current alerts reuse authenticated `/api/v1/alerts`, not direct alert repository access. This is the existing scoped read API, documented in the chat query allowlist as `alerts.list.v1`.
 
-Conversation context contains only previous intent/metric, no tenant or branch. Context is client-owned and untrusted. It is accepted only for a standalone period/follow-up phrase, then validated and authorized again. Unknown questions with a date are not treated as the previous metric. No persistent chat history or new database migration is introduced.
+Conversation context contains only previous intent/metric, no tenant or branch. Context is client-owned and untrusted. LLM receives only an allow-listed intent and server-derived metric; deterministic fallback still accepts context only for a standalone period/follow-up phrase. Every candidate is authorized again. No persistent chat history or new database migration is introduced.
+
+External providers receive the question, sanitized context and today's UTC+7 date only, not JWT, tenant/branch directory or Reporting API data. LLM cannot choose URLs, query databases, emit executable SQL or compute KPI values. Comparison extraction asks for a single period rather than adding analytics. OpenAI/Gemini are optional adapters, not a BA-approved production vendor choice. See [LLM provider/configuration](LLM_PROVIDER.md).
+
+Reporting endpoints retain a 10-second default request timeout; Chat uses 30 seconds to accommodate the LLM total budget (default 5, maximum 10 seconds) and unchanged Reporting client's 8 seconds. `BuildApp` accepts an optional service-registration callback for in-process test transport overrides only, not a runtime/environment-configurable bypass. Production `Main` does not supply it.
 
 ## Errors and observability
 
