@@ -14,6 +14,8 @@ public sealed partial class ChatIntentResolver(
     public async Task<ChatIntentResult> ResolveAsync(string message, ChatConversationContext? context,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (ResolveConversation(message) is { } conversation) return conversation;
         var text = Normalize(message);
         var dateRange = ResolveDateRange(text);
         var intent = ResolveIntent(text);
@@ -41,6 +43,24 @@ public sealed partial class ChatIntentResolver(
 
         return new ChatIntentResult(intent, ChatResolutionStatus.Resolved, .95m, dateRange, branch, limit,
             Metric(intent), severity);
+    }
+
+    // Local informational replies reuse the existing non-reporting contract.
+    // Exact normalized phrases cannot turn a mixed business/security request into a greeting.
+    internal static ChatIntentResult? ResolveConversation(string message)
+    {
+        var text = Normalize(message).TrimEnd('?', '!', '.', ' ');
+        var reply = text switch
+        {
+            "hello" or "hi" or "xin chao" or "chao" =>
+                "Xin chào! Tôi là trợ lý báo cáo HOSCO. Bạn muốn xem doanh thu, sản phẩm, tồn kho hay cảnh báo?",
+            "help" or "ban lam duoc gi" or "ban co the lam gi" or "huong dan" =>
+                "Tôi có thể tra cứu KPI, doanh thu, Top/Bottom sản phẩm, tồn kho nguy hiểm và cảnh báo trong phạm vi bạn được cấp quyền. " +
+                "Hãy nêu chỉ số, thời gian và chi nhánh; ví dụ: Doanh thu hôm nay? Tôi không thực thi SQL hoặc thay đổi dữ liệu.",
+            _ => null
+        };
+        return reply is null ? null : new ChatIntentResult(ChatIntent.Unknown, ChatResolutionStatus.Unknown, 1m,
+            Clarification: reply);
     }
 
     private ChatDateRange? ResolveDateRange(string text)

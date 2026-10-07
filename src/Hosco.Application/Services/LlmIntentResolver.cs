@@ -10,6 +10,7 @@ public sealed class LlmIntentResolver(ILlmProvider provider, ChatIntentResolver 
     {
         cancellationToken.ThrowIfCancellationRequested();
         safety.EnsureSafe(message);
+        if (ChatIntentResolver.ResolveConversation(message) is { } conversation) return conversation;
         var safeContext = LlmIntentContract.SafeContext(context);
         ChatIntentResult? result;
         try { result = await provider.TryResolveAsync(message, safeContext, cancellationToken); }
