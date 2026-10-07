@@ -31,6 +31,19 @@ public sealed class ChatApiTests(ApiFixture fixture)
         Assert.NotEqual("", json.RootElement.GetProperty("correlationId").GetString());
     }
 
+    [Theory]
+    [InlineData("Hello", "Xin chào!")]
+    [InlineData("Bạn làm được gì?", "Tôi có thể tra cứu KPI")]
+    public async Task Mock_conversation_returns_local_reply_without_reporting(string message, string expected)
+    {
+        using var response = await Send(message, await Login("owner@hosco.local"));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.StartsWith(expected, json.RootElement.GetProperty("message").GetString());
+        Assert.Equal(JsonValueKind.Null, json.RootElement.GetProperty("data").ValueKind);
+        Assert.Equal(JsonValueKind.Null, json.RootElement.GetProperty("reportingOperation").ValueKind);
+    }
+
     [Fact]
     public async Task Ambiguous_unknown_and_no_data_responses_are_safe()
     {
