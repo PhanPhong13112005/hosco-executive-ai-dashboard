@@ -17,7 +17,7 @@ public sealed class LlmProviderOptions
     public static LlmProviderOptions FromConfiguration(Func<string, string?> read)
     {
         var name = read("AI_PROVIDER") ?? "Mock";
-        if (!Enum.TryParse<LlmProviderKind>(name, true, out var provider) || !Enum.IsDefined(provider))
+        if (!Enum.TryParse<LlmProviderKind>(name, true, out var provider) || !Enum.IsDefined(provider) || !name.Equals(provider.ToString(), StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("AI_PROVIDER must be Mock, OpenAI or Gemini.");
         var model = read("AI_MODEL")?.Trim() ?? "";
         if (model.Length > 100 || (model.Length > 0 && !Regex.IsMatch(model, @"^[a-zA-Z0-9._-]+$")))

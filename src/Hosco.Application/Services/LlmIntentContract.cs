@@ -40,7 +40,7 @@ public sealed class LlmIntentContract(IBusinessTime businessTime, TimeProvider c
         """ + "\nNgày nghiệp vụ hiện tại: " + businessTime.GetBusinessDate(clock.GetUtcNow()).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     public static ChatConversationContext? SafeContext(ChatConversationContext? context) =>
-        Enum.TryParse<ChatIntent>(context?.PreviousIntent, false, out var intent) && Enum.IsDefined(intent) && intent != ChatIntent.Unknown
+        Enum.TryParse<ChatIntent>(context?.PreviousIntent, false, out var intent) && Enum.IsDefined(intent) && intent != ChatIntent.Unknown && context?.PreviousIntent == intent.ToString()
             ? new ChatConversationContext(intent.ToString(), Metric(intent)) : null;
 
     public ChatIntentResult? Parse(string json)
@@ -65,7 +65,7 @@ public sealed class LlmIntentContract(IBusinessTime businessTime, TimeProvider c
             {
                 if (!DateOnly.TryParseExact(from, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) ||
                     !DateOnly.TryParseExact(to, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end) ||
-                    start > end || end.DayNumber - start.DayNumber > 365 || end == DateOnly.MaxValue) return null;
+                    start > end || end.DayNumber - start.DayNumber > 365 || start.Year < 1900 || end.Year > 9998) return null;
                 range = new ChatDateRange(businessTime.StartOfBusinessDayUtc(start), businessTime.StartOfBusinessDayUtc(end.AddDays(1)).AddTicks(-1), $"{from} → {to}");
             }
             var branch = Text(root, "branch");

@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using Hosco.Application.Abstractions;
 using Hosco.Application.Models;
@@ -52,7 +51,7 @@ public abstract class LlmHttpProvider(HttpClient client, LlmProviderOptions opti
             }
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return null; }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or InvalidOperationException or IOException or KeyNotFoundException)
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or InvalidOperationException or IOException or KeyNotFoundException or FormatException)
         { return null; } // Never surface provider body, credentials, raw prompt or network exception.
         cancellationToken.ThrowIfCancellationRequested();
         return null;

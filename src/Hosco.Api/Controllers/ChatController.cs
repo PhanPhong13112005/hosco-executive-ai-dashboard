@@ -4,11 +4,13 @@ using Hosco.Application.Models;
 using Hosco.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Timeouts;
 
 namespace Hosco.Api.Controllers;
 
 [ApiController]
 [Authorize(Policy = "ReportingReader")]
+[RequestTimeout("chat")]
 [Route("api/v1/chat/messages")]
 [Produces("application/json")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
