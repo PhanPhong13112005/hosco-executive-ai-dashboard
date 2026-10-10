@@ -15,14 +15,14 @@ public sealed class DashboardExportService(IReportingDataStore data, IAlertRepos
         filter.Validate();
         var alertSummary = await alerts.GetSummaryAsync(scope, cancellationToken);
         var summary = await data.GetDashboardSummaryAsync(scope, filter, alertSummary, cancellationToken);
-        var top = await data.GetProductRankingAsync(scope, filter with { PageSize = 10 }, false, cancellationToken);
-        var bottom = await data.GetProductRankingAsync(scope, filter with { PageSize = 10 }, true, cancellationToken);
+        var top = await data.GetProductRankingAsync(scope, filter with { Page = 1, PageSize = 10 }, false, cancellationToken);
+        var bottom = await data.GetProductRankingAsync(scope, filter with { Page = 1, PageSize = 10 }, true, cancellationToken);
         var dangerous = await data.GetDangerousInventoryAsync(scope, filter with { PageSize = ReportingFilter.MaxPageSize }, cancellationToken);
         var branches = await data.GetBranchesAsync(scope, cancellationToken);
         var branch = filter.BranchId.HasValue
             ? branches.FirstOrDefault(x => x.Id == filter.BranchId)?.Name ?? filter.BranchId.Value.ToString()
             : "All authorized branches";
-        var rows = BuildRows(filter, branch, summary, top, bottom, dangerous);
+        var rows = BuildRows(filter, branch, summary, top.Items, bottom.Items, dangerous);
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
 
         return format.Trim().ToLowerInvariant() switch

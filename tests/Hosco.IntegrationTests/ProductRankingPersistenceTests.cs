@@ -61,8 +61,8 @@ public sealed class ProductRankingPersistenceTests
             DemoSeedIds.BranchA1,
             PageSize: 3);
 
-        var top = await store.GetProductRankingAsync(scope, filter, bottom: false, CancellationToken.None);
-        var bottom = await store.GetProductRankingAsync(scope, filter, bottom: true, CancellationToken.None);
+        var top = (await store.GetProductRankingAsync(scope, filter, bottom: false, CancellationToken.None)).Items;
+        var bottom = (await store.GetProductRankingAsync(scope, filter, bottom: true, CancellationToken.None)).Items;
 
         Assert.Equal(3, top.Count);
         Assert.Equal(3, bottom.Count);
@@ -80,6 +80,7 @@ public sealed class ProductRankingPersistenceTests
             From = new DateTimeOffset(2027, 1, 1, 0, 0, 0, TimeSpan.Zero),
             To = new DateTimeOffset(2027, 1, 31, 23, 59, 59, TimeSpan.Zero)
         }, bottom: false, CancellationToken.None);
-        Assert.Empty(outsideDateRange);
+        Assert.Empty(outsideDateRange.Items);
+        Assert.Equal(0, outsideDateRange.TotalCount);
     }
 }

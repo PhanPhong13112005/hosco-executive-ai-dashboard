@@ -98,7 +98,7 @@ public sealed class ReportingController(
     {
         filter.Validate(); var scope = await scopes.CreateAsync(filter.BranchId, ct);
         var result = await data.GetProductRankingAsync(scope, filter, bottom, ct);
-        return Ok(new ApiEnvelope<IReadOnlyList<ProductRankRow>>(result, await Meta(scope, filter, "products.ranking.v1", null, ct)));
+        return Ok(new ApiEnvelope<IReadOnlyList<ProductRankRow>>(result.Items, await Meta(scope, filter, "products.ranking.v1", result.TotalCount, ct)));
     }
 
     [HttpGet("products/top")]
