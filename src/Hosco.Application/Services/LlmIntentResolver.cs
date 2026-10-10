@@ -11,6 +11,7 @@ public sealed class LlmIntentResolver(ILlmProvider provider, ChatIntentResolver 
         cancellationToken.ThrowIfCancellationRequested();
         safety.EnsureSafe(message);
         if (ChatIntentResolver.ResolveConversation(message) is { } conversation) return conversation;
+        if (ChatIntentResolver.ResolveUnsupportedAnalysis(message) is { } unsupported) return unsupported;
         var safeContext = LlmIntentContract.SafeContext(context);
         ChatIntentResult? result;
         try { result = await provider.TryResolveAsync(message, safeContext, cancellationToken); }

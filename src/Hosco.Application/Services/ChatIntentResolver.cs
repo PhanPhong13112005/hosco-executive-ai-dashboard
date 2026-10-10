@@ -16,6 +16,7 @@ public sealed partial class ChatIntentResolver(
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (ResolveConversation(message) is { } conversation) return conversation;
+        if (ResolveUnsupportedAnalysis(message) is { } unsupported) return unsupported;
         var text = Normalize(message);
         var dateRange = ResolveDateRange(text);
         var intent = ResolveIntent(text);
@@ -39,10 +40,23 @@ public sealed partial class ChatIntentResolver(
         if (needsDate && dateRange is null)
             return new ChatIntentResult(intent, ChatResolutionStatus.Ambiguous, .72m, BranchReference: branch,
                 Limit: limit, Metric: Metric(intent), Severity: severity,
-                Clarification: "Bạn muốn xem hôm nay, hôm qua, tuần này, tuần trước, tháng này, tháng trước hay N ngày gần nhất?");
+                Clarification: CalendarMonthRegex().IsMatch(text)
+                    ? "Bạn muốn xem tháng nào, năm nào? Vui lòng ghi tháng 1–12 và năm, ví dụ: doanh thu tháng 8 năm 2026."
+                    : "Bạn muốn xem hôm nay, hôm qua, tuần này, tuần trước, tháng này, tháng trước hay N ngày gần nhất?");
 
         return new ChatIntentResult(intent, ChatResolutionStatus.Resolved, .95m, dateRange, branch, limit,
             Metric(intent), severity);
+    }
+
+    // A recognized metric is not permission to silently discard unsupported dimensions.
+    // Both local and LLM paths use this check; it never creates a new reporting query.
+    internal static ChatIntentResult? ResolveUnsupportedAnalysis(string message)
+    {
+        var text = Normalize(message);
+        var unsupported = ContainsAny(text, "nhan vien", "thu ngan", "khach hang", "tong thu", "tong chi", "chi phi",
+            "so sanh", "so voi", "theo tung chi nhanh", "chi nhanh nao", "theo doanh thu", "sku-") || IncomeExpenseRegex().IsMatch(text);
+        return unsupported ? new ChatIntentResult(ChatIntent.Unknown, ChatResolutionStatus.Unknown, 1m,
+            Clarification: "Hiện chưa có Reporting API trong MVP cho chiều phân tích hoặc bộ lọc này. Tôi hỗ trợ KPI theo kỳ/chi nhánh, xếp hạng SKU theo số lượng, tồn kho nguy hiểm và cảnh báo.") : null;
     }
 
     // Local informational replies reuse the existing non-reporting contract.
@@ -65,6 +79,7 @@ public sealed partial class ChatIntentResolver(
 
     private ChatDateRange? ResolveDateRange(string text)
     {
+        text = text.Replace("thang ni", "thang nay", StringComparison.Ordinal);
         var today = businessTime.GetBusinessDate(timeProvider.GetUtcNow());
         if (text.Contains("hom nay")) return Range(today, today, "hôm nay");
         if (text.Contains("hom qua")) return Range(today.AddDays(-1), today.AddDays(-1), "hôm qua");
@@ -88,6 +103,13 @@ public sealed partial class ChatIntentResolver(
         var recent = RecentDaysRegex().Match(text);
         if (recent.Success && int.TryParse(recent.Groups[1].Value, out var days) && days is >= 1 and <= 366)
             return Range(today.AddDays(-(days - 1)), today, $"{days} ngày gần nhất");
+        var month = CalendarMonthRegex().Match(text);
+        if (month.Success && int.TryParse(month.Groups[1].Value, out var monthNumber) && monthNumber is >= 1 and <= 12 &&
+            int.TryParse(month.Groups[2].Value, out var year) && year is >= 2000 and <= 2100)
+        {
+            var first = new DateOnly(year, monthNumber, 1);
+            return Range(first, first.AddMonths(1).AddDays(-1), $"tháng {monthNumber} năm {year}");
+        }
         return null;
     }
 
@@ -105,9 +127,10 @@ public sealed partial class ChatIntentResolver(
     private static ChatIntent ResolveIntent(string text)
     {
         if ((text.Contains("ton kho") && text.Contains("nguy hiem")) || ContainsAny(text, "hang ton nguy hiem", "dangerous stock")) return ChatIntent.DangerousInventory;
+        if (text.Contains("sap het hang")) return ChatIntent.DangerousInventory;
         if (ContainsAny(text, "canh bao", "alert")) return ChatIntent.CurrentAlerts;
         if (ContainsAny(text, "top ", "ban chay", "san pham top")) return ChatIntent.TopProducts;
-        if (ContainsAny(text, "bottom", "ban cham", "xep cuoi")) return ChatIntent.BottomProducts;
+        if (ContainsAny(text, "bottom", "ban cham", "xep cuoi", "ban it nhat", "doanh so thap nhat")) return ChatIntent.BottomProducts;
         if (ContainsAny(text, "ty le huy", "ty le hoan", "huy hoan")) return ChatIntent.CancellationReturnRate;
         if (ContainsAny(text, "bien loi nhuan", "gross margin")) return ChatIntent.GrossMargin;
         if (ContainsAny(text, "loi nhuan", "gross profit")) return ChatIntent.GrossProfit;
@@ -115,8 +138,8 @@ public sealed partial class ChatIntentResolver(
         if (ContainsAny(text, "tong don", "so don", "total orders")) return ChatIntent.TotalOrders;
         if (text.Contains("gmv")) return ChatIntent.Gmv;
         if (ContainsAny(text, "tong quan", "kpi")) return ChatIntent.KpiOverview;
-        if (ContainsAny(text, "doanh thu", "revenue"))
-            return ContainsAny(text, "xu huong", "ngay gan nhat", "trend") ? ChatIntent.RevenueTrend : ChatIntent.Revenue;
+        if (ContainsAny(text, "doanh thu", "revenue") || RevenueAbbreviationRegex().IsMatch(text))
+            return ContainsAny(text, "xu huong", "ngay gan nhat", "trend", "theo ngay") ? ChatIntent.RevenueTrend : ChatIntent.Revenue;
         return ChatIntent.Unknown;
     }
 
@@ -170,7 +193,7 @@ public sealed partial class ChatIntentResolver(
 
     private static bool IsPeriodFollowUp(string text) => PeriodFollowUpRegex().IsMatch(text);
 
-    [GeneratedRegex(@"^(?:con\s+)?(?:hom nay|hom qua|tuan nay|tuan truoc|thang nay|thang truoc|\d{1,3}\s+ngay\s+gan\s+nhat)\s*[?.!]*$")]
+    [GeneratedRegex(@"^(?:con\s+)?(?:hom nay|hom qua|tuan nay|tuan truoc|thang nay|thang truoc|\d{1,3}\s+ngay\s+gan\s+nhat)(?:\s+thi sao)?\s*[?.!]*$")]
     private static partial Regex PeriodFollowUpRegex();
 
     [GeneratedRegex(@"\b(\d{1,3})\s+ngay\s+gan\s+nhat\b")]
@@ -179,8 +202,18 @@ public sealed partial class ChatIntentResolver(
     [GeneratedRegex(@"(?:top|bottom)?\s*(\d{1,3})\b")]
     private static partial Regex LimitRegex();
 
-    [GeneratedRegex(@"chi\s+nhanh\s+(.+?)(?=\s+(?:hom\s+nay|hom\s+qua|tuan\s+nay|tuan\s+truoc|thang\s+nay|thang\s+truoc|\d+\s+ngay\s+gan\s+nhat)|[?.,]|$)")]
+    [GeneratedRegex(@"(?:chi\s+nhanh\s+|cua\s+(?:chi\s+nhanh\s+)?(?!(?:toan|he thong)\b))(.+?)(?=\s+(?:hom\s+nay|hom\s+qua|tuan\s+nay|tuan\s+truoc|thang\s+\S+|\d+\s+ngay\s+gan\s+nhat|la\s+bao\s+nhieu|bao\s+nhieu)|[?.,]|$)")]
     private static partial Regex BranchRegex();
+
+    [GeneratedRegex(@"\bdt\b")]
+    private static partial Regex RevenueAbbreviationRegex();
+
+    // Do not mistake "doanh thu chi nhánh ..." for the unsupported "thu chi" report.
+    [GeneratedRegex(@"(?<!doanh )\bthu chi\b")]
+    private static partial Regex IncomeExpenseRegex();
+
+    [GeneratedRegex(@"\bthang\s+(\d{1,2})(?:\s+(?:nam\s+)?(\d{4}))?\b")]
+    private static partial Regex CalendarMonthRegex();
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex WhitespaceRegex();

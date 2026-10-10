@@ -9,10 +9,12 @@ public sealed class ChatSafetyGuard : IChatSafetyGuard
     private const int MaxMessageLength = 1000;
     private static readonly string[] BlockedPatterns =
     [
-        "ignore previous", "bo qua chi thi", "bo qua quyen", "vuot quyen", "tenant", "branchid", "sql",
+        "ignore previous", "ignore instructions", "bo qua chi thi", "bo qua huong dan", "bo qua quyen", "vuot quyen", "tenant", "branchid", "sql",
         "branch id", "select *", "drop table", "insert into", "update orders",
         "connection string", "api key", "system prompt", "doc secret", "lay secret", "shell command",
-        "thuc thi lenh", "command he thong", "goi url", "http://", "https://"
+        "thuc thi lenh", "command he thong", "goi url", "http://", "https://",
+        "mat khau", "password", "access token", "token bi mat", "secret", "schema",
+        "truy cap thang database", "truy cap database truc tiep"
     ];
 
     public void EnsureSafe(string message)
@@ -64,7 +66,9 @@ public sealed class ChatAuthorizationGuard(IQueryCatalog queryCatalog) : IChatAu
             var reference = ChatIntentResolver.Normalize(intent.BranchReference);
             var matches = accessibleBranches.Where(x =>
                 ChatIntentResolver.Normalize(x.Code).Equals(reference, StringComparison.OrdinalIgnoreCase) ||
-                ChatIntentResolver.Normalize(x.Name).Equals(reference, StringComparison.OrdinalIgnoreCase)).ToList();
+                ChatIntentResolver.Normalize(x.Name).Equals(reference, StringComparison.OrdinalIgnoreCase) ||
+                ChatIntentResolver.Normalize(x.Name).Equals($"hosco {reference}", StringComparison.OrdinalIgnoreCase) ||
+                (reference is "hn" or "hcm" && x.Code.EndsWith($"-{reference}", StringComparison.OrdinalIgnoreCase))).ToList();
             if (matches.Count == 0)
                 throw new ForbiddenException("Bạn không có quyền xem chi nhánh được yêu cầu.");
             if (matches.Count > 1)
