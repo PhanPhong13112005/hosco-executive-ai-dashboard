@@ -75,6 +75,32 @@ public sealed class KpiCalculatorTests
     }
 
     [Fact]
+    public void Unrecognized_orders_do_not_create_aov_or_margin_denominators()
+    {
+        var snapshot = _calculator.Calculate([Order(OrderStatus.Cancelled, Line(1, 100, 40, 100))]);
+        Assert.Equal(0, snapshot.TotalOrders);
+        Assert.Null(snapshot.Aov);
+        Assert.Null(snapshot.GrossMarginPercent);
+    }
+
+    [Fact]
+    public void Recognized_free_order_has_valid_zero_aov_but_undefined_margin()
+    {
+        var snapshot = _calculator.Calculate([Order(OrderStatus.Completed, Line(1, 0, 0, 0))]);
+        Assert.Equal(1, snapshot.TotalOrders);
+        Assert.Equal(0m, snapshot.Aov);
+        Assert.Null(snapshot.GrossMarginPercent);
+    }
+
+    [Fact]
+    public void Positive_revenue_with_zero_profit_has_valid_zero_margin()
+    {
+        var snapshot = _calculator.Calculate([Order(OrderStatus.Completed, Line(1, 100, 100, 100))]);
+        Assert.Equal(100m, snapshot.Aov);
+        Assert.Equal(0m, snapshot.GrossMarginPercent);
+    }
+
+    [Fact]
     public void Vietnam_business_date_moves_2330_utc_to_next_day()
     {
         var time = new VietnamBusinessTime();
