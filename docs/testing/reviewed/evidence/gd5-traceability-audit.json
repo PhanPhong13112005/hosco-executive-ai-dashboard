@@ -1,0 +1,137 @@
+{
+  "counts": {
+    "00_TONG_QUAN": 23,
+    "01_RTM_SRS": 30,
+    "02_AC_SRS": 16,
+    "03_TEST_CASES": 116,
+    "04_TEST_DATA": 21,
+    "05_FIXTURES": 19,
+    "06_API": 21,
+    "07_KPI": 8,
+    "08_PHAN_CONG": 7,
+    "09_CAU_HOI_BA": 19
+  },
+  "duplicateCaseIds": [],
+  "missingLinkedCases": [],
+  "casesNotLinked": [],
+  "requirements": [
+    "FR-01",
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "FR-05",
+    "FR-06",
+    "FR-07",
+    "FR-08",
+    "NFR-01",
+    "NFR-02",
+    "NFR-03",
+    "NFR-04",
+    "NFR-05",
+    "NFR-06"
+  ],
+  "execution": {
+    "NOT RUN": 116
+  },
+  "datasetCounts": {
+    "Pass": 30,
+    "Blocked": 9,
+    "Fail": 66
+  },
+  "datasetDuplicateIds": [],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/api/v1/alert-rules"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/alert-rules/{id}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts/{id}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/alerts/{id}/acknowledge"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/alerts/{id}/resolve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chat/messages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/dashboard/summary"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/dashboard/export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/kpis/summary"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/revenue"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/revenue/trend"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/orders/trend"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/orders"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/products/ranking"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/products/top"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/products/bottom"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/inventory/dangerous"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/branches"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reporting/kpis/{metricId}/drilldown"
+    }
+  ],
+  "originalSha256": {
+    "BÁO CÁO KIỂM THỬ BẢO MẬT.docx": "ffaef4d34cc2c4133ac9b95d78dec269434402f1c6b0d873c0afa156cf132e1a",
+    "BÁO CÁO KIỂM THỬ ĐỘ CHÍNH XÁC AI.docx": "45de031f6d0aff1de2e479bea1ef15e18d05826fdc9f38923d2d86049a5f7abe",
+    "HOSCO_Intent_Test_Dataset.xlsx": "a78c2c9a6bbcd5eaea0d3910a7ffcee2bd643802471870a46f3a92653a9fc0f4",
+    "Kế hoạch kiểm thử & Truy vết.docx": "0c004cfc617fa25965148302f102309136c7093eb1b38b75f76214d6abdcb088",
+    "Traceability.xlsx": "6d6e49c8adeaa3b05e59832a76bd15d714ba42268b4a6d9f71c03fcf0b4794bb",
+    "VuVanHauKiemThuHosco.docx": "34be1fd51cf2b3be1be0fcabcb04dff98a24b8e813739b0699a15a81589f9cbf",
+    "Đối soát Dashboard_API.docx": "e122e11113f89455fea422f42065f0514c23f14a0d4e0f1d0084a971e2f57d9b"
+  }
+}
