@@ -1,0 +1,305 @@
+{
+  "baseCommit": "d2c4a7801840b96718abd1b3f7cf9ca4e230aebe",
+  "branch": "fix/gd5-tester-findings",
+  "notes": [
+    "SHA256 of working files immediately before commits; verify contents remain identical after commit.",
+    "This manifest belongs to docs commit but omits its own hash to avoid self-reference.",
+    "Ignored archives preserved separately; see handoff-archive-inventory.json."
+  ],
+  "files": [
+    {
+      "path": "docs/testing/GD5_DEV_TRIAGE_REPORT.md",
+      "bytes": 15701,
+      "sha256": "70C57781764BFA5C50316FEE9E4B00C456C2D5FAFE4111CFFB5E508D3E890D5B",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/GD5_HANDOFF_REPORT.md",
+      "bytes": 9020,
+      "sha256": "2F467769F290B1A42155B166D22B9D28F4A83CB06D3B7140F59A53B7056A0541",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/GD5_SELF_QA_REPORT.md",
+      "bytes": 19032,
+      "sha256": "D0527E3BEBC7643C601A47401EB82BCF05AF005BF35A610260B1CB474ED33AA4",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/alert-resolved-delivery.jpg",
+      "bytes": 32122,
+      "sha256": "C27D54B02E1930D48F7E9D415025FC0A5EC22D22D839D06D7196662C895CDB99",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/branch-manager-rule-denied.jpg",
+      "bytes": 159853,
+      "sha256": "8E916B487E98D8BE4F7B05063681BCF42C9153B25E739F251D025C25A80321F4",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/chain-hanoi-chat.jpg",
+      "bytes": 36512,
+      "sha256": "5AEDADD5475E86BC31612881CECAF2DBA1D6D6EB28869CE72567F74B8AEF5FA0",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/chain-hanoi-dashboard.jpg",
+      "bytes": 125251,
+      "sha256": "E7D543DB0EF1718650B874B3BC5A6ED92DE55CE18ADF91810EC1B2C7AA651CD0",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/chat-ai019-ai020-final.jpg",
+      "bytes": 41370,
+      "sha256": "FD53B0F946AB1B136B74FFDC0D8D2ED52A9E1524339FB061B69A66B3296828AB",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/chat-revenue-final.jpg",
+      "bytes": 36494,
+      "sha256": "D38504F202F957FE320825B09D9C72CE16F20F2D9FAF3C3DEB422CAE37F92C3D",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/conversation-smoke.jsonl",
+      "bytes": 1308,
+      "sha256": "CD99F049E95B18E22A3FFDE197A458100474DEDADB65AA1876E82AA75EAAC844",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-drilldown.jpg",
+      "bytes": 51778,
+      "sha256": "D50B0344971E1254EC6C5AFBB74FA21B3B6E451B31047B185C26C1DA3CBB8588",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-empty-final-render.png",
+      "bytes": 73934,
+      "sha256": "288423AEA0F6CD7280A5385A5B301ED52DF105AB6DA5B4CAB2F0E0CFC28EDE43",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-empty-final.pdf",
+      "bytes": 20261,
+      "sha256": "70ACE4DC73BEE503A2A23988CD1804483DB5DDEE89A124C18EFC678C3F7CC129",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-empty-final.xlsx",
+      "bytes": 2869,
+      "sha256": "4BA05A6CC0E05340F957DD869C9278D185373CC54CC3C69C69684A7AFE0EE16B",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-empty.jpg",
+      "bytes": 87941,
+      "sha256": "A081432BDFE003ECB6FCBF7CDDE05DF0B754C256E3C5CD3759CF6B834D98A0B6",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-january-final-render.png",
+      "bytes": 164247,
+      "sha256": "7EC6800092760EB0AC15F6F167D8A467A1D4648C9F0CA02A97B104AD8005D842",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-january-final.jpg",
+      "bytes": 124205,
+      "sha256": "BA4D150F88A1881844013686C5D391071F58A0F4B0EEC7FFA8312FB4E18E2256",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-january-final.pdf",
+      "bytes": 20600,
+      "sha256": "0DAE074DC5C290D79BB1448E02DD9B4E0AC87C8C53A65B48C3EECEE95EFED217",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-january-final.xlsx",
+      "bytes": 3404,
+      "sha256": "B1DE73F9CC063A2B7EBA7150E22BC24A94A9734B33352CE1F239714CC604EA05",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-january.pdf",
+      "bytes": 2560,
+      "sha256": "18D079B9F8946CE538734C8C5C9823D3F420C083C2639FD0F84583DC48310C31",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-january.xlsx",
+      "bytes": 2831,
+      "sha256": "288F3703E85CB7447145F07758B52E96CD9B1918103085311C9091EF1BBF8FDA",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/dashboard-xlsx-preview.png",
+      "bytes": 76026,
+      "sha256": "AFE76768AD96BAF9623371E6057B054E8DE273B0A6CB99774F1674A36BA84EF3",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/event-log-check.log",
+      "bytes": 264,
+      "sha256": "D273AA0C97E811A26E399FD609DE5F0E819E7BD36B5C41698DD2C85DB9557E71",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/export-inspection.json",
+      "bytes": 2130,
+      "sha256": "1D0E652EEE8A237CB505A9373AAE2472364B9C602AEFC1B6211CECD1A9414973",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/gd4-runtime-replay.jsonl",
+      "bytes": 8820,
+      "sha256": "A19F36A205B3C22601E8DBAEE15915EDCB59BD147F7A3F6A26C36A501A5DDB7E",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/handoff-archive-inventory.json",
+      "bytes": 3264,
+      "sha256": "16FF7A940AFDF1622BD44C42FC324585408144D93D610742EC1107622A6BF17A",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/http-handoff-summary.json",
+      "bytes": 20352,
+      "sha256": "D765F42F3B0FD3CD9169BD8F5217ABBC217A4CD8002F997B859A16E970525F72",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/original-tester-files.json",
+      "bytes": 1139,
+      "sha256": "8C2DF43FF8CC838734E2CF51696434324EC91CE204157AAB2BAE6E4CD516493B",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/owner-hanoi-denied-mobile-logout.jpg",
+      "bytes": 36405,
+      "sha256": "26E46688B9B5637AB218934B3B04132F161C021FB9768014E9A636310D841FF1",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/rule-save-before.log",
+      "bytes": 272,
+      "sha256": "B8A9419A7B406A7F2FE871E184275286537F0EFC00AE65C9A3B3B128159E13B9",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/rule-save-final.jpg",
+      "bytes": 151659,
+      "sha256": "254A49CA112A5CD4BC94DBD41BF791FA24AB49FE88714764DCFBA446F584AAF5",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/tenant-b-dashboard.jpg",
+      "bytes": 126133,
+      "sha256": "92F1BB74E158F4C6AEF17AA20210B3D527EC3178AFF0DCF5F32D18E948DDDA40",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/validation-baseline.log",
+      "bytes": 2373,
+      "sha256": "55DD96B6330B1949C416570901A11B1B7BEA6F2484E38C3E4B18B77FC8C04625",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/evidence/validation-handoff.log",
+      "bytes": 2522,
+      "sha256": "8D2362955C0632A6381C46DB7E41D470E64E5D5921B3E0BE1D88819ED9C91D72",
+      "group": "docs"
+    },
+    {
+      "path": "docs/testing/self-qa/Inspect-Exports.py",
+      "bytes": 3496,
+      "sha256": "7E3728D14B42053FA86A24D4E47942A1A0CDA143A17BAC001E59657A62DCCE7E",
+      "group": "test"
+    },
+    {
+      "path": "docs/testing/self-qa/Verify-Gd5SelfQa.py",
+      "bytes": 15655,
+      "sha256": "618E506D1734CBA3782B8819FBF117A2ACFEA49180252CA24BD2999357561258",
+      "group": "test"
+    },
+    {
+      "path": "src/Hosco.Application/Models/AlertModels.cs",
+      "bytes": 3315,
+      "sha256": "E9447D3EE4E0EDFC584EF1F78E0D4706C8ECE9DE6E82B9929C9812BA6107F7B4",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Application/Services/ChatIntentResolver.cs",
+      "bytes": 12665,
+      "sha256": "FECC2DB6730A1B30D320960EFD3469D7B1D63892B9347236869EE97795540DA4",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Infrastructure/Assets/Fonts/LICENSE.txt",
+      "bytes": 4377,
+      "sha256": "0DAB92D0544F7B233403F14B84A663BDBFA746982EDA629E7F4F9FFE1B036FEB",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Infrastructure/Assets/Fonts/NotoSans-Regular.ttf",
+      "bytes": 569208,
+      "sha256": "B85C38ECEA8A7CFB39C24E395A4007474FA5A4FC864F6EE33309EB4948D232D5",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Infrastructure/Assets/Fonts/README.md",
+      "bytes": 671,
+      "sha256": "854CCC13A91311935AC5F2FAB1C9EF3FBF9DFB3214CDD7523374F22DF2F091C0",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Infrastructure/Hosco.Infrastructure.csproj",
+      "bytes": 1302,
+      "sha256": "A68753A72F5FE03761A92E58E4555E6A294FE760D6B22E8740024812D15FB495",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Infrastructure/Persistence/DashboardExportService.cs",
+      "bytes": 10633,
+      "sha256": "CE410EC4AD10B9628844A02B1CDF17F7474BBF7FDC2689A92F02E1867A427BE7",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Infrastructure/Persistence/DashboardPdfWriter.cs",
+      "bytes": 3742,
+      "sha256": "D1B621A98A0907E2BE6444DAB5C49204BD6712164F6A22FB12380EDED11757BE",
+      "group": "fix"
+    },
+    {
+      "path": "src/Hosco.Web/src/styles.css",
+      "bytes": 17499,
+      "sha256": "CB013769074AFBF3207C23D298BD0CA1CE419931A73131B279E22698B1D2812E",
+      "group": "fix"
+    },
+    {
+      "path": "tests/Hosco.IntegrationTests/Gd5SelfQaRegressionTests.cs",
+      "bytes": 8662,
+      "sha256": "68A79B5BCF485FC8AD50F8708A3D72A0605B73298592D32423130B3A70CC9133",
+      "group": "test"
+    },
+    {
+      "path": "tests/Hosco.UnitTests/Gd5IntentRegressionTests.cs",
+      "bytes": 5987,
+      "sha256": "48B4AE46045C9FA4284FD359A62042A847A3CA7454A3A60628AC6A4344AB249E",
+      "group": "test"
+    },
+    {
+      "path": "tests/Hosco.WebTests/mobile-logout.test.mjs",
+      "bytes": 714,
+      "sha256": "93616219594406225093AD4CCF59942914E8CF955226364AEE54BCED206292BD",
+      "group": "test"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 124,
+      "sha256": "BBAC5B87101FC7E115DCBF58CF63BD628F2637471503874EFDBB665FFBC6E2D2",
+      "group": "docs"
+    }
+  ]
+}

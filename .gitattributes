@@ -1,0 +1,2 @@
+# Preserve PDF evidence byte-for-byte (including ASCII-only historical exports).
+docs/testing/self-qa/evidence/*.pdf binary

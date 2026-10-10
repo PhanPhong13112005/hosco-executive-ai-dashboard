@@ -1,0 +1,78 @@
+{
+  "localArchive": "work/gd5/handoff-archive",
+  "recoverable": true,
+  "files": [
+    {
+      "name": "alert-rules-unicode.jpg",
+      "sha256": "254A49CA112A5CD4BC94DBD41BF791FA24AB49FE88714764DCFBA446F584AAF5",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "backend-start-final.log",
+      "sha256": "23829630AD4300F3FF07F25AB0DC9DC4861F892A2CA867A063B95805AF5C7AF2",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "backend-start-latest.log",
+      "sha256": "23829630AD4300F3FF07F25AB0DC9DC4861F892A2CA867A063B95805AF5C7AF2",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "dashboard-january-render.png",
+      "sha256": "82D5E77E34F528C47DEB49ADD823FA5E591861AD3DB51AAC83968A6F4D5838B2",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "dashboard-january.jpg",
+      "sha256": "38753CE91E2F5375365E6C91075C7B2557236357AECFBEB0F42AC3223EB3AA51",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "git-final.log",
+      "sha256": "6C362A1AAC39C1ED40364E388A993F43776EB99C15DC49D6EAE537039BE76244",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "git-remote-initial.log",
+      "sha256": "AAB1CDF940039F3C98802858004AA15AD4D99C7025F27B2327FDF15454CC21E3",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "http-final.json",
+      "sha256": "D763111B770599A388D1D73D2B170F305BCA822DDF955D6E0A5F18B0A6C85F99",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "http-initial.json",
+      "sha256": "B2BBA888BDC9137B0B9B4910A77D09B9CD619707EC272766F77FF89575138972",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "services-stopped.log",
+      "sha256": "90A7BD08B5676866CBA1E9F32A8E7D43EB2AAB45DA5B65AAB06793A55E1482AE",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "validation-final.log",
+      "sha256": "9568903371144E71FC80033E9F5209B707ACC27213E095542F83163C9B2C2F02",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    },
+    {
+      "name": "validation-latest.log",
+      "sha256": "3D963B0B73EB53101D2F4C42EEAA25104D783DB1736FCE9958B873783EED4CBC",
+      "preserved": true,
+      "reason": "Untracked intermediate, duplicate or bulky raw evidence; excluded from handoff commit"
+    }
+  ]
+}

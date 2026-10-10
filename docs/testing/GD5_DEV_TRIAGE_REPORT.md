@@ -45,7 +45,7 @@ A-HCM tháng01/2030 (equivalent half-open Tester01/01–01/02 UTC+7) API baselin
 
 Actual browser login + filters2030-01-01 đến2030-01-31 và A-HCM hiển thị AOV N/A, Margin N/A, Revenue0/GMV0/Profit0. [UI screenshot](reviewed/evidence/gd5-empty-kpi-summary.jpg), [full page](reviewed/evidence/gd5-empty-kpi.jpg). Stock2 là current inventory, không lấy historical order count.
 
-Không thể xác nhận ảnh Tester0 thuộc đúng build/cache/filter. Yêu cầu retest đúng revision, capture Network response và screenshot cùng filters. Regression mới: empty API hai tenants, calculator Orders0/Revenue0, recognized free-order AOV0 hợp lệ, Revenue>0 và Profit0 →Margin0 hợp lệ. Node tests trích actual formatter AST từ Dashboard.tsx, không copy implementation: null/undefined NA, valid0, rounding hiện hành. **Không frontend source fix** vì implementation hiện tại đúng.
+Không thể xác nhận ảnh Tester0 thuộc đúng build/cache/filter. Yêu cầu retest đúng revision, capture Network response và screenshot cùng filters. Regression mới: empty API hai tenants, calculator Orders0/Revenue0, recognized free-order AOV0 hợp lệ, Revenue>0 và Profit0 →Margin0 hợp lệ. Node tests trích actual formatter AST từ Dashboard.tsx, không copy implementation: API null hiển thị N/A, valid0, rounding hiện hành. Tên test “undefined-denominator” chỉ mẫu số không xác định về toán học; không phải test JavaScript undefined. **Không frontend source fix** cho BUG-EMPTY-01 vì implementation hiện tại đúng.
 
 ## 5. AI refusal và supported intent fixes
 

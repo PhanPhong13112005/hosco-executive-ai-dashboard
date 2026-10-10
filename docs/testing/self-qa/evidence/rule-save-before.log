@@ -1,0 +1,2 @@
+HTTP 400
+{"code":"validation_error","message":"The update field is required. The JSON value could not be converted to Hosco.Application.Models.UpdateAlertRule. Path: $.severity | LineNumber: 0 | BytePositionInLine: 18.","correlationId":"a131f1e256f64763a6b7eb11f4add1db"}

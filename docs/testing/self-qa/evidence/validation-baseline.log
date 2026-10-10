@@ -1,0 +1,43 @@
+D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\Hosco.IntegrationTests.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Hosco.Domain -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Domain\bin\Debug\net10.0\Hosco.Domain.dll
+  Hosco.Application -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Application\bin\Debug\net10.0\Hosco.Application.dll
+  Hosco.UnitTests -> D:\Code\hosco-executive-ai-dashboard\tests\Hosco.UnitTests\bin\Debug\net10.0\Hosco.UnitTests.dll
+  Hosco.Infrastructure -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Infrastructure\bin\Debug\net10.0\Hosco.Infrastructure.dll
+  Hosco.Api -> D:\Code\hosco-executive-ai-dashboard\src\Hosco.Api\bin\Debug\net10.0\Hosco.Api.dll
+  Hosco.IntegrationTests -> D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll
+
+Build succeeded.
+
+D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\Hosco.IntegrationTests.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:09.86
+
+
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.UnitTests\bin\Debug\net10.0\Hosco.UnitTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   175, Skipped:     0, Total:   175, Duration: 104 ms - Hosco.UnitTests.dll (net10.0)
+
+
+Test run for D:\Code\hosco-executive-ai-dashboard\tests\Hosco.IntegrationTests\bin\Debug\net10.0\Hosco.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   156, Skipped:     0, Total:   156, Duration: 16 s - Hosco.IntegrationTests.dll (net10.0)
+
+
+
+> hosco-web@0.3.0 build
+> tsc --noEmit -p tsconfig.app.json && vite build
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 25 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.45 kB │ gzip:  0.29 kB
+dist/assets/index-Cd1w91ED.css   16.12 kB │ gzip:  4.67 kB
+dist/assets/index-CqvSi0GT.js   251.08 kB │ gzip: 77.47 kB
+
+✓ built in 155ms
