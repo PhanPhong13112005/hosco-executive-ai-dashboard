@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.2.2" />
     <ProjectReference Include="..\Hosco.Domain\Hosco.Domain.csproj" />
     <ProjectReference Include="..\Hosco.Application\Hosco.Application.csproj" />
   </ItemGroup>
@@ -21,5 +22,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/Fonts/NotoSans-Regular.ttf" />
+    <None Update="Assets/Fonts/LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

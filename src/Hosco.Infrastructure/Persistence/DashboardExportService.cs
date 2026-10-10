@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.IO.Compression;
 using System.Text;
-using System.Xml;
 using Hosco.Application.Abstractions;
 using Hosco.Application.Models;
 
@@ -47,9 +46,9 @@ public sealed class DashboardExportService(IReportingDataStore data, IAlertRepos
             new object?[] { "Revenue", summary.Revenue, summary.Currency },
             new object?[] { "GMV", summary.Gmv, summary.Currency },
             new object?[] { "Total orders", summary.TotalOrders, "orders" },
-            new object?[] { "AOV", summary.Aov, summary.Currency },
+            new object?[] { "AOV", (object?)summary.Aov ?? "N/A", summary.Currency },
             new object?[] { "Gross profit", summary.GrossProfit, summary.Currency },
-            new object?[] { "Gross margin", summary.GrossMarginPercent, "%" },
+            new object?[] { "Gross margin", (object?)summary.GrossMarginPercent ?? "N/A", "%" },
             new object?[] { "Cancellation / return rate", summary.CancellationReturnRate, "%" },
             new object?[] { "Dangerous stock", summary.DangerousStockCount, "SKU" },
             new object?[] { "Open alerts", summary.OpenAlerts, "alerts" },
@@ -75,7 +74,7 @@ public sealed class DashboardExportService(IReportingDataStore data, IAlertRepos
         {
             WriteEntry(archive, "[Content_Types].xml", """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>
+                <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>
                 """);
             WriteEntry(archive, "_rels/.rels", """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -87,12 +86,26 @@ public sealed class DashboardExportService(IReportingDataStore data, IAlertRepos
                 """);
             WriteEntry(archive, "xl/_rels/workbook.xml.rels", """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>
+                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>
                 """);
-            var sheet = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>");
+            WriteEntry(archive, "xl/styles.xml", """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Arial"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>
+                """);
+            // Keep dates, labels and SKU identifiers readable without changing data.
+            var widths = Enumerable.Range(0, rows.Max(x => x.Length)).Select(column =>
+                Math.Clamp(rows.Max(row => column < row.Length ?
+                    (Convert.ToString(row[column], CultureInfo.InvariantCulture) ?? "").Length : 0) + 2, 12, 50)).ToArray();
+            var sheet = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><cols>");
+            for (var column = 0; column < widths.Length; column++)
+                sheet.Append($"<col min=\"{column + 1}\" max=\"{column + 1}\" width=\"{widths[column]}\" customWidth=\"1\"/>");
+            sheet.Append("</cols><sheetData>");
             for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++)
             {
-                sheet.Append("<row r=\"").Append(rowIndex + 1).Append("\">");
+                var lineCount = rows[rowIndex].Select((value, column) => Math.Max(1,
+                    (int)Math.Ceiling((Convert.ToString(value, CultureInfo.InvariantCulture) ?? "").Length / (double)(widths[column] - 2)))).DefaultIfEmpty(1).Max();
+                sheet.Append("<row r=\"").Append(rowIndex + 1).Append("\" ht=\"")
+                    .Append(lineCount * 15).Append("\" customHeight=\"1\">");
                 for (var column = 0; column < rows[rowIndex].Length; column++)
                 {
                     var value = rows[rowIndex][column];
@@ -116,33 +129,7 @@ public sealed class DashboardExportService(IReportingDataStore data, IAlertRepos
 
     private static byte[] CreatePdf(IReadOnlyList<object?[]> rows)
     {
-        var lines = rows.Select(row => string.Join(" | ", row.Where(x => x is not null).Select(x => Ascii(Convert.ToString(x, CultureInfo.InvariantCulture) ?? string.Empty))))
-            .Where(x => x.Length > 0).Take(48).ToList();
-        var content = new StringBuilder("BT /F1 9 Tf 40 800 Td 12 TL ");
-        foreach (var line in lines)
-            content.Append('(').Append(PdfEscape(line.Length > 105 ? line[..105] : line)).Append(") Tj T* ");
-        content.Append("ET");
-        var objects = new[]
-        {
-            "<< /Type /Catalog /Pages 2 0 R >>",
-            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
-            $"<< /Length {Encoding.ASCII.GetByteCount(content.ToString())} >>\nstream\n{content}\nendstream",
-            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
-        };
-        using var stream = new MemoryStream();
-        WriteAscii(stream, "%PDF-1.4\n");
-        var offsets = new List<long> { 0 };
-        for (var i = 0; i < objects.Length; i++)
-        {
-            offsets.Add(stream.Position);
-            WriteAscii(stream, $"{i + 1} 0 obj\n{objects[i]}\nendobj\n");
-        }
-        var xref = stream.Position;
-        WriteAscii(stream, $"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
-        foreach (var offset in offsets.Skip(1)) WriteAscii(stream, $"{offset:0000000000} 00000 n \n");
-        WriteAscii(stream, $"trailer << /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF");
-        return stream.ToArray();
+        return DashboardPdfWriter.Write(rows);
     }
 
     private static void WriteEntry(ZipArchive archive, string path, string content)
@@ -159,11 +146,4 @@ public sealed class DashboardExportService(IReportingDataStore data, IAlertRepos
     }
 
     private static string XmlEscape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
-    private static string PdfEscape(string value) => value.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
-    private static string Ascii(string value)
-    {
-        var normalized = value.Normalize(NormalizationForm.FormD);
-        return new string(normalized.Where(x => CharUnicodeInfo.GetUnicodeCategory(x) != UnicodeCategory.NonSpacingMark && x <= 127).ToArray());
-    }
-    private static void WriteAscii(Stream stream, string value) => stream.Write(Encoding.ASCII.GetBytes(value));
 }

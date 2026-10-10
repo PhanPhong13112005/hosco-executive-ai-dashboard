@@ -1,4 +1,5 @@
 using Hosco.Domain.Enums;
+using System.Text.Json.Serialization;
 
 namespace Hosco.Application.Models;
 
@@ -48,6 +49,7 @@ public sealed record AlertRuleView(
 
 public sealed record UpdateAlertRule(
     bool? IsEnabled = null,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     AlertSeverity? Severity = null,
     decimal? Threshold = null,
     decimal? Baseline = null,

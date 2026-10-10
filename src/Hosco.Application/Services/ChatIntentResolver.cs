@@ -162,6 +162,10 @@ public sealed partial class ChatIntentResolver(
     private static string? ResolveBranchReference(string text)
     {
         var match = BranchRegex().Match(text);
+        // Supported city aliases are also meaningful without "của/chi nhánh".
+        // Only preserve a reference here; authorization still resolves it from
+        // the current user's accessible branch directory, never a global ID.
+        if (!match.Success) match = CityBranchRegex().Match(text);
         return match.Success ? match.Groups[1].Value.Trim() : null;
     }
 
@@ -204,6 +208,9 @@ public sealed partial class ChatIntentResolver(
 
     [GeneratedRegex(@"(?:chi\s+nhanh\s+|cua\s+(?:chi\s+nhanh\s+)?(?!(?:toan|he thong)\b))(.+?)(?=\s+(?:hom\s+nay|hom\s+qua|tuan\s+nay|tuan\s+truoc|thang\s+\S+|\d+\s+ngay\s+gan\s+nhat|la\s+bao\s+nhieu|bao\s+nhieu)|[?.,]|$)")]
     private static partial Regex BranchRegex();
+
+    [GeneratedRegex(@"\b(ha noi|ho chi minh|da nang|hn|hcm)\b")]
+    private static partial Regex CityBranchRegex();
 
     [GeneratedRegex(@"\bdt\b")]
     private static partial Regex RevenueAbbreviationRegex();
