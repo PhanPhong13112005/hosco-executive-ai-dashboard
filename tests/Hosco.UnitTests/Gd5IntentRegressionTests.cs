@@ -52,6 +52,11 @@ public sealed class Gd5IntentRegressionTests
 
     [Theory]
     [InlineData("Doanh thu tháng nì của HN bao nhiêu?", ChatIntent.Revenue, "hn")]
+    [InlineData("Doanh thu Hà Nội tháng 1 năm 2026?", ChatIntent.Revenue, "ha noi")]
+    [InlineData("Doanh thu HN tháng 1 năm 2026?", ChatIntent.Revenue, "hn")]
+    [InlineData("GMV Hồ Chí Minh tháng 1 năm 2026?", ChatIntent.Gmv, "ho chi minh")]
+    [InlineData("Doanh thu HCM tháng 1 năm 2026?", ChatIntent.Revenue, "hcm")]
+    [InlineData("Doanh thu Đà Nẵng tháng 1 năm 2026?", ChatIntent.Revenue, "da nang")]
     [InlineData("Doanh thu tháng trước của Hà Nội?", ChatIntent.Revenue, "ha noi")]
     [InlineData("Doanh thu tháng này của chi nhánh Hà Nội là bao nhiêu?", ChatIntent.Revenue, "ha noi")]
     [InlineData("Doanh thu chi nhánh Hà Nội tuần này bao nhiêu?", ChatIntent.Revenue, "ha noi")]
