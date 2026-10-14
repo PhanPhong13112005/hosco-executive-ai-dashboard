@@ -167,7 +167,10 @@ for intent,message,operation,endpoint in positive:
         query = jan+'&PageSize=5' if intent in ('TopProducts','BottomProducts') else '' if intent=='DangerousInventory' else jan
         _, direct = request('/api/v1/reporting/'+endpoint+query, owner)
         direct = direct['data']
-    else: _,direct = request('/api/v1/alerts?status=Open',owner)
+    # Chat's local resolver defaults list intents to five items. Compare the
+    # identical filter/page, not AlertFilter's default fifty-item page. This
+    # matters once the real scheduler adds alerts beyond the seed's four open.
+    else: _,direct = request('/api/v1/alerts?status=Open&pageSize=5',owner)
     check('chat-canonical:'+intent, status==200 and actual.get('intent')==intent and actual.get('status')=='Completed' and
           actual.get('reportingOperation')==operation and actual.get('data')==direct,
           {'intent':intent,'operation':operation,'data':'equal direct Reporting API'}, actual)
