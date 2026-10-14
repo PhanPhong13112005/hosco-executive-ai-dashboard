@@ -170,7 +170,7 @@ public partial class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "HOSCO Reporting API", Version = "v1", Description = "Tenant-safe reporting boundary shared by Dashboard and future Chatbot." });
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "HOSCO Executive API", Version = "v1", Description = "JWT/tenant/branch-safe Reporting, Dashboard exports, Smart Alert and Chatbot API. Demo fixtures are not production data; rule defaults remain BA-pending." });
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
