@@ -1,6 +1,6 @@
 # HOSCO — Tester setup (Windows PowerShell)
 
-Branch: `feature/gd4-ai-chatbot`. Handoff baseline: `835829895f1329b1ca53bf6ee9d4102c8ac6af63`.
+Branch: `fix/gd5-tester-findings`. Published GD5 baseline: `84b94141bb9afc1a1a3cb16e58e3dcc2979129e3`. GD6 additions remain local until explicitly published; verify the revision supplied by DEV. Current guides: [GD6 runbook](../gd6/OPERATIONS_RUNBOOK.md) and [GD6 handoff](../gd6/GD6_FINAL_HANDOFF_REPORT.md).
 Read [handoff validation](HANDOFF_REPORT.md), [checklist](TESTER_CHECKLIST.md) and [AI smoke tests](LIVE_AI_SMOKE_TEST.md).
 Mock is the default. No API key, paid LLM call, Telegram token or SQL Server installation is needed for the quick-start.
 
@@ -27,15 +27,15 @@ Scripts do not change PowerShell execution policy. If company policy blocks `.ps
 For a **new clone only** (do not switch/reset an existing dirty workspace):
 
 ```powershell
-git clone --branch feature/gd4-ai-chatbot --single-branch https://github.com/PhanPhong13112005/hosco-executive-ai-dashboard.git
+git clone --branch fix/gd5-tester-findings --single-branch https://github.com/PhanPhong13112005/hosco-executive-ai-dashboard.git
 Set-Location .\hosco-executive-ai-dashboard
 git branch --show-current
 git rev-parse HEAD
 git status --short
 ```
 
-For an existing clean tester clone, `git switch feature/gd4-ai-chatbot` selects the branch. This is an instruction for the Tester, not an operation performed on the current development workspace.
-These scripts, handoff documents and BUG-UI-001 regression files are delivered together on this feature branch. Confirm the developer's published revision before testing; `8358298` is the pre-handoff baseline, not the complete tester revision. After publication, a new clone should contain `scripts/setup-tester.ps1` and `docs/testing/TESTER_SETUP.md`. Verify `git status` is clean and `git branch -vv` shows the intended upstream. If publication is pending or a different revision was cloned, request the complete reviewed delivery; do not assume missing files are an application defect.
+For an existing tester workspace, check its branch/revision without changing branches or resetting files. Ask DEV for the reviewed revision if it differs.
+These scripts, handoff documents and regression files are delivered on the stated branch. A new clone should contain `scripts/setup-tester.ps1`; verify the published revision before testing. GD5 reports are historical evidence, not GD6 results. GD6 includes a targeted crypto-package security patch; do not assume the older published baseline has that patch. If publication is pending, request the complete reviewed delivery rather than changing another branch.
 
 ## 3. Quick setup: restore, tools, backend build, npm install/build
 
@@ -233,7 +233,7 @@ git diff --check
 git status --short
 ```
 
-Integration tests start their own Kestrel API on a random high port with isolated SQLite and force Mock; they do not migrate your SQL Server or call a paid LLM. Current working-copy expected counts: Unit **141**, Integration **137** including the three uncommitted BUG-UI-001 regression cases and sixteen new Greeting/Help/security cases. Baseline HEAD alone has Unit 131, Integration 128. Confirm the delivered file/revision set before comparing counts.
+Integration tests start their own Kestrel API on a random high port with isolated SQLite and force Mock; they do not migrate your SQL Server or call a paid LLM. GD5 baseline was Unit 180 and Integration 164. Read the fresh GD6 validation evidence for the current results; historical GD3/GD4 counts are not current acceptance counts.
 
 ## 12. Troubleshooting
 
