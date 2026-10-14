@@ -1,0 +1,130 @@
+{
+  "phase": "GD6",
+  "completedAtUtc": "2026-10-14 09:05:57 UTC",
+  "branch": "fix/gd5-tester-findings",
+  "baseline": "84b94141bb9afc1a1a3cb16e58e3dcc2979129e3",
+  "validatedCodeCommit": "6e5e411d832b76db972adc04a78c7257d31cf3d9",
+  "environment": {
+    "os": "Windows",
+    "dotnetSdk": "10.0.400",
+    "sharedRuntime": "10.0.11 (IT patch pending)",
+    "node": "26.7.0",
+    "npm": "11.19.0",
+    "ai": "Mock",
+    "telegram": "disabled",
+    "databases": [
+      "isolated SQLite RAM",
+      "dedicated local SQL Server HoscoGd6Qa20261014"
+    ]
+  },
+  "gates": {
+    "backendBuild": {
+      "status": "PASS",
+      "warnings": 0,
+      "errors": 0
+    },
+    "unit": {
+      "passed": 180,
+      "failed": 0,
+      "skipped": 0
+    },
+    "integration": {
+      "passed": 167,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontendBuild": {
+      "status": "PASS"
+    },
+    "frontendRegression": {
+      "passed": 7,
+      "failed": 0
+    },
+    "http": {
+      "passed": 167,
+      "failed": 0,
+      "requestCount": 146,
+      "originalDatasetRowsObserved": 28,
+      "originalDatasetContractChecks": 26,
+      "canonicalPositiveIntents": 13
+    },
+    "gd6Smoke": {
+      "passed": 33,
+      "failed": 0
+    },
+    "export": {
+      "passed": 15,
+      "failed": 0,
+      "visualReview": "actual UI PDF full page and XLSX A1:F16; empty PDF reviewed"
+    },
+    "openApi": {
+      "paths": 21,
+      "scheme": "bearer",
+      "live": 200,
+      "ready": 200
+    },
+    "sql": {
+      "migrations": 4,
+      "tenants": 2,
+      "branches": 4,
+      "users": 5,
+      "rules": 20,
+      "uniqueOrders": 2084,
+      "login": "PASS",
+      "januaryRevenue": 14022500,
+      "januaryOrders": 93,
+      "restartPersistence": "PASS",
+      "backupRestore": "NOT VERIFIED - owner chose not to proceed"
+    },
+    "nugetAudit": {
+      "projectGraphs": 6,
+      "vulnerablePackageFindings": 0,
+      "sharedRuntimeAudit": "not covered"
+    },
+    "gitDiffCheck": "PASS"
+  },
+  "cleanClone": {
+    "sourceCommit": "6e5e411d832b76db972adc04a78c7257d31cf3d9",
+    "setup": "PASS - restore/tool restore/build/npm ci/npm build",
+    "buildWarnings": 0,
+    "unitPassed": 180,
+    "integrationPassed": 167,
+    "applicationWebTestsPassed": 4,
+    "gd6SmokePassed": 33,
+    "statusAfterSetup": "clean",
+    "documentationTests": "3 additional handbook/privacy/link checks passed in root with final 19 docs; final handoff files are documentation-only"
+  },
+  "eventLog": {
+    "checkedFromLocal": "2026-10-14 15:07:00 UTC+7",
+    "applicationEvents": [
+      {
+        "id": 1026,
+        "timeLocal": "2026-10-14 15:41:56",
+        "cause": "Kestrel bind IOException AddressInUseException Socket10048, second server tried port5000"
+      },
+      {
+        "id": 1000,
+        "timeLocal": "2026-10-14 15:41:57",
+        "application": "Hosco.Api.exe"
+      }
+    ],
+    "newCodeIntegrity3033Or3077": 0,
+    "wdacDisabled": false,
+    "classification": "setup port conflict, not reproduced Code Integrity block in trusted execution"
+  },
+  "privacy": {
+    "datasetSha256": "a78c2c9a6bbcd5eaea0d3910a7ffcee2bd643802471870a46f3a92653a9fc0f4",
+    "originalTesterWorkbookUnchanged": true,
+    "realKeysOrTokensCommitted": false,
+    "studentReport": "outside Git",
+    "wordReportEdited": false,
+    "loginScreenshots": "public Development fixture only; no real environment credentials"
+  },
+  "acceptance": {
+    "done": 3,
+    "partial": 1,
+    "pendingApproval": 1,
+    "mentorSignOff": false,
+    "productionAccepted": false
+  }
+}
