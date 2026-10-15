@@ -9,40 +9,54 @@ param(
 # Compatible with Windows PowerShell 5.1 and PowerShell 7. No policy bypass.
 . (Join-Path $PSScriptRoot 'tester-common.ps1')
 
-# Windows Job Object: child processes are automatically killed when this window is closed (X button).
-# Uses KILL_ON_JOB_CLOSE so closing CMD/PowerShell window cleans up backend and frontend.
+# Console close guard: kill child processes when the CMD window is closed (X button, logoff, shutdown).
+# Uses SetConsoleCtrlHandler to catch CTRL_CLOSE_EVENT before the process is terminated.
 Add-Type -TypeDefinition @'
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-public static class HoscoJobObject {
+public static class HoscoConsoleGuard {
+    public delegate bool HandlerRoutine(uint dwCtrlType);
     [DllImport("kernel32.dll", SetLastError=true)]
-    static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
-    [DllImport("kernel32.dll", SetLastError=true)]
-    static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, ref JELO lpJobObjectInfo, uint cbJobObjectInfoLength);
-    [DllImport("kernel32.dll", SetLastError=true)]
-    static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
-    [StructLayout(LayoutKind.Sequential)]
-    struct JELO { public uint BasicLimitFlags; public UIntPtr MinimumWorkingSetSize; public UIntPtr MaximumWorkingSetSize; public uint ActiveProcessLimit; public UIntPtr Affinity; public uint PriorityClass; public uint SchedulingClass; }
-    const uint KILL_ON_JOB_CLOSE = 0x2000;
-    static IntPtr _job = IntPtr.Zero;
-    public static bool Init() {
-        _job = CreateJobObject(IntPtr.Zero, null);
-        if (_job == IntPtr.Zero) return false;
-        var info = new JELO { BasicLimitFlags = KILL_ON_JOB_CLOSE };
-        return SetInformationJobObject(_job, 9, ref info, (uint)System.Runtime.InteropServices.Marshal.SizeOf(info));
+    public static extern bool SetConsoleCtrlHandler(HandlerRoutine Handler, bool Add);
+    static HandlerRoutine _handler;
+    static readonly List<int> _pids = new List<int>();
+    public static void Init() {
+        _handler = ctrlType => {
+            // 2=CTRL_CLOSE, 5=LOGOFF, 6=SHUTDOWN
+            if (ctrlType == 2 || ctrlType == 5 || ctrlType == 6) {
+                KillChildren();
+            }
+            return false; // Let Windows proceed with normal termination
+        };
+        SetConsoleCtrlHandler(_handler, true);
     }
-    public static bool Add(IntPtr processHandle) {
-        if (_job == IntPtr.Zero) return false;
-        return AssignProcessToJobObject(_job, processHandle);
+    public static void AddPid(int pid) { lock(_pids) { _pids.Add(pid); } }
+    static void KillChildren() {
+        lock(_pids) {
+            foreach (var pid in _pids) {
+                try {
+                    var p = Process.GetProcessById(pid);
+                    // taskkill /PID <pid> /T /F to kill the tree
+                    Process.Start(new ProcessStartInfo {
+                        FileName = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "taskkill.exe"),
+                        Arguments = "/PID " + pid + " /T /F",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    });
+                } catch { }
+            }
+        }
     }
 }
 '@ -ErrorAction SilentlyContinue
-function Initialize-HoscoJobObject {
-    try { $null = [HoscoJobObject]::Init() } catch { }
+function Initialize-HoscoConsoleGuard {
+    try { [HoscoConsoleGuard]::Init() } catch { }
 }
-function Add-HoscoJobObject {
+function Add-HoscoConsoleGuardPid {
     param([Diagnostics.Process]$Process)
-    try { $null = [HoscoJobObject]::Add($Process.Handle) } catch { }
+    try { [HoscoConsoleGuard]::AddPid($Process.Id) } catch { }
 }
 
 function Assert-HoscoLocalPorts {
@@ -167,10 +181,10 @@ function Start-HoscoLocal {
         $null = New-Item -ItemType Directory -Path $logDirectory -ErrorAction Stop
         Write-Host '[2/3] Start isolated SQLite demo, Mock AI, scheduler and Web. Telegram is disabled.'
         Write-Host "Local startup logs (ignored by Git): $logDirectory"
-        Initialize-HoscoJobObject
+        Initialize-HoscoConsoleGuard
         $children += Start-HoscoLocalService -Service Backend -RepoRoot $repoRoot -LogDirectory $logDirectory
         $children += Start-HoscoLocalService -Service Frontend -RepoRoot $repoRoot -LogDirectory $logDirectory
-        foreach ($child in $children) { Add-HoscoJobObject $child }
+        foreach ($child in $children) { Add-HoscoConsoleGuardPid $child }
         Wait-HoscoLocalReady -Processes $children -TimeoutSeconds $StartupTimeoutSeconds
         Write-Host '[3/3] READY: Web and API (including the Vite proxy) responded HTTP 200.'
         Write-Host 'Web: http://127.0.0.1:5173/ | Swagger: http://localhost:5000/swagger'
