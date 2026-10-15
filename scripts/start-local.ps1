@@ -9,6 +9,42 @@ param(
 # Compatible with Windows PowerShell 5.1 and PowerShell 7. No policy bypass.
 . (Join-Path $PSScriptRoot 'tester-common.ps1')
 
+# Windows Job Object: child processes are automatically killed when this window is closed (X button).
+# Uses KILL_ON_JOB_CLOSE so closing CMD/PowerShell window cleans up backend and frontend.
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class HoscoJobObject {
+    [DllImport("kernel32.dll", SetLastError=true)]
+    static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
+    [DllImport("kernel32.dll", SetLastError=true)]
+    static extern bool SetInformationJobObject(IntPtr hJob, int JobObjectInfoClass, ref JELO lpJobObjectInfo, uint cbJobObjectInfoLength);
+    [DllImport("kernel32.dll", SetLastError=true)]
+    static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
+    [StructLayout(LayoutKind.Sequential)]
+    struct JELO { public uint BasicLimitFlags; public UIntPtr MinimumWorkingSetSize; public UIntPtr MaximumWorkingSetSize; public uint ActiveProcessLimit; public UIntPtr Affinity; public uint PriorityClass; public uint SchedulingClass; }
+    const uint KILL_ON_JOB_CLOSE = 0x2000;
+    static IntPtr _job = IntPtr.Zero;
+    public static bool Init() {
+        _job = CreateJobObject(IntPtr.Zero, null);
+        if (_job == IntPtr.Zero) return false;
+        var info = new JELO { BasicLimitFlags = KILL_ON_JOB_CLOSE };
+        return SetInformationJobObject(_job, 9, ref info, (uint)System.Runtime.InteropServices.Marshal.SizeOf(info));
+    }
+    public static bool Add(IntPtr processHandle) {
+        if (_job == IntPtr.Zero) return false;
+        return AssignProcessToJobObject(_job, processHandle);
+    }
+}
+'@ -ErrorAction SilentlyContinue
+function Initialize-HoscoJobObject {
+    try { $null = [HoscoJobObject]::Init() } catch { }
+}
+function Add-HoscoJobObject {
+    param([Diagnostics.Process]$Process)
+    try { $null = [HoscoJobObject]::Add($Process.Handle) } catch { }
+}
+
 function Assert-HoscoLocalPorts {
     $listeners = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()
     foreach ($port in @(5000, 5173)) {
@@ -131,8 +167,10 @@ function Start-HoscoLocal {
         $null = New-Item -ItemType Directory -Path $logDirectory -ErrorAction Stop
         Write-Host '[2/3] Start isolated SQLite demo, Mock AI, scheduler and Web. Telegram is disabled.'
         Write-Host "Local startup logs (ignored by Git): $logDirectory"
+        Initialize-HoscoJobObject
         $children += Start-HoscoLocalService -Service Backend -RepoRoot $repoRoot -LogDirectory $logDirectory
         $children += Start-HoscoLocalService -Service Frontend -RepoRoot $repoRoot -LogDirectory $logDirectory
+        foreach ($child in $children) { Add-HoscoJobObject $child }
         Wait-HoscoLocalReady -Processes $children -TimeoutSeconds $StartupTimeoutSeconds
         Write-Host '[3/3] READY: Web and API (including the Vite proxy) responded HTTP 200.'
         Write-Host 'Web: http://127.0.0.1:5173/ | Swagger: http://localhost:5000/swagger'
