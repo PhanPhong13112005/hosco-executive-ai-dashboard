@@ -1,0 +1,10 @@
+{
+  "log": "Application",
+  "since": "2026-10-10T10:00:00",
+  "queryStatus": "No events were found that match the specified selection criteria."
+}
+{
+  "log": "Microsoft-Windows-CodeIntegrity/Operational",
+  "since": "2026-10-10T10:00:00",
+  "matchingEvents": []
+}

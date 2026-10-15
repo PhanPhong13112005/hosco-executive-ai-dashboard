@@ -57,7 +57,7 @@ public sealed class ReportingDataStore(
         return new PagedResult<OrderRow>(rows, total);
     }
 
-    public async Task<IReadOnlyList<ProductRankRow>> GetProductRankingAsync(ReportingScope scope, ReportingFilter filter, bool bottom, CancellationToken ct)
+    public async Task<PagedResult<ProductRankRow>> GetProductRankingAsync(ReportingScope scope, ReportingFilter filter, bool bottom, CancellationToken ct)
     {
         // Keep aggregation after materialization: SQL Server cannot translate the former
         // GroupBy key containing Product navigation members.
@@ -82,7 +82,12 @@ public sealed class ReportingDataStore(
         var ranked = bottom
             ? rows.OrderBy(x => x.Quantity).ThenBy(x => x.Sku).ThenBy(x => x.ProductId)
             : rows.OrderByDescending(x => x.Quantity).ThenBy(x => x.Sku).ThenBy(x => x.ProductId);
-        return ranked.Take(filter.PageSize).ToList();
+        var materialized = ranked.ToList();
+        // Compute the total after scope/date/valid-quantity filtering, before pagination.
+        // Use a wide offset so a valid large Page cannot overflow back to the first page.
+        var offset = (long)(filter.Page - 1) * filter.PageSize;
+        var page = offset >= materialized.Count ? [] : materialized.Skip((int)offset).Take(filter.PageSize).ToList();
+        return new PagedResult<ProductRankRow>(page, materialized.Count);
     }
 
     public async Task<IReadOnlyList<DangerousInventoryRow>> GetDangerousInventoryAsync(ReportingScope scope, ReportingFilter filter, CancellationToken ct)

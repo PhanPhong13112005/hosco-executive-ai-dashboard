@@ -1,0 +1,7 @@
+# Dữ liệu demo tái lập
+Owner kỹ thuật: DEV. Toàn bộ dữ liệu synthetic từ DemoSeed, không dữ liệu khách hàng thật.
+Hai tenant HOSCO-A/B,4branches A-HCM/A-HN/B-DN/B-CT,5users,4roles. IDs SHA256-derived từ fixture labels; stable không random response. Order generation181days Jan1–Jun30,3 orders/day/branch, giảm volume May10–20; deterministic status/discount/product sequences. SKU fixture demo mỗi tenant8 SKU, không đại diện catalog production. Returns có item allocation và historical cost.
+Seed trống tạo data/rules/5historical anomaly alerts. Repeated seed calls EnsureFinalBusinessFixturesAsync, có thể bổ sung defaults/allocations và cập nhật rule defaults; không nghĩa giữ mọi config tùy chỉnh. Regression Gd6DemoReadinessTests kiểm counts/orderIDs/userbranch mapping không trùng; reset2 DB RAM mới tái lập.
+DemoJan/HCM: Revenue14,022,500; GMV14,062,500; Orders93; AOV150,779.6; GP6,127,500; Margin43.7%; rate6.45%; dangerous2. Hà Nội Revenue12,307,500. Những số này là current fixture oracle, không BA sign-off93/87. Current stockavailable1/safety8 của2keySKU sinhAL03 khi scheduler thực chạy hôm nay.
+Reset bằng restart runner RAM; không production deletion. Script seed không được hướng vào existing customer DB. GD6 đã tạo database SQL test riêng HoscoGd6Qa20261014 trên instance local HOSCO: 4 migrations, 2 tenants, 4 branches, 5 users, 20 rules, 2.084 orders. Restart API giữ counts và KPI, không trùng đơn. Không xóa database test này; người vận hành quản lý riêng, không coi đó là production.
+[Account guide](DEMO_ACCOUNTS_GUIDE.md), [demo](DEMO_SCRIPT.md).

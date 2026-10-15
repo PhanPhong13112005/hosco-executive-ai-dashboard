@@ -1,0 +1,90 @@
+{
+  "phase": "FINAL_HANDOFF_VALIDATION",
+  "checks": [
+    {
+      "name": "dashboard-january-final:Unicode-branch",
+      "pass": true,
+      "actual": "HOSCO Hồ Chí Minh"
+    },
+    {
+      "name": "dashboard-january-final:no-error-cells",
+      "pass": true,
+      "actual": "no spreadsheet error cells"
+    },
+    {
+      "name": "xlsx-canonical-revenue",
+      "pass": true,
+      "actual": 14022500
+    },
+    {
+      "name": "xlsx-canonical-AOV-margin",
+      "pass": true,
+      "actual": [
+        150779.6,
+        43.7
+      ]
+    },
+    {
+      "name": "dashboard-january-final:pdf-UTF8-full-branch",
+      "pass": true,
+      "actual": "Full text verified from corresponding PDF; redundant body omitted"
+    },
+    {
+      "name": "dashboard-january-final:pdf-no-mojibake",
+      "pass": true,
+      "actual": 1
+    },
+    {
+      "name": "pdf-canonical-revenue-AOV",
+      "pass": true,
+      "actual": "Full text verified from corresponding PDF; redundant body omitted"
+    },
+    {
+      "name": "pdf-last-inventory-retained",
+      "pass": true,
+      "actual": "Full text verified from corresponding PDF; redundant body omitted"
+    },
+    {
+      "name": "dashboard-empty-final:Unicode-branch",
+      "pass": true,
+      "actual": "HOSCO Hồ Chí Minh"
+    },
+    {
+      "name": "dashboard-empty-final:no-error-cells",
+      "pass": true,
+      "actual": "no spreadsheet error cells"
+    },
+    {
+      "name": "xlsx-empty-ratios-NA",
+      "pass": true,
+      "actual": [
+        "N/A",
+        "N/A"
+      ]
+    },
+    {
+      "name": "xlsx-empty-revenue-numeric-zero",
+      "pass": true,
+      "actual": 0
+    },
+    {
+      "name": "dashboard-empty-final:pdf-UTF8-full-branch",
+      "pass": true,
+      "actual": "Full text verified from corresponding PDF; redundant body omitted"
+    },
+    {
+      "name": "dashboard-empty-final:pdf-no-mojibake",
+      "pass": true,
+      "actual": 1
+    },
+    {
+      "name": "pdf-empty-NA",
+      "pass": true,
+      "actual": "Full text verified from corresponding PDF; redundant body omitted"
+    }
+  ],
+  "summary": {
+    "passed": 15,
+    "failed": 0
+  }
+}

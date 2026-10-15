@@ -1,140 +1,106 @@
-# HOSCO – Executive AI Dashboard & Smart Alert Chatbot
+# HOSCO Executive AI Dashboard & Smart Alert Chatbot
 
-## Bàn giao Tester GD3/GD4
+MVP điều hành bán lẻ gồm Dashboard KPI, Smart Alert và trợ lý báo cáo tiếng Việt. Chatbot chỉ lấy dữ liệu qua Reporting API có JWT/RBAC/Tenant/Branch guard, không truy cập database trực tiếp hoặc thực thi SQL do LLM sinh.
 
-Windows PowerShell quick-start (Mock AI, không cần API key): xem [TESTER_SETUP](docs/testing/TESTER_SETUP.md), [TESTER_CHECKLIST](docs/testing/TESTER_CHECKLIST.md) và [LIVE_AI_SMOKE_TEST](docs/testing/LIVE_AI_SMOKE_TEST.md).
-Script setup: `./scripts/setup-tester.ps1`. Chạy backend và frontend trong hai terminal riêng bằng `./scripts/run-tester.ps1 -Service Backend -AiProvider Mock` và `./scripts/run-tester.ps1 -Service Frontend`.
-SQLite mặc định là in-memory; luồng SQL Server persistence/migration và trạng thái validation được ghi trong tài liệu bàn giao. Khi nhận bản bàn giao, kiểm tra revision và trạng thái branch theo TESTER_SETUP.
+Bản bàn giao GD6 được chuẩn bị trên `fix/gd5-tester-findings`. Baseline GD5 đã công bố là `84b9414`; các commit GD6 chỉ local cho đến khi DEV được phép push. Kiểm tra revision do DEV cung cấp trước khi dùng kết quả kiểm thử GD6. [Báo cáo GD6](docs/gd6/GD6_FINAL_HANDOFF_REPORT.md) ghi kết quả mới và các mục còn pending.
 
-Nền tảng backend GD2 cung cấp Reporting API an toàn theo Tenant, dùng chung cho Dashboard và Chatbot trong tương lai. Ranh giới truy cập của Chatbot là Reporting API/Danh mục truy vấn (Query Catalog); Chatbot không bao giờ được truy cập trực tiếp cơ sở dữ liệu.
+## Chạy demo từ một clone mới
 
-## Công nghệ và cấu trúc
+### Chạy bằng một lần nhấp trên Windows
 
-Repository sử dụng .NET 10 vì .NET SDK 10.0.400 là SDK được hỗ trợ và đã cài đặt khi audit workspace ban đầu. Các package được cố định ở bản vá 10.0.11.
+Nhấp đúp **CHAY_HOSCO_LOCAL.cmd** tại thư mục gốc. File này tự kiểm tra công cụ, restore NuGet và dotnet tools, cài đúng frontend lockfile bằng `npm ci`, build rồi chạy API/Web và mở trình duyệt khi cả hai đã sẵn sàng. Dùng PowerShell 7 trên PATH hoặc Program Files; trên máy DEV có thể dùng runtime PowerShell 7 đã có của Codex. Nếu không có, thử Windows PowerShell 5.1 có sẵn, chỉ khi policy của máy cho phép script. Máy cần có .NET SDK theo `global.json`, Node/npm tương thích và Internet để tải dependency; launcher không tự cài/reinstall công cụ hệ thống, nâng cấp thư viện hay thay đổi chính sách Windows.
 
-```text
-src/
-  Hosco.Api/             HTTP, JWT, policies, Swagger, middleware, health
-  Hosco.Application/     contracts, scope rules, semantic/query catalogs
-  Hosco.Domain/          entities and enums
-  Hosco.Infrastructure/  EF Core, SQL Server, seed, reporting/audit stores
-tests/
-  Hosco.UnitTests/
-  Hosco.IntegrationTests/
-docs/gd2/
-```
+Demo dùng SQLite RAM, AI Mock, scheduler bật và Telegram tắt, không cần SQL Server hoặc API key thật. Web: http://127.0.0.1:5173/; Swagger: http://localhost:5000/swagger. Chọn tháng 01/2026 để xem dữ liệu bán hàng mẫu. Giữ cửa sổ launcher mở khi test, nhấn **Enter** hoặc **Ctrl+C** để dừng các tiến trình do chính launcher tạo. Dữ liệu/chỉnh sửa demo mất khi dừng; không tác động database SQL Server.
 
-## 1. Điều kiện tiên quyết
+Nếu cổng 5000/5173 đã có chương trình sử dụng hoặc đã mở launcher, file sẽ báo lỗi và không tự kill tiến trình khác. Log startup nằm trong `work/local-run/<lần-chạy>/` đã được Git ignore; không gửi log chưa rà soát lên GitHub. Thiếu công cụ, lỗi mạng hoặc WDAC/ExecutionPolicy chặn sẽ được báo, không tự bypass. Trường hợp này cần cài prerequisite được IT cho phép hoặc nhờ IT xử lý policy, không tắt bảo mật.
 
-- .NET SDK 10.0.400 hoặc SDK 10.0.x tương thích
-- SQL Server, SQL Server Express, container hoặc LocalDB
-- Các ví dụ bên dưới dùng PowerShell; có thể sử dụng lệnh tương đương trên shell khác
+Kiểm tra không cài/chạy server: `./scripts/start-local.ps1 -CheckOnly`. Kiểm tra setup/start/proxy rồi tự dừng: `./scripts/start-local.ps1 -SmokeTest -NoBrowser`. Nếu tải bản ZIP từ Internet bị Windows chặn script, dùng terminal/quy trình được IT phê duyệt; launcher không tự Unblock-File hoặc đổi ExecutionPolicy.
 
-## 2. Khôi phục package và công cụ
+Điều kiện: Git, PowerShell7 được công ty cho phép, .NET SDK10.0.400 hoặc compatible10.0.4xx patch theo global.json, Node20.19+ trong nhánh20 hoặc >=22.12, npm và truy cập NuGet/npm cho lần restore đầu. Không cần SQL Server, API key hay Telegram token cho demo Mock. Runtime phải được IT duyệt bản vá trước khi triển khai đối ngoại.
 
 ```powershell
-dotnet restore Hosco.slnx
-dotnet tool restore
+git clone --branch fix/gd5-tester-findings --single-branch https://github.com/PhanPhong13112005/hosco-executive-ai-dashboard.git
+Set-Location hosco-executive-ai-dashboard
+git branch --show-current
+git rev-parse HEAD
+git status --short
+./scripts/setup-tester.ps1
 ```
 
-## 3. Cấu hình cơ sở dữ liệu và secret
+Setup chạy restore, `dotnet tool restore --tool-manifest dotnet-tools.json`, backend build, lockfile-based `npm.cmd ci` và frontend build. Không đổi execution policy, production database hay Git branch. Không dùng `dotnet tool restore` mặc định vì tool manifest nằm ở root, không phải .config. Nếu policy chặn script, dùng các [manual commands](docs/testing/TESTER_SETUP.md) trong terminal được IT phê duyệt, không bypass WDAC.
 
-Connection string và JWT key được commit chỉ là placeholder cho môi trường phát triển, không phải secret production. Nên ưu tiên user-secrets:
+Terminal backend (root):
 
 ```powershell
-dotnet user-secrets init --project src/Hosco.Api
-dotnet user-secrets set "ConnectionStrings:HoscoDb" "Server=localhost;Database=Hosco;Trusted_Connection=True;TrustServerCertificate=True" --project src/Hosco.Api
-dotnet user-secrets set "Jwt:SigningKey" "replace-with-at-least-32-random-characters" --project src/Hosco.Api
-dotnet user-secrets set "Seed:Enabled" "true" --project src/Hosco.Api
+$env:AlertScheduler__RunOnStartup = 'true'
+./scripts/run-tester.ps1 -Service Backend -AiProvider Mock -EnableScheduler
 ```
 
-Hệ thống cũng hỗ trợ các biến môi trường tương ứng với [.env.example](.env.example). File `.env` đã được Git bỏ qua và ứng dụng không tự động nạp file này.
-
-## 4. Áp dụng Migration
+Terminal frontend riêng (root, không kế thừa credential backend):
 
 ```powershell
-dotnet tool run dotnet-ef database update --project src/Hosco.Infrastructure --startup-project src/Hosco.Api
+./scripts/run-tester.ps1 -Service Frontend
 ```
 
-API cũng gọi `MigrateAsync` khi khởi động. Trong production, thông thường nên chạy Migration như một bước phát hành có kiểm soát trước khi khởi động instance mới.
+Web: http://127.0.0.1:5173/; API: http://localhost:5000/; Swagger: http://localhost:5000/swagger; live/ready: `/health/live`, `/health/ready`. Vite proxy gọi5000; plain launch profile5179 không phải quick-start này. StrictPort không tự chuyển sang cổng khác. Dừng bằng Ctrl+C từng server của mình.
 
-## 5. Tạo dữ liệu demo xác định
+## Dữ liệu và tài khoản
 
-Đặt `Seed:Enabled=true` hoặc chạy bằng profile Development. Trên cơ sở dữ liệu trống, Seed khi khởi động sẽ tạo hai Tenant, bốn Branch, sáu tháng dữ liệu đơn hàng và các anomaly fixture. Lần chạy thứ hai có tính idempotent vì tiến trình dừng khi đã tồn tại dữ liệu Tenant.
+SQLite demo là relational RAM, không file persistent. API gọi EnsureCreated và DemoSeed; stop/restart mất các rule edits, alert workflow và delivery/audit vừa tạo. Không gọi SQL Server migration cho chế độ này.
 
-```powershell
-dotnet run --project src/Hosco.Api --environment Development
-```
+Seed giả lập hai tenant, bốn branch, năm user, bốn role và sales/anomaly lịch sử Jan–Jun2026. Repeated seed bổ sung final fixtures và áp rule defaults, không chỉ là no-op. Chỉ dùng database test riêng, không production hoặc DB có config cần giữ.
 
-## 6. Chạy API và Swagger
-
-```powershell
-dotnet run --project src/Hosco.Api --environment Development
-```
-
-Mở URL do ASP.NET Core hiển thị và thêm `/swagger`. Swagger được bật trong Development và có thể được điều khiển rõ ràng bằng `Swagger:Enabled`.
-
-## 7. Đăng nhập và nhận JWT phát triển
-
-Tất cả tài khoản demo dùng mật khẩu chỉ dành cho môi trường phát triển `HoscoDemo!2026`; cơ sở dữ liệu chỉ lưu hash PBKDF2-SHA256.
-
-| Vai trò | Email | Phạm vi |
+| Role | Public demo email | Quyền thực tế |
 |---|---|---|
-| Owner | `owner@hosco.local` | Tenant HOSCO-A |
-| Branch Manager | `branch.manager@hosco.local` | Chỉ Branch A-HCM |
-| Chain Manager | `chain.manager@hosco.local` | Tất cả Branch thuộc HOSCO-A |
-| System Admin | `admin@hosco.local` | Quản trị kỹ thuật, Tenant HOSCO-A |
-| Dữ liệu kiểm thử cô lập | `owner@fixture.local` | Tenant HOSCO-B |
+| Owner | owner@hosco.local | HOSCO-A, A-HCM only; AL04 action403 |
+| BranchManager | branch.manager@hosco.local | A-HCM; rule config403 |
+| ChainManager | chain.manager@hosco.local | A-HCM+A-HN, không tenantB |
+| SystemAdmin | admin@hosco.local | HOSCO-A/A-HCM; không cross-tenant superuser |
+| Owner fixture | owner@fixture.local | HOSCO-B/B-DN only |
+
+Public Development credential được định nghĩa tại `DemoSeed.DemoPassword` (có trong TESTER_SETUP), không phải mật khẩu môi trường thật. DB chỉ lưu PBKDF2 hash. Logout giữa các tài khoản. Không thêm cashier authrole: employee/cashier business rows khác authenticated roles.
+
+Để demo số liệu: chọn 01/01–31/01/2026, HCM; Revenue14,022,500, GMV14,062,500, Orders93. Câu “Doanh thu hôm nay thế nào?” vào tháng10 có thể đúng là no-data. Không chỉnh clock/seed/formula để tạo câu trả lời đẹp. AL03 có thể phát sinh thật từ current low stock khi scheduler chạy; “6 hủy/5 phút” chưa khớp rule AL01 và chưa có cancellation-write API.
+
+## Kiểm thử
+
+Dừng tester servers trước build; Integration suite tự tạo Kestrel/SQLite/Mock trên cổng riêng.
 
 ```powershell
-$body = @{ email = "owner@hosco.local"; password = "HoscoDemo!2026" } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/v1/auth/login" -ContentType "application/json" -Body $body
-```
-
-Sao chép `accessToken` vào hộp thoại **Authorize** của Swagger.
-
-## 8. Health Check
-
-```powershell
-Invoke-RestMethod http://localhost:5000/health/live
-Invoke-RestMethod http://localhost:5000/health/ready
-```
-
-`live` không phụ thuộc SQL Server. `ready` kiểm tra cơ sở dữ liệu và chuyển sang trạng thái không khỏe mạnh khi cơ sở dữ liệu không khả dụng.
-
-## 9. Chạy Build và Test
-
-```powershell
-dotnet build Hosco.slnx
+dotnet build Hosco.slnx --no-restore
 dotnet test Hosco.slnx --no-build
+Push-Location src/Hosco.Web
+try { npm.cmd run build } finally { Pop-Location }
+node --test tests/Hosco.WebTests/dashboard-formatting.test.mjs tests/Hosco.WebTests/mobile-logout.test.mjs tests/Hosco.WebTests/gd6-handoff.test.mjs
+git diff --check
 ```
 
-Integration Test khởi chạy HTTP pipeline thực trên cổng local tạm thời với cơ sở dữ liệu quan hệ SQLite in-memory cô lập. Các test này không cần SQL Server.
+Khi demo server mới đang chạy: `./scripts/verify-gd6.ps1 -DisposableDemo` kiểm tra HTTP thật và chỉ in sanitized assertions. Python GD5 extended runner là optional, cần openpyxl và workbook Tester gốc ngoài repo; không phải prerequisite để mở demo.
 
-## Trạng thái định nghĩa nghiệp vụ
+## Cấu hình và bảo mật
 
-GD2/GD3 đã được đồng bộ với Final GD1 Business Spec. KPI-01..08 là `Implemented`, dùng canonical KPI layer và business timezone UTC+7. Các threshold/baseline/window/cooldown của Alert vẫn được ghi rõ là **BA đề xuất / configurable**; xem [báo cáo GD2](docs/gd2/GD2_REPORT.md) và [Alert Catalog](docs/gd3/ALERT_RULE_CATALOG.md).
+[.env.example](.env.example) là mẫu, **.NET và scripts không tự load .env/appsettings.Local.json**. Project chưa có UserSecretsId, không yêu cầu user-secrets init như bước bàn giao. Cấu hình thật dùng process environment hoặc secret manager đã được phê duyệt; không sửa csproj để giả định auto-loading.
 
-## Minh chứng xác minh GD2
+Runner sinh JWT key ephemeral khi chưa có key; không in giá trị. Key đổi cần login lại. Issuer/audience dùng Hosco.Api/Hosco.Clients; API kiểm chữ ký và lifetime. Never commit key/token/password thật, không VITE_* cho secret backend.
 
-Bộ audit GD2 có thể tái lập, kết quả Runtime, SQL Migration đã sinh, tài liệu OpenAPI đã thu thập và các giới hạn đã biết được tổng hợp tại [Báo cáo minh chứng GD2](docs/gd2/evidence/GD2_EVIDENCE_REPORT.md). Chạy `./scripts/verify-gd2.ps1` để thực hiện các kiểm tra Build/Test không làm thay đổi source.
+AI mặc định Mock/local deterministic intent, không tạo số liệu báo cáo. OpenAI/Gemini adapters chỉ trả structured intent; key/model backend-only, bounded timeout/retry, fallback và API guard. Live provisioning, privacy/cost/model acceptance chưa xác minh. [LLM provider](docs/gd4/LLM_PROVIDER.md), [live smoke](docs/testing/LIVE_AI_SMOKE_TEST.md).
 
-## GD3 – Dashboard & Smart Alert
+Telegram bị runner tắt, delivery hiển thị Skipped; fake tests cover retry/backoff/idempotency nhưng không chứng minh real delivery. Scheduler15–30min; demo dùng RunOnStartup config, không thay business rules.
 
-Branch `feature/gd3-dashboard-alert` bổ sung Executive Dashboard, năm Smart Alert rule cấu hình được, scheduler 15–30 phút, persistence, deduplication/cooldown, workflow acknowledge/resolve có note và notification qua structured log. KPI đã final; các giá trị số Alert mang nhãn BA đề xuất/configurable.
+Crypto dependencies Pkcs/Xml được pin10.0.13 theo [security patch evidence](docs/gd6/SECURITY_PATCH.md). Shared runtime máy hiện tại chưa được vá trong lượt này; package audit sạch không tương đương production security sign-off.
 
-Frontend React + TypeScript + Vite nằm tại `src/Hosco.Web`:
+## SQL Server persistent test
 
-```powershell
-cd src/Hosco.Web
-npm install
-npm run dev
-```
+Tùy chọn, chỉ database test mới. Design-time factory đọc `ConnectionStrings__HoscoDb`; tool manifest phải restore explicit. API startup dùng MigrateAsync. Commands và trạng thái offline/runtime/backup tại [runbook](docs/gd6/OPERATIONS_RUNBOOK.md); GD6 local không coi SQL script generation là database migration PASS.
 
-Đặt `VITE_API_BASE_URL` nếu API không chạy tại `http://localhost:5000`; Vite development server có proxy `/api` mặc định. Production build:
+## Kiến trúc và tài liệu
 
-```powershell
-npm run build
-```
+- [Kiến trúc/ADR](docs/gd6/ARCHITECTURE_OVERVIEW.md), [ADR index](docs/gd6/ADR_INDEX.md).
+- [Data/ERD/KPI/Query](docs/gd6/DATA_DOCUMENTATION.md), [demo data](docs/gd6/DEMO_DATA_GUIDE.md), [accounts](docs/gd6/DEMO_ACCOUNTS_GUIDE.md).
+- [Demo script](docs/gd6/DEMO_SCRIPT.md), [rehearsal](docs/gd6/DEMO_REHEARSAL_REPORT.md), [known issues](docs/gd6/KNOWN_ISSUES.md).
+- [GD2 evidence](docs/gd2/evidence/GD2_EVIDENCE_REPORT.md), [GD3](docs/gd3/GD3_REPORT.md), [GD4](docs/gd4/GD4_REPORT.md), [GD5](docs/testing/GD5_SELF_QA_REPORT.md).
+- [BA pending](docs/testing/BA_DECISIONS.md), [acceptance notes](docs/gd6/GD6_ACCEPTANCE_NOTES.md).
 
-Tài liệu chi tiết nằm trong `docs/gd3`. Môi trường Windows hiện tại có Enterprise WDAC có thể chặn DLL .NET build local trước khi Runtime/Integration Test chạy; xem `docs/gd3/KNOWN_ENVIRONMENT_ISSUES.md`. Trường hợp này phải ghi `BLOCKED_BY_LOCAL_WDAC`, không được ghi Integration Test PASS.
+Source chia Domain/Application/Infrastructure/Api/Web. KPI layer canonical phục vụ Reporting/Alerts; Chat là HTTP consumer. UI có8cards và Top/Bottom riêng. Không tự chuyển BA decisions/defaults/PENDING thành approved hoặc nhận mentor đã nghiệm thu.
+
+Báo cáo cá nhân, dữ liệu định danh sinh viên và file Word hiện có không đưa vào Git. Đây là DEV handoff cho test/review, chưa nghiệm thu production.

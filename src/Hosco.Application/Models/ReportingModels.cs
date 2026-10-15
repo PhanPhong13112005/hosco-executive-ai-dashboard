@@ -73,7 +73,7 @@ public interface IReportingDataStore
 {
     Task<IReadOnlyList<RevenuePoint>> GetRevenueTrendAsync(ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
     Task<PagedResult<OrderRow>> GetOrdersAsync(ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
-    Task<IReadOnlyList<ProductRankRow>> GetProductRankingAsync(ReportingScope scope, ReportingFilter filter, bool bottom, CancellationToken cancellationToken);
+    Task<PagedResult<ProductRankRow>> GetProductRankingAsync(ReportingScope scope, ReportingFilter filter, bool bottom, CancellationToken cancellationToken);
     Task<IReadOnlyList<DangerousInventoryRow>> GetDangerousInventoryAsync(ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
     Task<IReadOnlyList<OrderTrendPoint>> GetOrderTrendAsync(ReportingScope scope, ReportingFilter filter, CancellationToken cancellationToken);
     Task<DashboardSummary> GetDashboardSummaryAsync(ReportingScope scope, ReportingFilter filter, AlertSummary alertSummary, CancellationToken cancellationToken);

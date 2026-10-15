@@ -24,13 +24,13 @@ No-date product ranking uses the existing reporting API's unbounded date filter,
 
 ## Dates
 
-Supported: hôm nay, hôm qua, tuần này, tuần trước, tháng này, tháng trước, N ngày gần nhất (1–366). Weeks start Monday. Current week/month run to today; past week/month are complete periods. `IBusinessTime` supplies UTC+7 business date and UTC day boundaries; end is next day start minus one tick. KPI/trend without a valid period asks for clarification.
+Supported: hôm nay, hôm qua, tuần này, tuần trước, tháng này (including tháng nì), tháng trước, N ngày gần nhất (1–366), and explicit `tháng M năm YYYY` (month 1–12, year 2000–2100). A numbered month without a year asks for the year rather than assuming one. `dt` is recognized as a whole-word revenue abbreviation. Weeks start Monday. Current week/month run to today; past week/month are complete periods. `IBusinessTime` supplies UTC+7 business date and UTC day boundaries; end is next day start minus one tick. KPI/trend without a valid period asks for clarification.
 
-The deterministic resolver is not general NLU. Explicit calendar dates, comparative KPI calculations, conflicting/compound questions and all possible synonyms are outside the proposed MVP. Confidence .95/.72 is a heuristic classification indicator, not a statistically calibrated probability.
+The deterministic resolver is not general NLU. Arbitrary calendar dates, comparative KPI calculations, conflicting/compound questions and all possible synonyms remain outside the proposed MVP. Explicit unsupported employee/customer/cash-flow dimensions, comparisons, per-branch grouping, SKU-specific filters and revenue-based SKU ranking return a non-reporting scope-gap explanation instead of silently dropping the requested dimension. Confidence .95/.72 is a heuristic classification indicator, not a statistically calibrated probability.
 
 ## Conversation
 
-`Doanh thu tuần này?` followed by `Còn tuần trước?` reuses Revenue. A standalone supported period also works. Context cannot store/override branch or tenant, and each data request is reauthorized. `Thời tiết hôm nay?` stays Unknown even with previous Revenue context. Clear conversation resets the client context.
+`Doanh thu tuần này?` followed by `Còn tuần trước?`, `Còn hôm qua thì sao?` or `Còn tháng trước thì sao?` reuses Revenue. A standalone supported period also works. Context cannot store/override branch or tenant, and each data request is reauthorized. `Thời tiết hôm nay?` stays Unknown even with previous Revenue context. Clear conversation resets the client context. Natural `của Hà Nội`/`của HN` branch references are resolved only against the current authorized directory (including HOSCO display names and HN/HCM code aliases); inaccessible references still return 403.
 
 ## UI suggestions verified
 
