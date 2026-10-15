@@ -6,6 +6,16 @@ Bản bàn giao GD6 được chuẩn bị trên `fix/gd5-tester-findings`. Basel
 
 ## Chạy demo từ một clone mới
 
+### Chạy bằng một lần nhấp trên Windows
+
+Nhấp đúp **CHAY_HOSCO_LOCAL.cmd** tại thư mục gốc. File này tự kiểm tra công cụ, restore NuGet và dotnet tools, cài đúng frontend lockfile bằng `npm ci`, build rồi chạy API/Web và mở trình duyệt khi cả hai đã sẵn sàng. Dùng PowerShell 7 trên PATH hoặc Program Files; trên máy DEV có thể dùng runtime PowerShell 7 đã có của Codex. Nếu không có, thử Windows PowerShell 5.1 có sẵn, chỉ khi policy của máy cho phép script. Máy cần có .NET SDK theo `global.json`, Node/npm tương thích và Internet để tải dependency; launcher không tự cài/reinstall công cụ hệ thống, nâng cấp thư viện hay thay đổi chính sách Windows.
+
+Demo dùng SQLite RAM, AI Mock, scheduler bật và Telegram tắt, không cần SQL Server hoặc API key thật. Web: http://127.0.0.1:5173/; Swagger: http://localhost:5000/swagger. Chọn tháng 01/2026 để xem dữ liệu bán hàng mẫu. Giữ cửa sổ launcher mở khi test, nhấn **Enter** hoặc **Ctrl+C** để dừng các tiến trình do chính launcher tạo. Dữ liệu/chỉnh sửa demo mất khi dừng; không tác động database SQL Server.
+
+Nếu cổng 5000/5173 đã có chương trình sử dụng hoặc đã mở launcher, file sẽ báo lỗi và không tự kill tiến trình khác. Log startup nằm trong `work/local-run/<lần-chạy>/` đã được Git ignore; không gửi log chưa rà soát lên GitHub. Thiếu công cụ, lỗi mạng hoặc WDAC/ExecutionPolicy chặn sẽ được báo, không tự bypass. Trường hợp này cần cài prerequisite được IT cho phép hoặc nhờ IT xử lý policy, không tắt bảo mật.
+
+Kiểm tra không cài/chạy server: `./scripts/start-local.ps1 -CheckOnly`. Kiểm tra setup/start/proxy rồi tự dừng: `./scripts/start-local.ps1 -SmokeTest -NoBrowser`. Nếu tải bản ZIP từ Internet bị Windows chặn script, dùng terminal/quy trình được IT phê duyệt; launcher không tự Unblock-File hoặc đổi ExecutionPolicy.
+
 Điều kiện: Git, PowerShell7 được công ty cho phép, .NET SDK10.0.400 hoặc compatible10.0.4xx patch theo global.json, Node20.19+ trong nhánh20 hoặc >=22.12, npm và truy cập NuGet/npm cho lần restore đầu. Không cần SQL Server, API key hay Telegram token cho demo Mock. Runtime phải được IT duyệt bản vá trước khi triển khai đối ngoại.
 
 ```powershell
